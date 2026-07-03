@@ -137,6 +137,27 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RenderTypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\TriangleVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>6.2</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>g_pTriangleVS</VariableName>
+      <HeaderFileOutput>$(ProjectDir)CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
+    <FxCompile Include="Shaders\TrianglePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>6.2</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>g_pTrianglePS</VariableName>
+      <HeaderFileOutput>$(ProjectDir)CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

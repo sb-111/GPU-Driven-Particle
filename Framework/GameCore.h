@@ -48,9 +48,13 @@ namespace GameCore
 
 namespace GameCore
 {
+    /*
+    * Create Window & Update Loop (Update->RenderScene->RenderUI->Display::Present())
+    */
     int RunApplication( IGameApp& app, const wchar_t* className, HINSTANCE hInst, int nCmdShow );
 }
 
+// Execute GameCore::RunApplication
 #define CREATE_APPLICATION( app_class ) \
     int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int nCmdShow) \
     { \

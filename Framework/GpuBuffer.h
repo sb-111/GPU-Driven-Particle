@@ -47,6 +47,11 @@ public:
 
     D3D12_CPU_DESCRIPTOR_HANDLE CreateConstantBufferView( uint32_t Offset, uint32_t Size ) const;
 
+    /*
+    * @Offset 어디서 시작할지
+    * @Size 버퍼 전체 사이즈
+    * @Stride 정점 하나 크기
+    */
     D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t Offset, uint32_t Size, uint32_t Stride) const;
     D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t BaseVertexIndex = 0) const
     {
