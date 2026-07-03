@@ -1,0 +1,239 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <FxCompile Include="Shaders\BlendUIHDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\BufferCopyPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CompositeHDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CompositeSDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DownsampleDepthPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsGammaCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsGammaOddCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsGammaOddXCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsGammaOddYCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsLinearCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsLinearOddCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsLinearOddXCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\GenerateMipsLinearOddYCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MagnifyPixelsPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ScaleAndCompositeHDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ScaleAndCompositeSDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ScreenQuadCommonVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\ScreenQuadPresentVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TextAntialiasPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TextShadowPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\TextVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PerfGraphVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PerfGraphPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PerfGraphBackgroundVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PresentHDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PresentSDRPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="BufferManager.cpp" />
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="ColorBuffer.cpp" />
+    <ClCompile Include="CommandAllocatorPool.cpp" />
+    <ClCompile Include="CommandContext.cpp" />
+    <ClCompile Include="CommandListManager.cpp" />
+    <ClCompile Include="CommandSignature.cpp" />
+    <ClCompile Include="DDSTextureLoader.cpp" />
+    <ClCompile Include="DepthBuffer.cpp" />
+    <ClCompile Include="DynamicDescriptorHeap.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp" />
+    <ClCompile Include="Debug\EngineProfiling.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\EngineTuning.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="GameCore.cpp" />
+    <ClCompile Include="GpuBuffer.cpp" />
+    <ClCompile Include="Debug\GpuTimeManager.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphicsCommon.cpp" />
+    <ClCompile Include="GraphicsCore.cpp" />
+    <ClCompile Include="Debug\GraphRenderer.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="LinearAllocator.cpp" />
+    <ClCompile Include="Math\BoundingSphere.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="PipelineState.cpp" />
+    <ClCompile Include="PixelBuffer.cpp" />
+    <ClCompile Include="Display.cpp" />
+    <ClCompile Include="ReadbackBuffer.cpp" />
+    <ClCompile Include="RootSignature.cpp" />
+    <ClCompile Include="SamplerManager.cpp" />
+    <ClCompile Include="SystemTime.cpp" />
+    <ClCompile Include="Debug\TextRenderer.cpp">
+      <Filter>Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="UploadBuffer.cpp" />
+    <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="Util\CommandLineArg.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BufferManager.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="ColorBuffer.h" />
+    <ClInclude Include="CommandAllocatorPool.h" />
+    <ClInclude Include="CommandContext.h" />
+    <ClInclude Include="CommandListManager.h" />
+    <ClInclude Include="CommandSignature.h" />
+    <ClInclude Include="d3dx12.h" />
+    <ClInclude Include="dds.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="DepthBuffer.h" />
+    <ClInclude Include="DynamicDescriptorHeap.h" />
+    <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="GpuBuffer.h" />
+    <ClInclude Include="Debug\EngineProfiling.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="EsramAllocator.h" />
+    <ClInclude Include="FileUtility.h" />
+    <ClInclude Include="GameInput.h" />
+    <ClInclude Include="GpuResource.h" />
+    <ClInclude Include="Debug\GpuTimeManager.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="GameCore.h" />
+    <ClInclude Include="GraphicsCommon.h" />
+    <ClInclude Include="GraphicsCore.h" />
+    <ClInclude Include="Debug\GraphRenderer.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash.h" />
+    <ClInclude Include="LinearAllocator.h" />
+    <ClInclude Include="Math\BoundingSphere.h" />
+    <ClInclude Include="Math\Common.h" />
+    <ClInclude Include="Math\Matrix3.h" />
+    <ClInclude Include="Math\Matrix4.h" />
+    <ClInclude Include="Math\Quaternion.h" />
+    <ClInclude Include="Math\Scalar.h" />
+    <ClInclude Include="Math\Transform.h" />
+    <ClInclude Include="Math\Vector.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="PipelineState.h" />
+    <ClInclude Include="PixelBuffer.h" />
+    <ClInclude Include="Debug\EngineTuning.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Display.h" />
+    <ClInclude Include="ReadbackBuffer.h" />
+    <ClInclude Include="RootSignature.h" />
+    <ClInclude Include="SamplerManager.h" />
+    <ClInclude Include="SystemTime.h" />
+    <ClInclude Include="Debug\TextRenderer.h">
+      <Filter>Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="UploadBuffer.h" />
+    <ClInclude Include="Utility.h" />
+    <ClInclude Include="Util\CommandLineArg.h" />
+    <ClInclude Include="VectorMath.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Math\Functions.inl" />
+    <None Include="Shaders\ColorSpaceUtility.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\CommonRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\GenerateMipsCS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ShaderUtility.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\TextRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PerfGraphRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PixelPacking.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PixelPacking_R11G11B10.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PixelPacking_RGBE.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PixelPacking_RGBM.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\PresentRS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Debug">
+      <UniqueIdentifier>{C1A8DADF-79B4-4BFD-B27C-84B9149C096F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{c5df3e3a-73f5-4b5b-8688-112163941bea}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

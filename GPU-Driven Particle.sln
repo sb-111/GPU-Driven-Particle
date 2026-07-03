@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22 d17.14
+VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPU-Driven Particle", "GPU-Driven Particle\GPU-Driven Particle.vcxproj", "{E578C37A-6C94-4FE1-83DF-430E512D8BA9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{B99BE4FA-5B5A-4424-8D30-284383F3920A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,14 @@ Global
 		{E578C37A-6C94-4FE1-83DF-430E512D8BA9}.Release|x64.Build.0 = Release|x64
 		{E578C37A-6C94-4FE1-83DF-430E512D8BA9}.Release|x86.ActiveCfg = Release|Win32
 		{E578C37A-6C94-4FE1-83DF-430E512D8BA9}.Release|x86.Build.0 = Release|Win32
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Debug|x64.ActiveCfg = Debug|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Debug|x64.Build.0 = Debug|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Debug|x86.ActiveCfg = Debug|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Debug|x86.Build.0 = Debug|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Release|x64.ActiveCfg = Release|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Release|x64.Build.0 = Release|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Release|x86.ActiveCfg = Release|x64
+		{B99BE4FA-5B5A-4424-8D30-284383F3920A}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
