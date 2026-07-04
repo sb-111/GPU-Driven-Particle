@@ -399,3 +399,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# ---------------------------------------------------------------------------
+# Project Settings (not build output)
+# ---------------------------------------------------------------------------
+!Framework/Debug/
+!Framework/Debug/**
