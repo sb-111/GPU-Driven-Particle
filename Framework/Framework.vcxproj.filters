@@ -13,9 +13,6 @@
     <FxCompile Include="Shaders\CompositeSDRPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\DownsampleDepthPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\GenerateMipsGammaCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -47,9 +44,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\ScaleAndCompositeSDRPS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ScreenQuadCommonVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\ScreenQuadPresentVS.hlsl">

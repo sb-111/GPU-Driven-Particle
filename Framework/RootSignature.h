@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -127,6 +127,10 @@ public:
 
     static void DestroyAll(void);
 
+	/*
+	* @NumRootParams 루트 파라미터(슬롯) 개수
+	* @NumStaticSamplers 정적 샘플러 개수
+	*/
     void Reset( UINT NumRootParams, UINT NumStaticSamplers = 0 )
     {
         if (NumRootParams > 0)
