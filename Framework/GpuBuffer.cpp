@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -25,6 +25,7 @@ void GpuBuffer::Create( const std::wstring& name, uint32_t NumElements, uint32_t
 {
     Destroy();
 
+	// 캐싱
     m_ElementCount = NumElements;
     m_ElementSize = ElementSize;
     m_BufferSize = NumElements * ElementSize;
@@ -40,11 +41,13 @@ void GpuBuffer::Create( const std::wstring& name, uint32_t NumElements, uint32_t
     HeapProps.CreationNodeMask = 1;
     HeapProps.VisibleNodeMask = 1;
 
+	// m_pResource 할당 (데이터 버퍼 생성)
     ASSERT_SUCCEEDED( g_Device->CreateCommittedResource( &HeapProps, D3D12_HEAP_FLAG_NONE,
         &ResourceDesc, m_UsageState, nullptr, MY_IID_PPV_ARGS(&m_pResource)) );
 
     m_GpuVirtualAddress = m_pResource->GetGPUVirtualAddress();
 
+	// InitialData 있으면 업로드
     if (initialData)
         CommandContext::InitializeBuffer(*this, initialData, m_BufferSize);
 
@@ -164,17 +167,20 @@ D3D12_RESOURCE_DESC GpuBuffer::DescribeBuffer(void)
 
 void ByteAddressBuffer::CreateDerivedViews(void)
 {
+	// ByteAddressBuffer 인식하게 설정
     D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
     SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    SRVDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+    SRVDesc.Format = DXGI_FORMAT_R32_TYPELESS;	// 4바이트 Typeless
     SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    SRVDesc.Buffer.NumElements = (UINT)m_BufferSize / 4;
-    SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+    SRVDesc.Buffer.NumElements = (UINT)m_BufferSize / 4; // 전체 바이트 / 4
+    SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW; // RAW 버퍼로 것임을 알림
 
+	// 힙 메모리에서 빈자리 배정 받고, SRV 생성
     if (m_SRV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
         m_SRV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     g_Device->CreateShaderResourceView(m_pResource.Get(), &SRVDesc, m_SRV);
 
+	// RWByteAddressBuffer 인식
     D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
     UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
     UAVDesc.Format = DXGI_FORMAT_R32_TYPELESS;
@@ -188,31 +194,39 @@ void ByteAddressBuffer::CreateDerivedViews(void)
 
 void StructuredBuffer::CreateDerivedViews(void)
 {
+	// HLSL: StructuredBuffer<T>
     D3D12_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
     SRVDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    SRVDesc.Format = DXGI_FORMAT_UNKNOWN;
+    SRVDesc.Format = DXGI_FORMAT_UNKNOWN; // UNKNOWN -> structured 표식
     SRVDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    SRVDesc.Buffer.NumElements = m_ElementCount;
-    SRVDesc.Buffer.StructureByteStride = m_ElementSize;
-    SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+    SRVDesc.Buffer.NumElements = m_ElementCount; // 원소 개수
+    SRVDesc.Buffer.StructureByteStride = m_ElementSize; // 원소 하나 크기
+    SRVDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE; // RAW 아님
 
-    if (m_SRV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
+    if (m_SRV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN) // 슬롯 없을 때만 배정
         m_SRV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     g_Device->CreateShaderResourceView(m_pResource.Get(), &SRVDesc, m_SRV);
 
+	// HLSL: RWStructuredBuffer<T>
     D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
     UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-    UAVDesc.Format = DXGI_FORMAT_UNKNOWN;
-    UAVDesc.Buffer.CounterOffsetInBytes = 0;
-    UAVDesc.Buffer.NumElements = m_ElementCount;
-    UAVDesc.Buffer.StructureByteStride = m_ElementSize;
-    UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+    UAVDesc.Format = DXGI_FORMAT_UNKNOWN; // UNKNOWN
+    UAVDesc.Buffer.CounterOffsetInBytes = 0; // 카운터가 카운터버퍼의 0바이트 위치
+    UAVDesc.Buffer.NumElements = m_ElementCount; // 원소 개수
+    UAVDesc.Buffer.StructureByteStride = m_ElementSize; // 원소 하나 크기
+    UAVDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE; // RAW 아님
 
+	// append/consume 카운터(uint32) 
     m_CounterBuffer.Create(L"StructuredBuffer::Counter", 1, 4);
 
     if (m_UAV.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
         m_UAV = AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    g_Device->CreateUnorderedAccessView(m_pResource.Get(), m_CounterBuffer.GetResource(), &UAVDesc, m_UAV);
+	// 2번째 인자->카운터 리소스 연결 (ByteAddress는 nullptr임)
+	g_Device->CreateUnorderedAccessView
+		(m_pResource.Get(),				//  뷰가 가리킬 실제 데이터 리소스
+		m_CounterBuffer.GetResource(),	// 카운터
+		&UAVDesc,						// 해석 규칙
+		m_UAV);							// 이 디스크립터 핸들에 UAV 디스크립터를 쓰기
 }
 
 void TypedBuffer::CreateDerivedViews(void)

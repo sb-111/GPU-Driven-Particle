@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -48,9 +48,9 @@ public:
     D3D12_CPU_DESCRIPTOR_HANDLE CreateConstantBufferView( uint32_t Offset, uint32_t Size ) const;
 
     /*
-    * @Offset ��� ��������
-    * @Size ���� ��ü ������
-    * @Stride ���� �ϳ� ũ��
+    * @param Offset 어디서 시작할지
+    * @param Size 버퍼 전체 사이즈
+    * @param Stride 정점 하나 크기
     */
     D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t Offset, uint32_t Size, uint32_t Stride) const;
     D3D12_VERTEX_BUFFER_VIEW VertexBufferView(size_t BaseVertexIndex = 0) const
@@ -82,12 +82,12 @@ protected:
     D3D12_RESOURCE_DESC DescribeBuffer(void);
     virtual void CreateDerivedViews(void) = 0;
 
-    D3D12_CPU_DESCRIPTOR_HANDLE m_UAV;
-    D3D12_CPU_DESCRIPTOR_HANDLE m_SRV;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_UAV; // 이 버퍼를 UAV로 보는 디스크립터의 핸들(칸 주소)
+    D3D12_CPU_DESCRIPTOR_HANDLE m_SRV; // 이 버퍼를 SRV로 보는 디스크립터의 핸들(칸 주소)
 
-    size_t m_BufferSize;
-    uint32_t m_ElementCount;
-    uint32_t m_ElementSize;
+    size_t m_BufferSize;					// 버퍼 전체 바이트 크기 (ElementCount * ElementSize)
+    uint32_t m_ElementCount;				// 원소 개수
+    uint32_t m_ElementSize;					// 원소 하나 바이트 크기
     D3D12_RESOURCE_FLAGS m_ResourceFlags;
 };
 
@@ -140,7 +140,7 @@ public:
     const D3D12_CPU_DESCRIPTOR_HANDLE& GetCounterUAV(CommandContext& Context);
 
 private:
-    ByteAddressBuffer m_CounterBuffer;
+    ByteAddressBuffer m_CounterBuffer; // 4바이트 정수 하나 (버퍼에 몇개 들어있는지 체크용)
 };
 
 class TypedBuffer : public GpuBuffer

@@ -17,6 +17,7 @@
 
 class DescriptorCache;
 
+// 매개변수 한 칸
 class RootParameter
 {
     friend class RootSignature;
@@ -57,6 +58,12 @@ public:
         m_RootParam.Descriptor.RegisterSpace = Space;
     }
 
+	/*
+	* 루트 파라미터를 Root Descriptor로 설정
+	* @param Register 연결할 t레지스터 번호
+	* @param Visibility 이 파라미터를 볼 수 있는 셰이더 단계
+	* @param Space 레지스터 공간 (보통 0)
+	*/
     void InitAsBufferSRV( UINT Register, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL, UINT Space = 0 )
     {
         m_RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -110,6 +117,7 @@ protected:
 // Root descriptor (CBV, SRV, or UAV) = 2 DWORDs each
 // Descriptor table pointer = 1 DWORD
 // Static samplers = 0 DWORDS (compiled into shader)
+// 매개변수 목록
 class RootSignature
 {
     friend class DynamicDescriptorHeap;

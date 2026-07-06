@@ -524,7 +524,12 @@ inline void ComputeContext::SetDynamicSRV(UINT RootIndex, size_t BufferSize, con
     SIMDMemCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
     m_CommandList->SetComputeRootShaderResourceView(RootIndex, cb.GpuAddress);
 }
-
+/*
+* Root Descriptor 방식
+* @param RootIndex 루트 파라미터 인덱스
+* @param SRV       SRV로 바인딩할 버퍼
+* @param Offset    버퍼 시작에서 건너뛸 바이트 오프셋 (기본 0 = 처음부터)
+*/
 inline void GraphicsContext::SetBufferSRV( UINT RootIndex, const GpuBuffer& SRV, UINT64 Offset)
 {
     ASSERT((SRV.m_UsageState & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) != 0);
