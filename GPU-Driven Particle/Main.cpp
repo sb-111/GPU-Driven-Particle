@@ -6,11 +6,7 @@
 #include "RootSignature.h"
 #include "PipelineState.h"
 
-#include "CompiledShaders/TriangleVS.h"
-#include "CompiledShaders/TrianglePS.h"
-#include "CompiledShaders/ParticleVS.h"
-#include "CompiledShaders/ParticlePS.h"
-#include "CompiledShaders/ParticleSpawnCS.h"
+#include "ShaderCompiler.h"
 #include "ParticleShared.h"
 
 #include "Camera.h"
@@ -36,6 +32,15 @@ public:
 	// ==============================================================
 	void Startup(void) override
 	{
+		// 0. 셰이더 런타임 컴파일 (DXC). 실패하면 출력창에 에러
+		//	  Blob은 PSO Finalize 시점까지만 살아있으면 됨.
+		auto triVS  = CompileShader(L"Shaders/TriangleVS.hlsl", L"main", L"vs_6_2");
+		auto triPS  = CompileShader(L"Shaders/TrianglePS.hlsl", L"main", L"ps_6_2");
+		auto partVS = CompileShader(L"ParticleVS.hlsl",         L"main", L"vs_6_2");
+		auto partPS = CompileShader(L"ParticlePS.hlsl",         L"main", L"ps_6_2");
+		auto partCS = CompileShader(L"ParticleSpawnCS.hlsl",    L"main", L"cs_6_2");
+		ASSERT(triVS && triPS && partVS && partPS && partCS, "셰이더 컴파일 실패 - VS 출력창 확인");
+
 		// 1. 정점 버퍼 생성 (IA에 공급될 소스)
 		Vertex verts[3] =
 		{
@@ -64,8 +69,8 @@ public:
 		// 파티클 pso
 		m_ParticlePSO.SetRootSignature(m_RootSig);
 		m_ParticlePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
-		m_ParticlePSO.SetVertexShader(g_pParticleVS, sizeof(g_pParticleVS));
-		m_ParticlePSO.SetPixelShader(g_pParticlePS, sizeof(g_pParticlePS));
+		m_ParticlePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
+		m_ParticlePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
 		m_ParticlePSO.SetRasterizerState(RasterizerDefault);
 		m_ParticlePSO.SetBlendState(BlendDisable);
 		m_ParticlePSO.SetDepthStencilState(DepthStateDisabled);
@@ -74,7 +79,7 @@ public:
 
 		// 파티클 컴퓨트 PSO
 		m_ParticleComputePSO.SetRootSignature(m_ComputeRootSig);
-		m_ParticleComputePSO.SetComputeShader(g_pParticleSpawnCS, sizeof(g_pParticleSpawnCS));
+		m_ParticleComputePSO.SetComputeShader(partCS->GetBufferPointer(), partCS->GetBufferSize());
 		m_ParticleComputePSO.Finalize();
 
 		// 3. Pipeline의 전 단계 설정을 하나로 굳힘
@@ -86,8 +91,8 @@ public:
 		};
 		m_PSO.SetInputLayout(_countof(inputLayout), inputLayout);                 // IA (POSITION/COLOR 레이아웃)
 		m_PSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);   // IA (삼각형 종류)
-		m_PSO.SetVertexShader(g_pTriangleVS, sizeof(g_pTriangleVS));              // VS 
-		m_PSO.SetPixelShader(g_pTrianglePS, sizeof(g_pTrianglePS));               // PS 
+		m_PSO.SetVertexShader(triVS->GetBufferPointer(), triVS->GetBufferSize()); // VS
+		m_PSO.SetPixelShader(triPS->GetBufferPointer(), triPS->GetBufferSize());  // PS
 		m_PSO.SetRasterizerState(RasterizerDefault);                              // RS (컬링/채우기)
 		m_PSO.SetBlendState(BlendDisable);                                        // OM (블렌딩 끔)
 		m_PSO.SetDepthStencilState(DepthStateDisabled);                           // OM (깊이 테스트 끔 — 지금은 삼각형뿐)
