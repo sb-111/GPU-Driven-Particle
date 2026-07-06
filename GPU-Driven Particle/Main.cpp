@@ -8,9 +8,13 @@
 
 #include "CompiledShaders/TriangleVS.h"
 #include "CompiledShaders/TrianglePS.h"
+#include "CompiledShaders/ParticleVS.h"
+#include "CompiledShaders/ParticlePS.h"
 
 #include "Camera.h"
 #include "CameraController.h"
+
+#include <random> // 파티클 임의 생성용
 
 using namespace GameCore;
 using namespace Graphics;
@@ -39,11 +43,28 @@ public:
 		};
 		m_VertexBuffer.Create(L"Triangle VB", 3, sizeof(Vertex), verts);
 
+		// ========= Particle Test ===========
+		std::vector<Particle> particles = MakeRandomParticles(m_ParticleNum);
+		m_ParticleStructuredBuffer.Create(L"ParticleBuffer", m_ParticleNum, sizeof(Particle), particles.data());
+
+
 		// 2. 루트 시그니처 생성
-		// 지금은 CBV 1개(b0)
-		m_RootSig.Reset(1, 0);                  // 루트 파라미터 1개
-		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 루트 파라미터에 0번 슬롯 바인딩
+		m_RootSig.Reset(2, 0);                  // 루트 파라미터 개수
+		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 -> b0
+		m_RootSig[1].InitAsBufferSRV(0);		// 1번 -> t0
+
 		m_RootSig.Finalize(L"triangle", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// 파티클 pso
+		m_ParticlePSO.SetRootSignature(m_RootSig);
+		m_ParticlePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
+		m_ParticlePSO.SetVertexShader(g_pParticleVS, sizeof(g_pParticleVS));
+		m_ParticlePSO.SetPixelShader(g_pParticlePS, sizeof(g_pParticlePS));
+		m_ParticlePSO.SetRasterizerState(RasterizerDefault);
+		m_ParticlePSO.SetBlendState(BlendDisable);
+		m_ParticlePSO.SetDepthStencilState(DepthStateDisabled);
+		m_ParticlePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
+		m_ParticlePSO.Finalize();
 
 		// 3. Pipeline의 전 단계 설정을 하나로 굳힘
 		m_PSO.SetRootSignature(m_RootSig);                                        // 자원 계약 연결
@@ -65,6 +86,8 @@ public:
 		// 4. 카메라 투영 설정 (fov/near/far 고정 → 1회. 창 리사이즈 때만 갱신)
 		float aspect = (float)g_SceneColorBuffer.GetHeight() / (float)g_SceneColorBuffer.GetWidth(); // ※ 높이/너비
 		m_Camera.SetPerspective(3.14159f / 3.0f, aspect, 1.0f, 1000.0f); // 60도
+
+		
 	}
 
 	void Cleanup(void) override {}
@@ -75,39 +98,40 @@ public:
 	// ==============================================================
 	void RenderScene(void) override
 	{
+		// =================== 공통 ==================
 		// 1. 명령 리스트 시작 (풀에서 하나 빌려옴)
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
-
 		// 2. 배리어: 씬버퍼 상태 전환 (Present → Render Target)  ※ Clear/그리기보다 먼저
 		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		// 3. 배경 클리어
 		float clearColor[4] = { 0.2f, 0.4f, 0.8f, 1.0f };
 		gfx.ClearColor(g_SceneColorBuffer, clearColor);
-
-		// 4. 루트 시그니처 → PSO   
+		// 루트 시그니처 공통 (주의: View 꽂기전에 먼저 바인딩 되어있어야 함)
 		gfx.SetRootSignature(m_RootSig);
-		gfx.SetPipelineState(m_PSO);
+		// RS 공통
+		gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+		// OM 공통 (PS/Blend/Depth 등은 PSO에 이미 있음)
+		gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV());
 
-		// 5. IA
-		gfx.SetVertexBuffer(0, m_VertexBuffer.VertexBufferView());      // 정점 소스 (뷰 = 주소 + stride)
-		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);  // 삼각형 목록
-
-		// 6. VS 동적 데이터 업로드 (viewProj는 매 프레임 바뀜 → dynamic)
+		// 카메라 업데이트 -> 업로드
 		m_Camera.Update();
 		VSConstants cb;
 		cb.viewProj = m_Camera.GetViewProj();
-		gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);          // 루트 b0
+		gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // 루트 파라미터 인덱스 0
 
-		// 7. RS
-		gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
-
-		// 8. OM (PS/Blend/Depth 등은 PSO에 이미 있음)
-		gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV());
-
-		// 9. Draw 
+		// 패스 A
+		gfx.SetPipelineState(m_PSO);
+		gfx.SetVertexBuffer(0, m_VertexBuffer.VertexBufferView());      // 정점 소스 (뷰 = 주소 + stride)
+		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);  // 삼각형 목록
 		gfx.Draw(3);
 
-		// 10. Command List 닫고 GPU 큐에 제출
+		// 패스 B
+		gfx.SetPipelineState(m_ParticlePSO);
+		gfx.SetBufferSRV(1, m_ParticleStructuredBuffer);
+		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		gfx.Draw(m_ParticleNum);
+
+		// Command List 닫고 GPU 큐에 제출
 		gfx.Finish();
 	}
 
@@ -115,10 +139,29 @@ private:
 	ByteAddressBuffer m_VertexBuffer;   // 정점 데이터
 	RootSignature     m_RootSig;        // Root Signature
 	GraphicsPSO       m_PSO;            // PSO
+	GraphicsPSO		  m_ParticlePSO;
 
 	// 초기 카메라 위치 지정, 회전 X
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
 	CameraController m_CamController{ m_Camera };
+
+	static const int m_ParticleNum = 100000;
+	StructuredBuffer m_ParticleStructuredBuffer;
+
+	std::vector<Particle> MakeRandomParticles(int n)
+	{
+		std::vector<Particle> particles(n);
+		std::mt19937 rng(12345);
+		std::uniform_real_distribution<float> dist(-2.0f, 2.0f);
+		for (int i = 0; i < n; i++)
+		{
+			particles[i].position[0] = dist(rng); // x
+			particles[i].position[1] = dist(rng); // y
+			particles[i].position[2] = dist(rng); // z
+		}
+
+		return particles;
+	}
 };
 
 CREATE_APPLICATION(ParticleApp)

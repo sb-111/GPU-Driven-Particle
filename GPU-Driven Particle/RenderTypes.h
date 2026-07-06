@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 namespace GP
 {
 	struct Vertex
@@ -7,4 +7,8 @@ namespace GP
 		float color[4];		// [12, 28]
 	};
 
+	struct Particle
+	{
+		float position[3];
+	};
 }

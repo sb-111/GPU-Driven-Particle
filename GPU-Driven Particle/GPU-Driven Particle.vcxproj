@@ -144,6 +144,22 @@
     <ClInclude Include="RenderTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="ParticleVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>6.2</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>g_pParticleVS</VariableName>
+      <HeaderFileOutput>$(ProjectDir)CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
+    <FxCompile Include="ParticlePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>6.2</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>g_pParticlePS</VariableName>
+      <HeaderFileOutput>$(ProjectDir)CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
     <FxCompile Include="Shaders\TriangleVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>6.2</ShaderModel>
