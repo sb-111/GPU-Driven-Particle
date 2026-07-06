@@ -35,6 +35,9 @@
     <ClInclude Include="Camera.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleShared.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\TrianglePS.hlsl">
@@ -47,6 +50,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleSpawnCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

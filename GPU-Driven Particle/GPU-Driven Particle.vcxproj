@@ -141,9 +141,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="ParticleShared.h" />
     <ClInclude Include="RenderTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="ParticleSpawnCS.hlsl">
+      <ShaderType>Compute</ShaderType>
+      <ShaderModel>6.2</ShaderModel>
+      <EntryPointName>main</EntryPointName>
+      <VariableName>g_pParticleSpawnCS</VariableName>
+      <HeaderFileOutput>$(ProjectDir)CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput />
+    </FxCompile>
     <FxCompile Include="ParticleVS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>6.2</ShaderModel>

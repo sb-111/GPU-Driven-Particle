@@ -10,6 +10,8 @@
 #include "CompiledShaders/TrianglePS.h"
 #include "CompiledShaders/ParticleVS.h"
 #include "CompiledShaders/ParticlePS.h"
+#include "CompiledShaders/ParticleSpawnCS.h"
+#include "ParticleShared.h"
 
 #include "Camera.h"
 #include "CameraController.h"
@@ -47,13 +49,17 @@ public:
 		std::vector<Particle> particles = MakeRandomParticles(m_ParticleNum);
 		m_ParticleStructuredBuffer.Create(L"ParticleBuffer", m_ParticleNum, sizeof(Particle), particles.data());
 
-
 		// 2. 루트 시그니처 생성
 		m_RootSig.Reset(2, 0);                  // 루트 파라미터 개수
 		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 -> b0
 		m_RootSig[1].InitAsBufferSRV(0);		// 1번 -> t0
-
 		m_RootSig.Finalize(L"triangle", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// Compute 용
+		m_ComputeRootSig.Reset(2, 0);
+		m_ComputeRootSig[0].InitAsBufferUAV(0); // u0
+		m_ComputeRootSig[1].InitAsConstantBuffer(0); // b0
+		m_ComputeRootSig.Finalize(L"ParticleCompute");
 
 		// 파티클 pso
 		m_ParticlePSO.SetRootSignature(m_RootSig);
@@ -65,6 +71,11 @@ public:
 		m_ParticlePSO.SetDepthStencilState(DepthStateDisabled);
 		m_ParticlePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
 		m_ParticlePSO.Finalize();
+
+		// 파티클 컴퓨트 PSO
+		m_ParticleComputePSO.SetRootSignature(m_ComputeRootSig);
+		m_ParticleComputePSO.SetComputeShader(g_pParticleSpawnCS, sizeof(g_pParticleSpawnCS));
+		m_ParticleComputePSO.Finalize();
 
 		// 3. Pipeline의 전 단계 설정을 하나로 굳힘
 		m_PSO.SetRootSignature(m_RootSig);                                        // 자원 계약 연결
@@ -91,16 +102,29 @@ public:
 	}
 
 	void Cleanup(void) override {}
-	void Update(float deltaT) override { m_CamController.Update(deltaT); }  // 입력 읽어 카메라 포즈 갱신
+	void Update(float deltaT) override { m_DeltaTime = deltaT; m_CamController.Update(deltaT); }  // 입력 읽어 카메라 포즈 갱신
 
 	// ==============================================================
 	//  매 프레임. GPU 명령을 "기록"만 함 (실행은 Finish 이후 GPU가)
 	// ==============================================================
 	void RenderScene(void) override
 	{
-		// =================== 공통 ==================
 		// 1. 명령 리스트 시작 (풀에서 하나 빌려옴)
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
+		// 컴퓨트 패스
+		ComputeContext& cpt = gfx.GetComputeContext(); // 컴퓨트 뷰
+		gfx.TransitionResource(m_ParticleStructuredBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS); // UAV 전환
+		cpt.SetRootSignature(m_ComputeRootSig);
+		cpt.SetPipelineState(m_ParticleComputePSO);
+		cpt.SetBufferUAV(0, m_ParticleStructuredBuffer);
+		ComputeCB ccb;
+		ccb.deltaTime = m_DeltaTime;
+		ccb.particleCount = m_ParticleNum;
+		cpt.SetDynamicConstantBufferView(1, sizeof(ccb), &ccb);
+		cpt.Dispatch((m_ParticleNum + 63) / 64, 1, 1);
+		gfx.TransitionResource(m_ParticleStructuredBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE); // SRV 전환
+
+		// =================== 공통 ==================
 		// 2. 배리어: 씬버퍼 상태 전환 (Present → Render Target)  ※ Clear/그리기보다 먼저
 		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		// 3. 배경 클리어
@@ -138,8 +162,10 @@ public:
 private:
 	ByteAddressBuffer m_VertexBuffer;   // 정점 데이터
 	RootSignature     m_RootSig;        // Root Signature
+	RootSignature	  m_ComputeRootSig;
 	GraphicsPSO       m_PSO;            // PSO
 	GraphicsPSO		  m_ParticlePSO;
+	ComputePSO		  m_ParticleComputePSO;
 
 	// 초기 카메라 위치 지정, 회전 X
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
@@ -147,7 +173,7 @@ private:
 
 	static const int m_ParticleNum = 100000;
 	StructuredBuffer m_ParticleStructuredBuffer;
-
+	float m_DeltaTime;
 	std::vector<Particle> MakeRandomParticles(int n)
 	{
 		std::vector<Particle> particles(n);
@@ -155,9 +181,10 @@ private:
 		std::uniform_real_distribution<float> dist(-2.0f, 2.0f);
 		for (int i = 0; i < n; i++)
 		{
-			particles[i].position[0] = dist(rng); // x
-			particles[i].position[1] = dist(rng); // y
-			particles[i].position[2] = dist(rng); // z
+			particles[i].position.x = dist(rng); 
+			particles[i].position.y = dist(rng); 
+			particles[i].position.z = dist(rng);
+			particles[i].velocity = { dist(rng), dist(rng), dist(rng) };
 		}
 
 		return particles;
