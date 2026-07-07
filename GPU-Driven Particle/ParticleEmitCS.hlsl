@@ -56,9 +56,11 @@ void main( uint3 id : SV_DispatchThreadID )
 
 	Particle p;
 	p.position = params.emitterPosition + offset*0.1f;
-	p.velocity = normalize(params.emitterDirection + spread * 0.3) +
+	p.velocity = normalize(params.emitterDirection + spread * 0.3) *
 	lerp(3.0f, 5.0f, rand01(seed));
 	p.lifeTime = lerp(params.minLifeTime, params.maxLifeTime, rand01(seed));
+	p.initialLife = p.lifeTime;
+	p.color = float4(params.startColor.r * rand01(seed), params.startColor.g * rand01(seed), params.startColor.b * rand01(seed), 1.0f);
 
 	// 풀의 빈 인덱스에 새 파티클 덮어쓰기
 	g_ParticleBuffer[poolIndex] = p;

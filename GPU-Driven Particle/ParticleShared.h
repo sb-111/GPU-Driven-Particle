@@ -5,6 +5,12 @@
 #define COUNTER_AFTER_SIMULATE 12
 
 #ifdef __cplusplus
+#define GP_CB_ALIGN alignas(16)
+#else
+#define GP_CB_ALIGN
+#endif
+
+#ifdef __cplusplus
 	#include <cstdint>
 	struct float3 { float x, y, z; };
 	struct float4 { float x, y, z, w; };
@@ -16,14 +22,14 @@
 	{
 		float3 position;
 		float lifeTime;
+
+		
 		float3 velocity;
+		float initialLife; // 태어날 때 수명
+		float4 color;
 	};
 
-#ifdef __cplusplus
-#define GP_CB_ALIGN alignas(16)
-#else
-#define GP_CB_ALIGN
-#endif
+
 	struct GP_CB_ALIGN ParticleFrameCB
 	{
 		float3 emitterPosition;	// world pos
