@@ -1,8 +1,8 @@
 ﻿#include "ParticleEmitter.h"
 
-GP::EmitterCBParams GP::ParticleEmitter::MakeParams(float dt) const
+GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(float dt) const
 {
-	EmitterCBParams params;
+	ParticleFrameCB params;
 	Math::Vector3 pos = m_EmitterTransform.GetTranslation();
 
 	params.emitterPosition = { pos.GetX(), pos.GetY(), pos.GetZ() };

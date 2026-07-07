@@ -2,12 +2,12 @@
 
 cbuffer ParticleCB : register(b0)
 {
-	EmitterCBParams params;
+	ParticleFrameCB params;
 };
 RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0);
 RWByteAddressBuffer AliveList1 : register(u1);
-RWByteAddressBuffer DeadList : register(u2);
-RWByteAddressBuffer Counters : register(u3);
+RWByteAddressBuffer DeadList : register(u3);
+RWByteAddressBuffer Counters : register(u4);
 
 uint wang_hash(uint seed)
 {
@@ -56,8 +56,8 @@ void main( uint3 id : SV_DispatchThreadID )
 
 	Particle p;
 	p.position = params.emitterPosition + offset*0.1f;
-	p.velocity = normalize(params.emitterDirection + spread * 0.3 +
-	lerp(3.0f, 5.0f, rand01(seed)));
+	p.velocity = normalize(params.emitterDirection + spread * 0.3) +
+	lerp(3.0f, 5.0f, rand01(seed));
 	p.lifeTime = lerp(params.minLifeTime, params.maxLifeTime, rand01(seed));
 
 	// 풀의 빈 인덱스에 새 파티클 덮어쓰기

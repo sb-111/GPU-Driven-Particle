@@ -50,9 +50,6 @@
     <ClInclude Include="ParticleEmitter.h">
       <Filter>Source</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\TrianglePS.hlsl">
@@ -67,17 +64,15 @@
     <None Include="ParticlePS.hlsl">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="ParticleSpawnCS.hlsl">
+    <None Include="ParticleSimulateCS.hlsl">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GPU-Driven Particle.rc">
-      <Filter>리소스 파일</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="ParticleEmitCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ParticleKickoffCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

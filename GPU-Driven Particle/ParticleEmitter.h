@@ -12,7 +12,7 @@ namespace GP
 			{}
 		void Update(float dt);
 		uint32_t GetCurrentSpawnCount() const { return m_CurrentSpawnCount; }
-		EmitterCBParams MakeParams(float dt) const;
+		ParticleFrameCB MakeParams(float dt) const;
 	private:
 		Math::OrthogonalTransform m_EmitterTransform;
 		//float m_EmitterAge;

@@ -13,8 +13,6 @@
 #include "Camera.h"
 #include "CameraController.h"
 
-#include <random> // 파티클 임의 생성용
-
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -39,9 +37,11 @@ public:
 		auto triPS  = CompileShader(L"Shaders/TrianglePS.hlsl", L"main", L"ps_6_2");
 		auto partVS = CompileShader(L"ParticleVS.hlsl",         L"main", L"vs_6_2");
 		auto partPS = CompileShader(L"ParticlePS.hlsl",         L"main", L"ps_6_2");
-		auto partCS = CompileShader(L"ParticleSpawnCS.hlsl",    L"main", L"cs_6_2");
+		auto particleKickoffCS = CompileShader(L"ParticleKickoffCS.hlsl", L"main", L"cs_6_2");
 		auto particleEmitCS = CompileShader(L"ParticleEmitCS.hlsl", L"main", L"cs_6_2");
-		ASSERT(triVS && triPS && partVS && partPS && partCS && particleEmitCS, "셰이더 컴파일 실패 - VS 출력창 확인");
+		auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
+		ASSERT(triVS && triPS && partVS && partPS && particleKickoffCS && particleEmitCS && particleSimulateCS
+			, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 		// 1. 정점 버퍼 생성 (IA에 공급될 소스)
 		Vertex verts[3] =
@@ -52,7 +52,7 @@ public:
 		};
 		m_VertexBuffer.Create(L"Triangle VB", 3, sizeof(Vertex), verts);
 
-		// 버퍼 생성
+		// ================ CS에서 사용할 버퍼 생성 ================
 		m_Alive1List.Create(L"Alive1", m_ParticleNum, sizeof(uint32_t));
 		m_Alive2List.Create(L"Alive2", m_ParticleNum, sizeof(uint32_t));
 		std::vector<uint32_t> deadInit(m_ParticleNum);
@@ -67,42 +67,39 @@ public:
 
 		std::vector<Particle> zeroInit(m_ParticleNum);
 		m_ParticleStructuredBuffer.Create(L"ParticleBuffer", m_ParticleNum, sizeof(Particle), zeroInit.data());
-		
+		// ================ CS에서 사용할 버퍼 생성 ================
 
+		// ================== Particle Compute RootSignature & PSO ==================
+		m_ComputeRootSig.Reset(6, 0);
+		m_ComputeRootSig[0].InitAsConstantBuffer(0); // b0
+		m_ComputeRootSig[1].InitAsBufferUAV(0);		// u0
+		m_ComputeRootSig[2].InitAsBufferUAV(1);		// u1
+		m_ComputeRootSig[3].InitAsBufferUAV(2);		// u2
+		m_ComputeRootSig[4].InitAsBufferUAV(3);		// u3
+		m_ComputeRootSig[5].InitAsBufferUAV(4);		// u4
+		m_ComputeRootSig.Finalize(L"ParticleCompute");
 
-
-		// ========= Particle Test ===========
-		//std::vector<Particle> particles = MakeRandomParticles(m_ParticleNum);
-		//m_ParticleStructuredBuffer.Create(L"ParticleBuffer", m_ParticleNum, sizeof(Particle), particles.data());
-
-		// 2. 루트 시그니처 생성
-		m_RootSig.Reset(2, 0);                  // 루트 파라미터 개수
-		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 -> b0
-		m_RootSig[1].InitAsBufferSRV(0);		// 1번 -> t0
-		m_RootSig.Finalize(L"triangle", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
-
-		// Compute 용
-		//m_ComputeRootSig.Reset(2, 0);
-		//m_ComputeRootSig[0].InitAsBufferUAV(0); // u0
-		//m_ComputeRootSig[1].InitAsConstantBuffer(0); // b0
-		//m_ComputeRootSig.Finalize(L"ParticleCompute");
-
-		// ================== Emit Compute ==================
-		m_ComputeRootSig.Reset(5, 0);
-		m_ComputeRootSig[0].InitAsConstantBuffer(0);
-		m_ComputeRootSig[1].InitAsBufferUAV(0);
-		m_ComputeRootSig[2].InitAsBufferUAV(1);
-		m_ComputeRootSig[3].InitAsBufferUAV(2);
-		m_ComputeRootSig[4].InitAsBufferUAV(3);
-		m_ComputeRootSig.Finalize(L"EmitCompute");
+		m_ParticleKickoffPSO.SetRootSignature(m_ComputeRootSig);
+		m_ParticleKickoffPSO.SetComputeShader(particleKickoffCS->GetBufferPointer(), particleKickoffCS->GetBufferSize());
+		m_ParticleKickoffPSO.Finalize();
 
 		m_ParticleEmitPSO.SetRootSignature(m_ComputeRootSig);
 		m_ParticleEmitPSO.SetComputeShader(particleEmitCS->GetBufferPointer(), particleEmitCS->GetBufferSize());
 		m_ParticleEmitPSO.Finalize();
-		// ================== Emit Compute ==================
 
+		m_ParticleSimulatePSO.SetRootSignature(m_ComputeRootSig);
+		m_ParticleSimulatePSO.SetComputeShader(particleSimulateCS->GetBufferPointer(), particleSimulateCS->GetBufferSize());
+		m_ParticleSimulatePSO.Finalize();
+		// ================== Particle Compute RootSignature & PSO ==================
 
-		// 파티클 pso
+		// ================= Particle Graphics RootSignature & PSO =================
+		m_RootSig.Reset(4, 0);                  // 루트 파라미터 개수
+		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 -> b0
+		m_RootSig[1].InitAsBufferSRV(0);		// 1번 -> t0
+		m_RootSig[2].InitAsBufferSRV(1);
+		m_RootSig[3].InitAsBufferSRV(2);
+		m_RootSig.Finalize(L"triangle", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
 		m_ParticlePSO.SetRootSignature(m_RootSig);
 		m_ParticlePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
 		m_ParticlePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
@@ -112,11 +109,8 @@ public:
 		m_ParticlePSO.SetDepthStencilState(DepthStateDisabled);
 		m_ParticlePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
 		m_ParticlePSO.Finalize();
+		// ================= Particle Graphics RootSignature & PSO =================
 
-		//// 파티클 컴퓨트 PSO
-		//m_ParticleComputePSO.SetRootSignature(m_ComputeRootSig);
-		//m_ParticleComputePSO.SetComputeShader(partCS->GetBufferPointer(), partCS->GetBufferSize());
-		//m_ParticleComputePSO.Finalize();
 
 		// 3. Pipeline의 전 단계 설정을 하나로 굳힘
 		m_PSO.SetRootSignature(m_RootSig);                                        // 자원 계약 연결
@@ -157,31 +151,50 @@ public:
 	{
 		// 1. 명령 리스트 시작 (풀에서 하나 빌려옴)
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
-		// 컴퓨트 패스
+		// =============== Compute 구간 ==============
 		ComputeContext& cpt = gfx.GetComputeContext(); // 컴퓨트 뷰
+		// UAV 전환
 		gfx.TransitionResource(m_ParticleStructuredBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS); // UAV 전환
-		gfx.TransitionResource(m_Alive1List, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		gfx.TransitionResource(*m_CurrentAlive, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		gfx.TransitionResource(*m_newAlive, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		gfx.TransitionResource(m_DeadList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		gfx.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		/*cpt.SetRootSignature(m_ComputeRootSig);
-		cpt.SetPipelineState(m_ParticleComputePSO);
-		cpt.SetBufferUAV(0, m_ParticleStructuredBuffer);
-		ComputeCB ccb;
-		ccb.deltaTime = m_DeltaTime;
-		ccb.particleCount = m_ParticleNum;
-		cpt.SetDynamicConstantBufferView(1, sizeof(ccb), &ccb);
-		cpt.Dispatch((m_ParticleNum + 63) / 64, 1, 1);*/
+		// 루트 시그 + 버퍼 바인딩
 		cpt.SetRootSignature(m_ComputeRootSig);
+		cpt.SetBufferUAV(1, m_ParticleStructuredBuffer);	// u0
+		cpt.SetBufferUAV(2, *m_CurrentAlive);				// u1
+		cpt.SetBufferUAV(3, *m_newAlive);					// u2
+		cpt.SetBufferUAV(4, m_DeadList);					// u3
+		cpt.SetBufferUAV(5, m_Counters);					// u4
+		// ============ Kickoff Pass =============
+		cpt.SetPipelineState(m_ParticleKickoffPSO);
+		cpt.Dispatch(1, 1, 1);
+		// ============ Kickoff Pass =============
+
+		// Counters 완료되도록 대기
+		cpt.InsertUAVBarrier(m_Counters);
+
+		// ============ Emit Pass =============
 		cpt.SetPipelineState(m_ParticleEmitPSO);
-		EmitterCBParams emitterParams = m_ParticleEmitter.MakeParams(m_DeltaTime);
-		cpt.SetDynamicConstantBufferView(0, sizeof(emitterParams), &emitterParams);
-		cpt.SetBufferUAV(1, m_ParticleStructuredBuffer);
-		cpt.SetBufferUAV(2, m_Alive1List);
-		cpt.SetBufferUAV(3, m_DeadList);
-		cpt.SetBufferUAV(4, m_Counters);
-		cpt.Dispatch((emitterParams.emitCount + 63) / 64, 1, 1); // 첫번째 인자 = 그룹 수
+		ParticleFrameCB particleFrameParams = m_ParticleEmitter.MakeParams(m_DeltaTime);
+		cpt.SetDynamicConstantBufferView(0, sizeof(particleFrameParams), &particleFrameParams);
+		cpt.Dispatch((particleFrameParams.emitCount + 63) / 64, 1, 1); // 첫번째 인자 = 그룹 수
+		// ============ Emit Pass =============
+
+		// 앞선 UAV 쓰기 모두 끝난 후 다음 명령이 이 리소스 건드리도록
+		cpt.InsertUAVBarrier(*m_CurrentAlive);
+		cpt.InsertUAVBarrier(m_ParticleStructuredBuffer);
+		cpt.InsertUAVBarrier(m_DeadList);
+		cpt.InsertUAVBarrier(m_Counters);
+
+		// ============ Simulation Pass =============
+		cpt.SetPipelineState(m_ParticleSimulatePSO);
+		cpt.Dispatch((m_ParticleNum + 63) / 64, 1, 1);
+		// ============ Simulation Pass =============
+
 		gfx.TransitionResource(m_ParticleStructuredBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE); // SRV 전환
-		gfx.TransitionResource(m_Alive1List, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		gfx.TransitionResource(*m_CurrentAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		gfx.TransitionResource(*m_newAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		gfx.TransitionResource(m_DeadList, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		gfx.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
@@ -213,12 +226,17 @@ public:
 
 		// 패스 B
 		gfx.SetPipelineState(m_ParticlePSO);
-		gfx.SetBufferSRV(1, m_ParticleStructuredBuffer);
+		gfx.SetBufferSRV(1, m_ParticleStructuredBuffer); // t0
+		gfx.SetBufferSRV(2, *m_newAlive);				 // t1
+		gfx.SetBufferSRV(3, m_Counters);				 // t2
 		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 		gfx.Draw(m_ParticleNum);
 
 		// Command List 닫고 GPU 큐에 제출
 		gfx.Finish();
+
+		// 핑퐁
+		std::swap(m_CurrentAlive, m_newAlive);
 	}
 
 private:
@@ -227,7 +245,6 @@ private:
 	RootSignature	  m_ComputeRootSig;
 	GraphicsPSO       m_PSO;            // PSO
 	GraphicsPSO		  m_ParticlePSO;
-	ComputePSO		  m_ParticleComputePSO;
 
 	// 초기 카메라 위치 지정, 회전 X
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
@@ -236,33 +253,23 @@ private:
 	static const int m_ParticleNum = 100000;
 	StructuredBuffer m_ParticleStructuredBuffer;
 	float m_DeltaTime;
-	std::vector<Particle> MakeRandomParticles(int n)
-	{
-		std::vector<Particle> particles(n);
-		std::mt19937 rng(12345);
-		std::uniform_real_distribution<float> dist(-2.0f, 2.0f);
-		for (int i = 0; i < n; i++)
-		{
-			particles[i].position.x = dist(rng); 
-			particles[i].position.y = dist(rng); 
-			particles[i].position.z = dist(rng);
-			particles[i].velocity = { dist(rng), dist(rng), dist(rng) };
-		}
 
-		return particles;
-	}
+
 	ParticleEmitter m_ParticleEmitter{
 	Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)),  // 원점, 회전 없음(Y=위로 분출)
 	5000.0f,   // spawnRate: 초당 5000개
 	2.0f,      // minLifeTime
 	4.0f       // maxLifeTime
 	};
+	ComputePSO m_ParticleKickoffPSO;
 	ComputePSO m_ParticleEmitPSO;
-	ComputePSO m_ParticleSimPSO;
+	ComputePSO m_ParticleSimulatePSO;
 	ByteAddressBuffer m_Alive1List;
 	ByteAddressBuffer m_Alive2List;
 	ByteAddressBuffer m_DeadList;
 	ByteAddressBuffer m_Counters;
+	ByteAddressBuffer* m_CurrentAlive = &m_Alive1List; // 이번 프레임 입력
+	ByteAddressBuffer* m_newAlive = &m_Alive2List; // 이번 프레임 출력
 
 };
 

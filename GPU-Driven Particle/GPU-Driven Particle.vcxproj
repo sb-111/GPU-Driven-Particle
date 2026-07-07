@@ -156,22 +156,33 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticleShared.h" />
     <ClInclude Include="RenderTypes.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderCompiler.h" />
   </ItemGroup>
   <ItemGroup>
     <!-- 셰이더는 런타임(DXC) 컴파일이기에 제외 -->
-    <None Include="ParticleSpawnCS.hlsl" />
+    <None Include="ParticleSimulateCS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
     <None Include="ParticleVS.hlsl" />
     <None Include="ParticlePS.hlsl" />
     <None Include="Shaders\TriangleVS.hlsl" />
     <None Include="Shaders\TrianglePS.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GPU-Driven Particle.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <FxCompile Include="ParticleEmitCS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="ParticleKickoffCS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compute</ShaderType>

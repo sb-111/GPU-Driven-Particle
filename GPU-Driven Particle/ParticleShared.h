@@ -1,4 +1,9 @@
 ﻿#pragma once
+#define COUNTER_ALIVE 0
+#define COUNTER_DEAD 4
+#define COUNTER_REAL 8
+#define COUNTER_AFTER_SIMULATE 12
+
 #ifdef __cplusplus
 	#include <cstdint>
 	struct float3 { float x, y, z; };
@@ -19,7 +24,7 @@
 #else
 #define GP_CB_ALIGN
 #endif
-	struct GP_CB_ALIGN EmitterCBParams
+	struct GP_CB_ALIGN ParticleFrameCB
 	{
 		float3 emitterPosition;	// world pos
 		uint emitCount;			// spawn count in this frame
