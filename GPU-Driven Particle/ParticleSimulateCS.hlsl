@@ -10,7 +10,6 @@ RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer AliveList2 : register(u2);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
-RWByteAddressBuffer ArgsBuffer : register(u5);
 
 [numthreads(64,1,1)]
 void main(uint3 id : SV_DispatchThreadID)

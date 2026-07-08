@@ -8,7 +8,6 @@ RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0);
 RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
-RWByteAddressBuffer ArgsBuffer : register(u5);
 
 uint wang_hash(uint seed)
 {

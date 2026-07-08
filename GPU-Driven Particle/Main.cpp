@@ -103,11 +103,10 @@ public:
 		// ================== Particle Compute RootSignature & PSO ==================
 
 		// ================= Particle Graphics RootSignature & PSO =================
-		m_RootSig.Reset(4, 0);                  // 루트 파라미터 개수
+		m_RootSig.Reset(3, 0);                  // 루트 파라미터 개수
 		m_RootSig[0].InitAsConstantBuffer(0);   // 0번 -> b0
 		m_RootSig[1].InitAsBufferSRV(0);		// 1번 -> t0
-		m_RootSig[2].InitAsBufferSRV(1);
-		m_RootSig[3].InitAsBufferSRV(2);
+		m_RootSig[2].InitAsBufferSRV(1);		// t1
 		m_RootSig.Finalize(L"triangle", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		m_ParticlePSO.SetRootSignature(m_RootSig);
@@ -190,10 +189,13 @@ public:
 
 		// Counters 완료되도록 대기
 		cpt.InsertUAVBarrier(m_Counters);
+		// 읽는 주체가 셰이더가 아닌 Command 프로세서임. 
+		gfx.TransitionResource(m_indirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 		// ============ Emit Pass =============
 		cpt.SetPipelineState(m_ParticleEmitPSO);
-		cpt.Dispatch((particleFrameParams.emitCount + 63) / 64, 1, 1); // 첫번째 인자 = 그룹 수
+		//cpt.Dispatch((particleFrameParams.emitCount + 63) / 64, 1, 1); // 첫번째 인자 = 그룹 수
+		cpt.DispatchIndirect(m_indirectArgsBuffer, ARGS_EMIT_DISPATCH_X);
 		// ============ Emit Pass =============
 
 		// 앞선 UAV 쓰기 모두 끝난 후 다음 명령이 이 리소스 건드리도록
@@ -204,8 +206,13 @@ public:
 
 		// ============ Simulation Pass =============
 		cpt.SetPipelineState(m_ParticleSimulatePSO);
-		cpt.Dispatch((m_ParticleNum + 63) / 64, 1, 1);
+		cpt.DispatchIndirect(m_indirectArgsBuffer, ARGS_SIMULATE_DISPATCH_X);
 		// ============ Simulation Pass =============
+
+		// args 버퍼 자리에 simul 끝난 후 개수 복사 -> Draw에 알려주기 위함
+		gfx.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_COPY_SOURCE); // 카피용
+		cpt.CopyBufferRegion(m_indirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
+		gfx.TransitionResource(m_indirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT); // args용(읽기 전용)
 
 		gfx.TransitionResource(m_ParticleStructuredBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE); // SRV 전환
 		gfx.TransitionResource(*m_CurrentAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -243,9 +250,8 @@ public:
 		gfx.SetPipelineState(m_ParticlePSO);
 		gfx.SetBufferSRV(1, m_ParticleStructuredBuffer); // t0
 		gfx.SetBufferSRV(2, *m_newAlive);				 // t1
-		gfx.SetBufferSRV(3, m_Counters);				 // t2
 		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-		gfx.Draw(m_ParticleNum);
+		gfx.DrawIndirect(m_indirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 
 		// Command List 닫고 GPU 큐에 제출
 		gfx.Finish();
@@ -265,7 +271,7 @@ private:
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
 	CameraController m_CamController{ m_Camera };
 
-	static const int m_ParticleNum = 100000;
+	static const int m_ParticleNum = 1000000;
 	StructuredBuffer m_ParticleStructuredBuffer;
 	float m_DeltaTime;
 
