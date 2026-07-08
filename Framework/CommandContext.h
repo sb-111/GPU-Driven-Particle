@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -137,6 +137,7 @@ public:
     }
 
     static void InitializeTexture( GpuResource& Dest, UINT NumSubresources, D3D12_SUBRESOURCE_DATA SubData[] );
+	// 16바이트 정렬된 데이터를 넘겨야 함.
     static void InitializeBuffer( GpuBuffer& Dest, const void* Data, size_t NumBytes, size_t DestOffset = 0);
     static void InitializeBuffer( GpuBuffer& Dest, const UploadBuffer& Src, size_t SrcOffset, size_t NumBytes = -1, size_t DestOffset = 0 );
     static void InitializeTextureArraySlice(GpuResource& Dest, UINT SliceIndex, GpuResource& Src);
@@ -168,7 +169,7 @@ protected:
 
     CommandListManager* m_OwningManager;
     ID3D12GraphicsCommandList* m_CommandList;
-    ID3D12CommandAllocator* m_CurrentAllocator;
+    ID3D12CommandAllocator* m_CurrentAllocator; // command 담는 메모리
 
     ID3D12RootSignature* m_CurGraphicsRootSignature;
     ID3D12RootSignature* m_CurComputeRootSignature;
@@ -177,13 +178,13 @@ protected:
     DynamicDescriptorHeap m_DynamicViewDescriptorHeap;		// HEAP_TYPE_CBV_SRV_UAV
     DynamicDescriptorHeap m_DynamicSamplerDescriptorHeap;	// HEAP_TYPE_SAMPLER
 
-    D3D12_RESOURCE_BARRIER m_ResourceBarrierBuffer[16];
-    UINT m_NumBarriersToFlush;
+    D3D12_RESOURCE_BARRIER m_ResourceBarrierBuffer[16];	// 16칸짜리 배열 (배리어 서술 레시피)
+    UINT m_NumBarriersToFlush;							// 몇 칸 채웠나 세는 카운터 
 
     ID3D12DescriptorHeap* m_CurrentDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
-    LinearAllocator m_CpuLinearAllocator;
-    LinearAllocator m_GpuLinearAllocator;
+    LinearAllocator m_CpuLinearAllocator; // 데이터(buffer) 담는 메모리
+    LinearAllocator m_GpuLinearAllocator; // 데이터(buffer) 담는 메모리
 
     std::wstring m_ID;
     void SetID(const std::wstring& ID) { m_ID = ID; }
@@ -309,10 +310,11 @@ private:
 
 inline void CommandContext::FlushResourceBarriers( void )
 {
+	// 채운 칸들을 한 번 호출로 GPU에 전달, then 카운터 0
     if (m_NumBarriersToFlush > 0)
     {
-        m_CommandList->ResourceBarrier(m_NumBarriersToFlush, m_ResourceBarrierBuffer);
-        m_NumBarriersToFlush = 0;
+		m_CommandList->ResourceBarrier(m_NumBarriersToFlush, m_ResourceBarrierBuffer);	// [0,count)만 읽음
+        m_NumBarriersToFlush = 0;														// 카운터만 0으로 초기화
     }
 }
 
@@ -523,7 +525,12 @@ inline void ComputeContext::SetDynamicSRV(UINT RootIndex, size_t BufferSize, con
     SIMDMemCopy(cb.DataPtr, BufferData, Math::AlignUp(BufferSize, 16) >> 4);
     m_CommandList->SetComputeRootShaderResourceView(RootIndex, cb.GpuAddress);
 }
-
+/*
+* Root Descriptor 방식
+* @param RootIndex 루트 파라미터 인덱스
+* @param SRV       SRV로 바인딩할 버퍼
+* @param Offset    버퍼 시작에서 건너뛸 바이트 오프셋 (기본 0 = 처음부터)
+*/
 inline void GraphicsContext::SetBufferSRV( UINT RootIndex, const GpuBuffer& SRV, UINT64 Offset)
 {
     ASSERT((SRV.m_UsageState & (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE)) != 0);

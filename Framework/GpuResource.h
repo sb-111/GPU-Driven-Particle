@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -59,7 +59,7 @@ public:
 protected:
 
     Microsoft::WRL::ComPtr<ID3D12Resource> m_pResource;
-    D3D12_RESOURCE_STATES m_UsageState;
+    D3D12_RESOURCE_STATES m_UsageState;	// 각 리소스의 현재 상태 저장
     D3D12_RESOURCE_STATES m_TransitioningState;
     D3D12_GPU_VIRTUAL_ADDRESS m_GpuVirtualAddress;
 

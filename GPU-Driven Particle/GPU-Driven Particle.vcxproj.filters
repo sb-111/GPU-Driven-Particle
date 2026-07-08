@@ -24,17 +24,55 @@
     <ClCompile Include="Main.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderCompiler.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderTypes.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleShared.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderCompiler.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\TrianglePS.hlsl">
+    <None Include="Shaders\TrianglePS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\TriangleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ParticlePS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="ParticleSimulateCS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="ParticleEmitCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\TriangleVS.hlsl">
+    <FxCompile Include="ParticleKickoffCS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

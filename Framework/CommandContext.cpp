@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -75,6 +75,9 @@ void CommandContext::DestroyAllContexts(void)
     g_ContextManager.DestroyAllContexts();
 }
 
+/*
+* 풀에서 놀고 있는 CommandContext 하나를 빌려옴
+*/
 CommandContext& CommandContext::Begin( const std::wstring ID )
 {
     CommandContext* NewContext = g_ContextManager.AllocateContext(D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -142,12 +145,12 @@ uint64_t CommandContext::Finish( bool WaitForCompletion )
 
     CommandQueue& Queue = g_CommandManager.GetQueue(m_Type);
 
-    uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);
-    Queue.DiscardAllocator(FenceValue, m_CurrentAllocator);
+    uint64_t FenceValue = Queue.ExecuteCommandList(m_CommandList);	// GPU에 batch 제출
+    Queue.DiscardAllocator(FenceValue, m_CurrentAllocator);			// 할당자 반납
     m_CurrentAllocator = nullptr;
 
     m_CpuLinearAllocator.CleanupUsedPages(FenceValue);
-    m_GpuLinearAllocator.CleanupUsedPages(FenceValue);
+    m_GpuLinearAllocator.CleanupUsedPages(FenceValue);				// 업로드 메모리 회수
     m_DynamicViewDescriptorHeap.CleanupUsedHeaps(FenceValue);
     m_DynamicSamplerDescriptorHeap.CleanupUsedHeaps(FenceValue);
 
@@ -364,10 +367,12 @@ void CommandContext::TransitionResource(GpuResource& Resource, D3D12_RESOURCE_ST
         ASSERT((NewState & VALID_COMPUTE_QUEUE_RESOURCE_STATES) == NewState);
     }
 
+	// 상태 다르면
     if (OldState != NewState)
     {
+		// 해당 칸에 덮어쓰고, 다음 칸 가리키게 
         ASSERT(m_NumBarriersToFlush < 16, "Exceeded arbitrary limit on buffered barriers");
-        D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++];
+        D3D12_RESOURCE_BARRIER& BarrierDesc = m_ResourceBarrierBuffer[m_NumBarriersToFlush++]; 
 
         BarrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
         BarrierDesc.Transition.pResource = Resource.GetResource();
@@ -384,11 +389,12 @@ void CommandContext::TransitionResource(GpuResource& Resource, D3D12_RESOURCE_ST
         else
             BarrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
-        Resource.m_UsageState = NewState;
+        Resource.m_UsageState = NewState;	// 갱신
     }
-    else if (NewState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+    else if (NewState == D3D12_RESOURCE_STATE_UNORDERED_ACCESS) // 상태 안바뀌어도, 이전 GPU 쓰고 다음이 읽을 필요 있을 때
         InsertUAVBarrier(Resource, FlushImmediate);
 
+	// 쌓아둔 배리어를 명령 리스트에 넣음
     if (FlushImmediate || m_NumBarriersToFlush == 16)
         FlushResourceBarriers();
 }

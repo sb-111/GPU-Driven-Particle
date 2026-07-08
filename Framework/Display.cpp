@@ -77,7 +77,8 @@ namespace Graphics
     const uint32_t kNumPredefinedResolutions = 6;
 
     const char* ResolutionLabels[] = { "1280x720", "1600x900", "1920x1080", "2560x1440", "3200x1800", "3840x2160" };
-    EnumVar NativeResolution("Graphics/Display/Native Resolution", k1080p, kNumPredefinedResolutions, ResolutionLabels);
+    // Comment: You can adjust 'native resolution'
+    EnumVar NativeResolution("Graphics/Display/Native Resolution", k720p, kNumPredefinedResolutions, ResolutionLabels);
 #ifdef _GAMING_DESKTOP
     // This can set the window size to common dimensions.  It's also possible for the window to take on other dimensions
     // through resizing or going full-screen.
@@ -92,8 +93,8 @@ namespace Graphics
 
     uint32_t g_NativeWidth = 0;
     uint32_t g_NativeHeight = 0;
-    uint32_t g_DisplayWidth = 1920;
-    uint32_t g_DisplayHeight = 1080;
+    uint32_t g_DisplayWidth = 1280; // Comment: You can adjust
+    uint32_t g_DisplayHeight = 720;
     ColorBuffer g_PreDisplayBuffer;
 
     void ResolutionToUINT(eResolution res, uint32_t& width, uint32_t& height)
@@ -188,6 +189,10 @@ namespace Graphics
 
 void Display::Resize(uint32_t width, uint32_t height)
 {
+    // 최소화/0 크기 메시지는 무시 (ResizeBuffers(0,0) 방지)
+    if (width == 0 || height == 0)
+        return;
+
     g_CommandManager.IdleGPU();
 
     g_DisplayWidth = width;
@@ -214,7 +219,13 @@ void Display::Resize(uint32_t width, uint32_t height)
 
     g_CommandManager.IdleGPU();
 
-    ResizeDisplayDependentBuffers(g_NativeWidth, g_NativeHeight);
+    //ResizeDisplayDependentBuffers(g_NativeWidth, g_NativeHeight);
+    // 
+    // Comment: 렌더(native) 해상도를 창(display) 크기에 맞춰 씬 컬러/뎁스 버퍼를 재생성
+    // → 리사이즈 시 native != display 로 인한 왜곡/크롭 방지, 항상 1:1 선명하게 유지
+    g_NativeWidth = width;
+    g_NativeHeight = height;
+    InitializeRenderingBuffers(width, height);
 }
 
 // Initialize the DirectX resources required to run.
@@ -512,7 +523,11 @@ void Display::Present(void)
     ++s_FrameIndex;
 
 
-    SetNativeResolution();
+    // native(렌더) 해상도는 창 크기(Display::Resize)가 결정하도록 한다.
+    // 여기서 매 프레임 SetNativeResolution()을 호출하면 NativeResolution 프리셋(720p)으로
+    // 강제로 되돌려버려 창 리사이즈가 씬 버퍼에 반영되지 않으므로 비활성화한다.
+    // (프리셋 기반 네이티브 해상도 메뉴를 다시 쓰고 싶으면 이 줄을 되살리면 됨)
+    //SetNativeResolution();
     SetDisplayResolution();
 }
 
