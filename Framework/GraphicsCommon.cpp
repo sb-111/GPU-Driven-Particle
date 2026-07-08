@@ -80,7 +80,9 @@ namespace Graphics
     D3D12_DEPTH_STENCIL_DESC DepthStateReadOnlyReversed;
     D3D12_DEPTH_STENCIL_DESC DepthStateTestEqual;
 
+	// 전역으로 존재
     CommandSignature DispatchIndirectCommandSignature(1);
+	// 전역으로 존재
     CommandSignature DrawIndirectCommandSignature(1);
 
     RootSignature g_CommonRS;

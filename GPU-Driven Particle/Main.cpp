@@ -51,7 +51,16 @@ public:
 			{{  1.0f, -1.0f, 0.0f }, { 0,1,0,1 }},
 		};
 		m_VertexBuffer.Create(L"Triangle VB", 3, sizeof(Vertex), verts);
-
+		// ================ Indirect에 사용할 버퍼 ================
+		std::vector<uint32_t> argsInit = {
+			0, 1, 1, 0, // emit dispatch
+			0, 1, 1, 0, // simulate dispatch
+			0, 1, 0, 0 // draw
+		};
+		// Emit dispatch(3) + pad + Simul dispatch(3) + pad + draw(4)
+		m_indirectArgsBuffer.Create(L"IndirectArgsBuffer", 12, sizeof(uint32_t), argsInit.data());
+		// ================ Indirect에 사용할 버퍼 ================
+		
 		// ================ CS에서 사용할 버퍼 생성 ================
 		m_Alive1List.Create(L"Alive1", m_ParticleNum, sizeof(uint32_t));
 		m_Alive2List.Create(L"Alive2", m_ParticleNum, sizeof(uint32_t));
@@ -70,13 +79,14 @@ public:
 		// ================ CS에서 사용할 버퍼 생성 ================
 
 		// ================== Particle Compute RootSignature & PSO ==================
-		m_ComputeRootSig.Reset(6, 0);
+		m_ComputeRootSig.Reset(7, 0);
 		m_ComputeRootSig[0].InitAsConstantBuffer(0); // b0
 		m_ComputeRootSig[1].InitAsBufferUAV(0);		// u0
 		m_ComputeRootSig[2].InitAsBufferUAV(1);		// u1
 		m_ComputeRootSig[3].InitAsBufferUAV(2);		// u2
 		m_ComputeRootSig[4].InitAsBufferUAV(3);		// u3
 		m_ComputeRootSig[5].InitAsBufferUAV(4);		// u4
+		m_ComputeRootSig[6].InitAsBufferUAV(5);		// u5
 		m_ComputeRootSig.Finalize(L"ParticleCompute");
 
 		m_ParticleKickoffPSO.SetRootSignature(m_ComputeRootSig);
@@ -159,6 +169,7 @@ public:
 		gfx.TransitionResource(*m_newAlive, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		gfx.TransitionResource(m_DeadList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		gfx.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		gfx.TransitionResource(m_indirectArgsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		// 루트 시그 + 버퍼 바인딩
 		cpt.SetRootSignature(m_ComputeRootSig);
 		cpt.SetBufferUAV(1, m_ParticleStructuredBuffer);	// u0
@@ -166,6 +177,12 @@ public:
 		cpt.SetBufferUAV(3, *m_newAlive);					// u2
 		cpt.SetBufferUAV(4, m_DeadList);					// u3
 		cpt.SetBufferUAV(5, m_Counters);					// u4
+		cpt.SetBufferUAV(6, m_indirectArgsBuffer);			// u5
+
+
+		ParticleFrameCB particleFrameParams = m_ParticleEmitter.MakeParams(m_DeltaTime);
+		cpt.SetDynamicConstantBufferView(0, sizeof(particleFrameParams), &particleFrameParams);
+
 		// ============ Kickoff Pass =============
 		cpt.SetPipelineState(m_ParticleKickoffPSO);
 		cpt.Dispatch(1, 1, 1);
@@ -176,8 +193,6 @@ public:
 
 		// ============ Emit Pass =============
 		cpt.SetPipelineState(m_ParticleEmitPSO);
-		ParticleFrameCB particleFrameParams = m_ParticleEmitter.MakeParams(m_DeltaTime);
-		cpt.SetDynamicConstantBufferView(0, sizeof(particleFrameParams), &particleFrameParams);
 		cpt.Dispatch((particleFrameParams.emitCount + 63) / 64, 1, 1); // 첫번째 인자 = 그룹 수
 		// ============ Emit Pass =============
 
@@ -271,6 +286,8 @@ private:
 	ByteAddressBuffer* m_CurrentAlive = &m_Alive1List; // 이번 프레임 입력
 	ByteAddressBuffer* m_newAlive = &m_Alive2List; // 이번 프레임 출력
 
+	// Indirect drawing
+	IndirectArgsBuffer m_indirectArgsBuffer;
 };
 
 CREATE_APPLICATION(ParticleApp)

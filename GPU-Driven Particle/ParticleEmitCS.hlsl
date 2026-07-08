@@ -8,6 +8,7 @@ RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0);
 RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
+RWByteAddressBuffer ArgsBuffer : register(u5);
 
 uint wang_hash(uint seed)
 {
@@ -28,13 +29,14 @@ float rand01(inout uint seed)     // 호출할 때마다 seed가 굴러감
 [numthreads(64, 1, 1)]
 void main( uint3 id : SV_DispatchThreadID )
 {
-	// 이번 프레임 방출량 이상 접근 가드
-	if (id.x >= params.emitCount)
+	// Counters에서 진짜 방출량 꺼내오기 (this frame)
+	uint realEmitCount = Counters.Load(COUNTER_REAL);
+	if (id.x >= realEmitCount) // guard
 		return;
 
 	// Dead list consume
 	uint prevDead; 
-	Counters.InterlockedAdd(4, -1, prevDead); // dead count 감소
+	Counters.InterlockedAdd(COUNTER_DEAD, -1, prevDead); // dead count 감소
 
 	if(prevDead == 0)
 	{
@@ -67,6 +69,6 @@ void main( uint3 id : SV_DispatchThreadID )
 
 	// alive list에 추가
 	uint prevAlive;
-	Counters.InterlockedAdd(0, 1, prevAlive);
+	Counters.InterlockedAdd(COUNTER_ALIVE, 1, prevAlive);
 	AliveList1.Store(prevAlive * 4, poolIndex);
 }
