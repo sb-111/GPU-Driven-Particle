@@ -247,10 +247,10 @@ void Graphics::InitializeCommonState(void)
     alphaBlend.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
     BlendTraditionalAdditive = alphaBlend;
 
-    DispatchIndirectCommandSignature[0].Dispatch();
-    DispatchIndirectCommandSignature.Finalize();
+    DispatchIndirectCommandSignature[0].Dispatch(); // Type을 Dispatch로
+    DispatchIndirectCommandSignature.Finalize();	// Type에 따른 ByteStride 계산 -> 커맨드 시그니처 생성
 
-    DrawIndirectCommandSignature[0].Draw();
+    DrawIndirectCommandSignature[0].Draw();			// Tpye을 Draw로
     DrawIndirectCommandSignature.Finalize();
 
 

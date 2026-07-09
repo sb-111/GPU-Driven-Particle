@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -83,7 +83,7 @@ public:
     const D3D12_INDIRECT_ARGUMENT_DESC& GetDesc( void ) const { return m_IndirectParam; }
 
 protected:
-
+	// INDITECT_ARGUMENT 구조체
     D3D12_INDIRECT_ARGUMENT_DESC m_IndirectParam;
 };
 
@@ -132,6 +132,6 @@ protected:
 
     BOOL m_Finalized;
     UINT m_NumParameters;
-    std::unique_ptr<IndirectParameter[]> m_ParamArray;
+    std::unique_ptr<IndirectParameter[]> m_ParamArray; // Indirect Parmater들을 가짐
     Microsoft::WRL::ComPtr<ID3D12CommandSignature> m_Signature;
 };

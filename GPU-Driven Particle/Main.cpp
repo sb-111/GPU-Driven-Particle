@@ -43,14 +43,17 @@ public:
 		ASSERT(triVS && triPS && partVS && partPS && particleKickoffCS && particleEmitCS && particleSimulateCS
 			, "셰이더 컴파일 실패 - VS 출력창 확인");
 
-		// 1. 정점 버퍼 생성 (IA에 공급될 소스)
-		Vertex verts[3] =
+		Vertex floorVerts[4] =
 		{
-			{{  0.0f,  1.0f, 0.0f }, { 1,0,0,1 }},
-			{{ -1.0f, -1.0f, 0.0f }, { 0,0,1,1 }},
-			{{  1.0f, -1.0f, 0.0f }, { 0,1,0,1 }},
+			{{ -20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 0: 뒤-왼
+		{{  20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 1: 뒤-오
+		{{  20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 2: 앞-오
+		{{ -20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 3: 앞-왼
 		};
-		m_VertexBuffer.Create(L"Triangle VB", 3, sizeof(Vertex), verts);
+		uint16_t floorIndices[6] = { 0, 2, 1,  0, 3, 2 };
+		m_FloorVB.Create(L"Floor VB", 4, sizeof(Vertex), floorVerts);
+		m_FloorIB.Create(L"Floor IB", 6, sizeof(uint16_t), floorIndices);
+
 		// ================ Indirect에 사용할 버퍼 ================
 		std::vector<uint32_t> argsInit = {
 			0, 1, 1, 0, // emit dispatch
@@ -114,7 +117,7 @@ public:
 		m_ParticlePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
 		m_ParticlePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
 		m_ParticlePSO.SetRasterizerState(RasterizerDefault);
-		m_ParticlePSO.SetBlendState(BlendDisable);
+		m_ParticlePSO.SetBlendState(BlendAdditive);
 		m_ParticlePSO.SetDepthStencilState(DepthStateDisabled);
 		m_ParticlePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
 		m_ParticlePSO.Finalize();
@@ -131,9 +134,10 @@ public:
 		m_PSO.SetInputLayout(_countof(inputLayout), inputLayout);                 // IA (POSITION/COLOR 레이아웃)
 		m_PSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);   // IA (삼각형 종류)
 		m_PSO.SetVertexShader(triVS->GetBufferPointer(), triVS->GetBufferSize()); // VS
+	
 		m_PSO.SetPixelShader(triPS->GetBufferPointer(), triPS->GetBufferSize());  // PS
 		m_PSO.SetRasterizerState(RasterizerDefault);                              // RS (컬링/채우기)
-		m_PSO.SetBlendState(BlendDisable);                                        // OM (블렌딩 끔)
+		m_PSO.SetBlendState(BlendDisable);                                        // OM 
 		m_PSO.SetDepthStencilState(DepthStateDisabled);                           // OM (깊이 테스트 끔 — 지금은 삼각형뿐)
 		m_PSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN); // OM (RT 포맷, 깊이 없음)
 		m_PSO.Finalize();                                                         // 확정
@@ -225,7 +229,7 @@ public:
 		// 2. 배리어: 씬버퍼 상태 전환 (Present → Render Target)  ※ Clear/그리기보다 먼저
 		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 		// 3. 배경 클리어
-		float clearColor[4] = { 0.2f, 0.4f, 0.8f, 1.0f };
+		float clearColor[4] = { 0.02f, 0.02f, 0.05f, 1.0f };
 		gfx.ClearColor(g_SceneColorBuffer, clearColor);
 		// 루트 시그니처 공통 (주의: View 꽂기전에 먼저 바인딩 되어있어야 함)
 		gfx.SetRootSignature(m_RootSig);
@@ -242,9 +246,11 @@ public:
 
 		// 패스 A
 		gfx.SetPipelineState(m_PSO);
-		gfx.SetVertexBuffer(0, m_VertexBuffer.VertexBufferView());      // 정점 소스 (뷰 = 주소 + stride)
+		gfx.SetVertexBuffer(0, m_FloorVB.VertexBufferView());
+		gfx.SetIndexBuffer(m_FloorIB.IndexBufferView());
 		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);  // 삼각형 목록
-		gfx.Draw(3);
+		gfx.DrawIndexed(6, 0, 0);
+		//gfx.Draw(3);
 
 		// 패스 B
 		gfx.SetPipelineState(m_ParticlePSO);
@@ -261,7 +267,6 @@ public:
 	}
 
 private:
-	ByteAddressBuffer m_VertexBuffer;   // 정점 데이터
 	RootSignature     m_RootSig;        // Root Signature
 	RootSignature	  m_ComputeRootSig;
 	GraphicsPSO       m_PSO;            // PSO
@@ -294,6 +299,11 @@ private:
 
 	// Indirect drawing
 	IndirectArgsBuffer m_indirectArgsBuffer;
+	
+	
+	ByteAddressBuffer m_FloorVB;
+	ByteAddressBuffer m_FloorIB;
+
 };
 
 CREATE_APPLICATION(ParticleApp)
