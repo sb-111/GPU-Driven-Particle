@@ -76,10 +76,13 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 
 	// 루트 시그 - 드로우용
 	// b0 카메라, t0 풀, t1 alive
-	m_GraphicsRootSig.Reset(3, 0);
+	m_GraphicsRootSig.Reset(4, 1); // 스태틱 샘플러 1개
 	m_GraphicsRootSig[0].InitAsConstantBuffer(0);
 	m_GraphicsRootSig[1].InitAsBufferSRV(0);
 	m_GraphicsRootSig[2].InitAsBufferSRV(1);
+	m_GraphicsRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_GraphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+
 	m_GraphicsRootSig.Finalize(L"ParticleDraw"); 
 
 	m_DrawPSO.SetRootSignature(m_GraphicsRootSig);
@@ -88,12 +91,15 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	m_DrawPSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
 	m_DrawPSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
 	m_DrawPSO.SetRasterizerState(RasterizerDefault);
-	//m_DrawPSO.SetBlendState(BlendAdditive);              // 가산블렌딩
-	m_DrawPSO.SetBlendState(BlendDisable);              // 블렌딩 X
+	m_DrawPSO.SetBlendState(BlendAdditive);              // 가산블렌딩
+	//m_DrawPSO.SetBlendState(BlendDisable);              // 블렌딩 X
 	m_DrawPSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
 	m_DrawPSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
 	m_DrawPSO.Finalize();
 
+	// 텍스쳐 로드
+	ASSERT(LoadDDSTexture(m_SpriteTex, "Textures/sparkTex.dds"), "dds 로드 실패");
+	
 }
 
 void GP::ParticleSystem::Update(float dt)
@@ -185,9 +191,10 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 		camera.GetViewProj());
 
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
-	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
+	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0
 	gfx.SetBufferSRV(1, m_Pool);				// t0
 	gfx.SetBufferSRV(2, *m_NewAlive);			// t1
+	gfx.SetDynamicDescriptor(3, 0, m_SpriteTex.GetSRV());
 	gfx.SetPipelineState(m_DrawPSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);

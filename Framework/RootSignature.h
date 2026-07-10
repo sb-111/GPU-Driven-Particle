@@ -80,12 +80,27 @@ public:
         m_RootParam.Descriptor.RegisterSpace = Space;
     }
 
+	/*
+	* Table+Range를 한 번에 만드는 축약(Range 1개 = 같은 종류, 연속 레지스터 Count칸
+	* 내부적으로 InitAsDescriptorTable(1) + SetTableRange(0)를 호출
+	* 텍스처 SRV처럼 루트 디스크립터로 못 꽂는 리소스는 최소 이 방식이 필요
+	* @param Type     종류 (SRV / UAV / CBV / SAMPLER)
+	* @param Register 시작 레지스터 번호 (SRV면 t레지스터)
+	* @param Count    시작 레지스터부터 연속 몇 개인지
+	*/
     void InitAsDescriptorRange( D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Register, UINT Count, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL, UINT Space = 0 )
     {
         InitAsDescriptorTable(1, Visibility);
         SetTableRange(0, Type, Register, Count, Space);
     }
 
+	/*
+	* 이 슬롯을 디스크립터 테이블로 정의 - "Range 몇 개짜리 목록"인지 틀만 잡는다
+	* 루트에는 힙 오프셋 1 DWORD만 실리고, 실제 디스크립터들은 힙에 산다
+	* 주의: 레인지 배열을 new로 할당만 하고 내용은 안 채움(쓰레기값).
+	*       반드시 SetTableRange로 RangeCount개를 전부 채운 뒤 Finalize
+	* @param RangeCount 이 테이블을 구성하는 레인지 개수
+	*/
     void InitAsDescriptorTable( UINT RangeCount, D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL )
     {
         m_RootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
@@ -94,6 +109,15 @@ public:
         m_RootParam.DescriptorTable.pDescriptorRanges = new D3D12_DESCRIPTOR_RANGE[RangeCount];
     }
 
+	/*
+	* 테이블의 RangeIndex번째 Range 내용을 채운다
+	* "어떤 종류를, 어느 레지스터부터, 몇 개"
+	* 앞 Range가 끝난 지점부터 자동으로 이어붙음 (수동 offset 계산 불필요)
+	* @param RangeIndex 채울 Range 번호 (0 ~ RangeCount-1)
+	* @param Type       구획 종류 (SRV / UAV / CBV / SAMPLER)
+	* @param Register   시작 레지스터 번호
+	* @param Count      연속 개수 (Register부터 Count개)
+	*/
     void SetTableRange( UINT RangeIndex, D3D12_DESCRIPTOR_RANGE_TYPE Type, UINT Register, UINT Count, UINT Space = 0 )
     {
         D3D12_DESCRIPTOR_RANGE* range = const_cast<D3D12_DESCRIPTOR_RANGE*>(m_RootParam.DescriptorTable.pDescriptorRanges + RangeIndex);
@@ -167,6 +191,11 @@ public:
         return m_ParamArray.get()[EntryIndex];
     }
 
+	/*
+	* @param Register 샘플러 레지스터 번호
+	* @param NonStaticSamplerDesc D3D12_SAMPLER_DESC
+	* @param D3D12_SHADER_VISIBILITY 셰이더 어느 stage에서 보이는지
+	*/
     void InitStaticSampler( UINT Register, const D3D12_SAMPLER_DESC& NonStaticSamplerDesc,
         D3D12_SHADER_VISIBILITY Visibility = D3D12_SHADER_VISIBILITY_ALL );
 

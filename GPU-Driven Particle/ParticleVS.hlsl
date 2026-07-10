@@ -21,6 +21,7 @@ struct VSOutput
 {
 	float4 pos : SV_Position;
 	float4 color : COLOR;
+	float2 uv : TEXCOORD0;
 };
 // 입력: 정점 id
 VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
@@ -32,9 +33,11 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	// Instance 내 정점 접근
 	float2 corner = QuadVert[vid];
 	float3 worldPos = p.position + (g_CamRight * corner.x + g_CamUp * corner.y) * g_ParticleSize;
-
+	
 	VSOutput output;
 	output.pos = mul(g_ViewProj, float4(worldPos, 1.0f));
 	output.color = p.color;
+	output.uv = (corner * 0.5f + 0.5f);
+	output.uv.y = 1 - output.uv.y;
 	return output;
 }

@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -48,9 +48,10 @@ void RootSignature::InitStaticSampler(
     StaticSamplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
     StaticSamplerDesc.MinLOD = NonStaticSamplerDesc.MinLOD;
     StaticSamplerDesc.MaxLOD = NonStaticSamplerDesc.MaxLOD;
-    StaticSamplerDesc.ShaderRegister = Register;
-    StaticSamplerDesc.RegisterSpace = 0;
-    StaticSamplerDesc.ShaderVisibility = Visibility;
+	// 일반 샘플러에 없는 필드 3개
+    StaticSamplerDesc.ShaderRegister = Register;	 // hlsl s0, s1...	
+	StaticSamplerDesc.RegisterSpace = 0;			 //  
+    StaticSamplerDesc.ShaderVisibility = Visibility; // 어느 stage에 보일지 
 
     if (StaticSamplerDesc.AddressU == D3D12_TEXTURE_ADDRESS_MODE_BORDER ||
         StaticSamplerDesc.AddressV == D3D12_TEXTURE_ADDRESS_MODE_BORDER ||
