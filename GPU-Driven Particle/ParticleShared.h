@@ -22,10 +22,11 @@
 
 #ifdef __cplusplus
 	#include <cstdint>
+	namespace GP{
 	struct float3 { float x, y, z; };
 	struct float4 { float x, y, z, w; };
+	struct float4x4 { float m[16]; };
 	typedef uint32_t uint;
-	namespace GP{
 #endif // __cplusplus
 
 	struct Particle
@@ -53,6 +54,16 @@
 		float maxLifeTime;
 		uint randomeSeed;
 		uint pad0;
+	};
+	struct GP_CB_ALIGN ParticleDrawCB
+	{
+		float4x4 viewProj;
+
+		float3 camRight;
+		float particleSize;
+
+		float3 camUp;
+		float pad0;
 	};
 #ifdef __cplusplus
 	}

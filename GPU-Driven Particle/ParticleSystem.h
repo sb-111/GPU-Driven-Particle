@@ -7,6 +7,7 @@
 #include "ParticleEmitter.h"
 #include "ShaderCompiler.h"
 
+namespace GP { class Camera; }
 class GraphicsContext;
 class ComputeContext;
 
@@ -21,7 +22,7 @@ namespace GP {
 		void Update(float dt);
 
 		void UpdateGPU(ComputeContext& cpt);   
-		void Draw(GraphicsContext& gfx, const Math::Matrix4& viewProj);
+		void Draw(GraphicsContext& gfx, const Camera& camera);
 		void EndFrame();
 	private:
 		// UpdateGPU의 내부 패스들 
@@ -53,6 +54,8 @@ namespace GP {
 
 		ComputePSO m_KickoffPSO, m_EmitPSO, m_SimulatePSO;
 		GraphicsPSO m_DrawPSO;
+
+		float m_ParticleSize = 0.05f;
 	};
 
 

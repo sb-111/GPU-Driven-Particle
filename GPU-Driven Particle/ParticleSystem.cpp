@@ -3,9 +3,19 @@
 #include "GraphicsCommon.h"
 #include "BufferManager.h"   // g_SceneColorBuffer / g_SceneDepthBuffer
 #include "CommandContext.h"
+#include "Camera.h"
 
 using namespace GameCore;
 using namespace Graphics;
+using namespace DirectX;
+
+// Vector3 형(16바이트) -> 자체 정의 GP::float3(12바이트) 변환
+static inline GP::float3 ToF3(const Math::Vector3& v)
+{
+	GP::float3 r;
+	DirectX::XMStoreFloat3((DirectX::XMFLOAT3*)&r, v);
+	return r;
+}
 
 void GP::ParticleSystem::Init(uint32_t maxParticles)
 {
@@ -28,7 +38,7 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	std::vector<uint32_t> argsInit = {
 			0, 1, 1, 0, // emit dispatch
 			0, 1, 1, 0, // simulate dispatch
-			0, 1, 0, 0 // draw
+			6, 0, 0, 0 // draw: 파티클당 정점 6개 고정, 인스턴스 수는 GPU가 채움
 	};
 	m_IndirectArgsBuffer.Create(L"IndirectArgsBuffer", 12, sizeof(uint32_t), argsInit.data());
 
@@ -74,11 +84,12 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 
 	m_DrawPSO.SetRootSignature(m_GraphicsRootSig);
 	// 인풋 레이아웃 X - 정점 버퍼 대신 SV_VertexID로 SRV(풀)를 직접 읽음
-	m_DrawPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT);
+	m_DrawPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 	m_DrawPSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
 	m_DrawPSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
 	m_DrawPSO.SetRasterizerState(RasterizerDefault);
-	m_DrawPSO.SetBlendState(BlendAdditive);              // 가산블렌딩
+	//m_DrawPSO.SetBlendState(BlendAdditive);              // 가산블렌딩
+	m_DrawPSO.SetBlendState(BlendDisable);              // 블렌딩 X
 	m_DrawPSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
 	m_DrawPSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
 	m_DrawPSO.Finalize();
@@ -155,7 +166,7 @@ void GP::ParticleSystem::UpdateDrawArgs(ComputeContext& cpt)
 {
 	// simulation이 확정한 생존자 수를 args 복사
 	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	cpt.CopyBufferRegion(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
+	cpt.CopyBufferRegion(m_IndirectArgsBuffer, ARGS_DRAW_INSTANCE_COUNT, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
 	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	// Draw가 읽을 리소스 SRV 전환
@@ -163,14 +174,22 @@ void GP::ParticleSystem::UpdateDrawArgs(ComputeContext& cpt)
 	cpt.TransitionResource(*m_NewAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Math::Matrix4& viewProj)
+void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 {
+	ParticleDrawCB cb;
+	cb.camRight = ToF3(camera.GetRight());
+	cb.camUp = ToF3(camera.GetUp());
+	cb.particleSize = m_ParticleSize;
+	DirectX::XMStoreFloat4x4(
+		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
+		camera.GetViewProj());
+
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
-	gfx.SetDynamicConstantBufferView(0, sizeof(viewProj), &viewProj);
+	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
 	gfx.SetBufferSRV(1, m_Pool);				// t0
 	gfx.SetBufferSRV(2, *m_NewAlive);			// t1
 	gfx.SetPipelineState(m_DrawPSO);
-	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 }
 

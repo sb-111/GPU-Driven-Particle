@@ -1,8 +1,18 @@
 ﻿#include "ParticleShared.h"
 
+static const float2 QuadVert[6] =
+{
+	float2(-1, -1), float2(1, 1), float2(-1, 1), // 좌하→우상→좌상 (CCW)
+    float2(-1, -1), float2(1, -1), float2(1, 1) // 좌하→우하→우상 (CCW)
+};
+
 cbuffer VSConstants : register(b0)
 {
 	float4x4 g_ViewProj;
+	float3 g_CamRight;
+	float g_ParticleSize;
+	float3 g_CamUp;
+	float pad0;
 }
 StructuredBuffer<Particle> g_ParticleBuffer : register(t0);
 ByteAddressBuffer NewAliveList : register(t1);
@@ -12,12 +22,19 @@ struct VSOutput
 	float4 pos : SV_Position;
 	float4 color : COLOR;
 };
-VSOutput main(uint vid : SV_VertexID)
+// 입력: 정점 id
+VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 {
-	VSOutput output;
+	// Alive 접근 : Instance id를 통해 접근
+	uint index = NewAliveList.Load(iid * 4);
+	Particle p = g_ParticleBuffer[index];
 
-	uint index = NewAliveList.Load(vid * 4);
-	output.pos = mul(g_ViewProj, float4(g_ParticleBuffer[index].position, 1.0f));
-	output.color = g_ParticleBuffer[index].color;
+	// Instance 내 정점 접근
+	float2 corner = QuadVert[vid];
+	float3 worldPos = p.position + (g_CamRight * corner.x + g_CamUp * corner.y) * g_ParticleSize;
+
+	VSOutput output;
+	output.pos = mul(g_ViewProj, float4(worldPos, 1.0f));
+	output.color = p.color;
 	return output;
 }

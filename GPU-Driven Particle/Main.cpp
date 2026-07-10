@@ -121,7 +121,7 @@ public:
 		gfx.DrawIndexed(6, 0, 0);
 
 		// =============== 파티클 ==============
-		m_Particles.Draw(gfx, m_Camera.GetViewProj());
+		m_Particles.Draw(gfx, m_Camera);
 
 		gfx.Finish();
 
