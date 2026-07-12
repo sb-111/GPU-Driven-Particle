@@ -85,6 +85,7 @@
     <ClInclude Include="GraphicsCore.h" />
     <ClInclude Include="Debug\GraphRenderer.h" />
     <ClInclude Include="Hash.h" />
+    <ClInclude Include="ImGuiLayer.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_impl_dx12.h" />
@@ -168,6 +169,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="GpuBuffer.cpp" />

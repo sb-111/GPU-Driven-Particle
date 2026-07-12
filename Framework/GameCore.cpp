@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -19,6 +19,7 @@
 #include "BufferManager.h"
 #include "CommandContext.h"
 #include "Display.h"
+#include "ImGuiLayer.h"
 #include "Util/CommandLineArg.h"
 #include <shellapi.h>
 
@@ -30,6 +31,8 @@ namespace GameCore
 
     bool gIsSupending = false;
 
+    extern HWND g_hWnd;
+
     void InitializeApplication( IGameApp& game )
     {
         int argc = 0;
@@ -40,6 +43,7 @@ namespace GameCore
         SystemTime::Initialize();
         GameInput::Initialize();
         EngineTuning::Initialize();
+        ImGuiLayer::Initialize(g_hWnd);
 
         game.Startup();
     }
@@ -50,6 +54,7 @@ namespace GameCore
 
         game.Cleanup();
 
+        ImGuiLayer::Shutdown();
         GameInput::Shutdown();
     }
 
@@ -61,7 +66,9 @@ namespace GameCore
     
         GameInput::Update(DeltaTime);
         EngineTuning::Update(DeltaTime);
-        
+
+        ImGuiLayer::BeginFrame();   // 이후 ImGui:: 위젯 호출 가능
+
         game.Update(DeltaTime);
         game.RenderScene();
 
@@ -77,6 +84,9 @@ namespace GameCore
         // presents a blank screen by default. TextRenderer + profiling remain available — draw
         // your own UI in IGameApp::RenderUI, or re-enable the line below to show CPU/GPU/Hz.
         // EngineTuning::Display( UiContext, 10.0f, 40.0f, 1900.0f, 1040.0f );
+
+		// 오버레이 RT가 바인딩된 상태에서 호출
+        ImGuiLayer::Render(UiContext);
 
         UiContext.Finish();
 
@@ -160,6 +170,9 @@ namespace GameCore
     //--------------------------------------------------------------------------------------
     LRESULT CALLBACK WndProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam )
     {
+        if (ImGuiLayer::WndProcHandler(hWnd, message, wParam, lParam))
+            return 1;
+
         switch( message )
         {
         case WM_SIZE:

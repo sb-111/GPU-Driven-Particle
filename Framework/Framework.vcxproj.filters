@@ -93,6 +93,7 @@
       <Filter>Debug</Filter>
     </ClCompile>
     <ClCompile Include="FileUtility.cpp" />
+    <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="GameCore.cpp" />
     <ClCompile Include="GpuBuffer.cpp" />
@@ -175,6 +176,7 @@
       <Filter>Debug</Filter>
     </ClInclude>
     <ClInclude Include="Hash.h" />
+    <ClInclude Include="ImGuiLayer.h" />
     <ClInclude Include="LinearAllocator.h" />
     <ClInclude Include="Math\BoundingSphere.h" />
     <ClInclude Include="Math\Common.h" />
