@@ -5,6 +5,7 @@
 #include "RootSignature.h"
 #include "PipelineState.h"
 #include "ParticleEmitter.h"
+#include "ParticleSetting.h"
 #include "ShaderCompiler.h"
 
 #include <fstream>
@@ -35,9 +36,11 @@ namespace GP {
 		// 이미터 갱신, CB 준비
 		void Update(float dt);
 
-		void UpdateGPU(ComputeContext& cpt);   
+		void UpdateGPU(ComputeContext& cpt);
 		void Draw(GraphicsContext& gfx, const Camera& camera);
 		void EndFrame();
+
+		ParticleSettings& GetSettings() { return m_Settings; } 
 	private:
 		// UpdateGPU의 내부 패스들 
 		void BindResources(ComputeContext& cpt);   
@@ -47,11 +50,9 @@ namespace GP {
 		void UpdateDrawArgs(ComputeContext& cpt);  
 
 		uint32_t m_maxParticle = 0;
+		ParticleSettings m_Settings;	
 		ParticleEmitter m_Emitter{
-			Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)),  
-			5000.0f,   // spawnRate: 초당 5000개
-			2.0f,      // minLifeTime
-			4.0f       // maxLifeTime
+			Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f))
 		};
 		ParticleFrameCB m_FrameParams = {};
 
@@ -68,8 +69,6 @@ namespace GP {
 
 		ComputePSO m_KickoffPSO, m_EmitPSO, m_SimulatePSO;
 		GraphicsPSO m_DrawPSO;
-
-		float m_ParticleSize = 0.05f;
 
 		Texture m_SpriteTex;
 	};

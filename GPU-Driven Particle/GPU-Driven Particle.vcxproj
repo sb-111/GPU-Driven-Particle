@@ -159,6 +159,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ParticleEmitter.h" />
+    <ClInclude Include="ParticleSetting.h" />
     <ClInclude Include="ParticleShared.h" />
     <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="RenderTypes.h" />

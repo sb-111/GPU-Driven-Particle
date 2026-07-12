@@ -40,7 +40,6 @@
 		float4 color;
 	};
 
-
 	struct GP_CB_ALIGN ParticleFrameCB
 	{
 		float3 emitterPosition;	// world pos
@@ -50,10 +49,21 @@
 		float deltaTime;		// dt
 
 		float4 startColor;		// color
-		float minLifeTime;		// life
-		float maxLifeTime;
+		float4 endColor;
+
+		float speedMin;
+		float speedMax;
+		float lifeTimeMin;		// life
+		float lifeTimeMax;
+
+		float3 gravity;
 		uint randomeSeed;
-		uint pad0;
+
+		float dirSpread;
+		float posSpread;
+		float pad0;
+		float pad1;
+
 	};
 	struct GP_CB_ALIGN ParticleDrawCB
 	{

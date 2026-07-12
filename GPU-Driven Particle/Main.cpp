@@ -8,6 +8,7 @@
 
 #include "ShaderCompiler.h"
 #include "ParticleSystem.h"
+#include "ParticlePanel.h"
 
 #include "Camera.h"
 #include "CameraController.h"
@@ -84,6 +85,10 @@ public:
 	void Update(float deltaT) override
 	{
 		m_CamController.Update(deltaT);
+
+		// 튜닝 패널 - ParticleSystem이 가진 ParticleSettings를 넘겨 드로우
+		DrawParticlePanel(m_Particles.GetSettings());
+
 		m_Particles.Update(deltaT);
 	}
 

@@ -56,10 +56,10 @@ void main( uint3 id : SV_DispatchThreadID )
 	                       rand01(seed) * 2.0 - 1.0);
 
 	Particle p;
-	p.position = params.emitterPosition + offset*0.1f;
-	p.velocity = normalize(params.emitterDirection + spread * 0.3) *
-	lerp(3.0f, 5.0f, rand01(seed));
-	p.lifeTime = lerp(params.minLifeTime, params.maxLifeTime, rand01(seed));
+	p.position = params.emitterPosition + offset * params.posSpread;
+	p.velocity = normalize(params.emitterDirection + spread * params.dirSpread) *
+	lerp(params.speedMin, params.speedMax , rand01(seed));
+	p.lifeTime = lerp(params.lifeTimeMin, params.lifeTimeMax, rand01(seed));
 	p.initialLife = p.lifeTime;
 	p.color = float4(params.startColor.rgb * lerp(0.6f, 1.0f, rand01(seed)), 1.0f);
 

@@ -76,11 +76,12 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 
 	// 루트 시그 - 드로우용
 	// b0 카메라, t0 풀, t1 alive
-	m_GraphicsRootSig.Reset(4, 1); // 스태틱 샘플러 1개
+	m_GraphicsRootSig.Reset(5, 1); // 스태틱 샘플러 1개
 	m_GraphicsRootSig[0].InitAsConstantBuffer(0);
-	m_GraphicsRootSig[1].InitAsBufferSRV(0);
-	m_GraphicsRootSig[2].InitAsBufferSRV(1);
-	m_GraphicsRootSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_GraphicsRootSig[1].InitAsConstantBuffer(1);
+	m_GraphicsRootSig[2].InitAsBufferSRV(0);
+	m_GraphicsRootSig[3].InitAsBufferSRV(1);
+	m_GraphicsRootSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
 	m_GraphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 
 	m_GraphicsRootSig.Finalize(L"ParticleDraw"); 
@@ -104,8 +105,8 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 
 void GP::ParticleSystem::Update(float dt)
 {
-	m_Emitter.Update(dt);
-	m_FrameParams = m_Emitter.MakeParams(dt);
+	m_Emitter.Update(dt, m_Settings);
+	m_FrameParams = m_Emitter.MakeParams(m_Settings, dt);
 }
 
 void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt)
@@ -185,16 +186,17 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 	ParticleDrawCB cb;
 	cb.camRight = ToF3(camera.GetRight());
 	cb.camUp = ToF3(camera.GetUp());
-	cb.particleSize = m_ParticleSize;
+	cb.particleSize = m_Settings.particleSize;
 	DirectX::XMStoreFloat4x4(
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
 
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
 	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0
-	gfx.SetBufferSRV(1, m_Pool);				// t0
-	gfx.SetBufferSRV(2, *m_NewAlive);			// t1
-	gfx.SetDynamicDescriptor(3, 0, m_SpriteTex.GetSRV());
+	gfx.SetDynamicConstantBufferView(1, sizeof(m_FrameParams), &m_FrameParams);
+	gfx.SetBufferSRV(2, m_Pool);				// t0
+	gfx.SetBufferSRV(3, *m_NewAlive);			// t1
+	gfx.SetDynamicDescriptor(4, 0, m_SpriteTex.GetSRV());
 	gfx.SetPipelineState(m_DrawPSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);

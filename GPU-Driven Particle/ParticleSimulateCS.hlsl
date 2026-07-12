@@ -34,7 +34,7 @@ void main(uint3 id : SV_DispatchThreadID)
 	else
 	{
 		// 살아있으면 위치 변경
-		p.velocity += float3(0, -9.8f, 0) * params.deltaTime;
+		p.velocity += params.gravity * params.deltaTime;
 		p.position += p.velocity * params.deltaTime;
 		g_ParticleBuffer[index] = p;
 

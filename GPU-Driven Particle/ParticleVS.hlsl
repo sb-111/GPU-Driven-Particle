@@ -14,6 +14,10 @@ cbuffer VSConstants : register(b0)
 	float3 g_CamUp;
 	float pad0;
 }
+cbuffer ParticleParams : register(b1)
+{
+	ParticleFrameCB frameParams;
+}
 StructuredBuffer<Particle> g_ParticleBuffer : register(t0);
 ByteAddressBuffer NewAliveList : register(t1);
 
@@ -42,8 +46,9 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	
 	VSOutput output;
 	output.pos = mul(g_ViewProj, float4(worldPos, 1.0f));
-	output.color = p.color;
+	output.color.rgb = lerp(p.color.rgb, frameParams.endColor.rgb, t);
 	output.color.rgb *= fade;
+	output.color.a = p.color.a;
 	output.uv = (corner * 0.5f + 0.5f);
 	output.uv.y = 1 - output.uv.y;
 

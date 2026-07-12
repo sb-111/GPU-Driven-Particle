@@ -56,6 +56,9 @@
     <ClInclude Include="ParticleSystem.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSetting.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\TrianglePS.hlsl">
