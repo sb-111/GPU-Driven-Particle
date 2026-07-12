@@ -4,7 +4,7 @@
 #include "GameInput.h"
 #include "VectorMath.h"
 #include <cmath>
-
+#include "ImGuiLayer.h"
 // 언리얼 에디터식 : 우클릭 마우스로 시점, WASD 이동, E/Q 상승 및 하강, 휠로 이동속도.
 
 namespace GP
@@ -26,7 +26,8 @@ namespace GP
 			using namespace Math;
 			using namespace GameInput;
 
-			const bool held = IsPressed(kMouse1);   // 우클릭
+			// UI가 마우스 잡고 있으면 룩 시작 안 함 (이미 룩 중이면 유지)
+			const bool held = IsPressed(kMouse1) && (m_Active || !ImGuiLayer::WantCaptureMouse()); 
 
 			if (held && !m_Active)      BeginLook(); // 우클릭 && 안 눌려있음 -> 커서 숨김
 			else if (!held && m_Active) EndLook();   // 우클릭X && 눌려있음 -> 커서 복원

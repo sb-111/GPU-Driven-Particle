@@ -12,7 +12,7 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(float dt) const
 	params.emitterDirection = { dir.GetX(), dir.GetY(), dir.GetZ() };
 	params.deltaTime = dt;
 
-	params.startColor = { 1.0f,1.0f,1.0f, 1.0f };
+	params.startColor = { 1.0f, 0.45f, 0.1f, 1.0f };
 	params.minLifeTime = m_MinLifeTime;
 	params.maxLifeTime = m_MaxLifeTime;
 	params.randomeSeed = m_FrameCount;

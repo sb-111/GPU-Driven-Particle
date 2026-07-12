@@ -98,7 +98,7 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	m_DrawPSO.Finalize();
 
 	// 텍스쳐 로드
-	ASSERT(LoadDDSTexture(m_SpriteTex, "Textures/sparkTex.dds"), "dds 로드 실패");
+	ASSERT(LoadDDSTexture(m_SpriteTex, "Textures/fire.dds"), "dds 로드 실패");
 	
 }
 

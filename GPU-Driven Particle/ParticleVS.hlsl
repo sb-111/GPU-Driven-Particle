@@ -30,14 +30,23 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	uint index = NewAliveList.Load(iid * 4);
 	Particle p = g_ParticleBuffer[index];
 
+	float t = 1.0f - (p.lifeTime / p.initialLife); // 0 -> 1
+	float fade = 1.0f - t; // 1 -> 0 (처음이 밝도록)
+
+	float size = g_ParticleSize * (1.0f - t*t);
+	
 	// Instance 내 정점 접근
 	float2 corner = QuadVert[vid];
-	float3 worldPos = p.position + (g_CamRight * corner.x + g_CamUp * corner.y) * g_ParticleSize;
+	float3 worldPos = p.position + (g_CamRight * corner.x + g_CamUp * corner.y) * size;
+
 	
 	VSOutput output;
 	output.pos = mul(g_ViewProj, float4(worldPos, 1.0f));
 	output.color = p.color;
+	output.color.rgb *= fade;
 	output.uv = (corner * 0.5f + 0.5f);
 	output.uv.y = 1 - output.uv.y;
+
+	
 	return output;
 }
