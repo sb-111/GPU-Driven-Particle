@@ -36,14 +36,15 @@ public:
 		ASSERT(triVS && triPS, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 		// 1. 바닥 쿼드 (정점 4개 + 인덱스 6개)
-		Vertex floorVerts[4] =
+		// SIMDMemCopy가 16바이트 정렬 요구
+		alignas(16) Vertex floorVerts[4] =
 		{
 			{{ -20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 0: 뒤-왼
 			{{  20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 1: 뒤-오
 			{{  20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 2: 앞-오
 			{{ -20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 3: 앞-왼
 		};
-		uint16_t floorIndices[6] = { 0, 2, 1,  0, 3, 2 };
+		alignas(16) uint16_t floorIndices[6] = { 0, 2, 1,  0, 3, 2 };
 		m_FloorVB.Create(L"Floor VB", 4, sizeof(Vertex), floorVerts);
 		m_FloorIB.Create(L"Floor IB", 6, sizeof(uint16_t), floorIndices);
 
