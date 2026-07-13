@@ -86,20 +86,26 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 
 	m_GraphicsRootSig.Finalize(L"ParticleDraw"); 
 
-	m_DrawPSO.SetRootSignature(m_GraphicsRootSig);
+	m_DrawAdditivePSO.SetRootSignature(m_GraphicsRootSig);
 	// 인풋 레이아웃 X - 정점 버퍼 대신 SV_VertexID로 SRV(풀)를 직접 읽음
-	m_DrawPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	m_DrawPSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
-	m_DrawPSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
-	m_DrawPSO.SetRasterizerState(RasterizerDefault);
-	m_DrawPSO.SetBlendState(BlendAdditive);              // 가산블렌딩
-	//m_DrawPSO.SetBlendState(BlendDisable);              // 블렌딩 X
-	m_DrawPSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
-	m_DrawPSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
-	m_DrawPSO.Finalize();
+	m_DrawAdditivePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	m_DrawAdditivePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
+	m_DrawAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
+	m_DrawAdditivePSO.SetRasterizerState(RasterizerDefault);
+	m_DrawAdditivePSO.SetBlendState(BlendAdditive);              // 가산블렌딩
+	m_DrawAdditivePSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
+	m_DrawAdditivePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
+	m_DrawAdditivePSO.Finalize();
 
-	// 텍스쳐 로드
-	ASSERT(LoadDDSTexture(m_SpriteTex, "Textures/fire.dds"), "dds 로드 실패");
+	m_DrawAlphaPSO = m_DrawAdditivePSO;
+	m_DrawAlphaPSO.SetBlendState(BlendTraditional);
+	m_DrawAlphaPSO.Finalize();
+
+	// 텍스쳐 로드 (ETexture enum 순서와 일치)
+	static const char* kTexturePaths[(int)ETexture::Count] =
+		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds" };
+	for (int i = 0; i < (int)ETexture::Count; ++i)
+		ASSERT(LoadDDSTexture(m_SpriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
 	
 }
 
@@ -189,15 +195,16 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 	DirectX::XMStoreFloat4x4(
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
-
+	cb.blendMode = m_Settings.blendMode;
 
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
 	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0
 	gfx.SetDynamicConstantBufferView(1, sizeof(m_FrameParams), &m_FrameParams);
 	gfx.SetBufferSRV(2, m_Pool);				// t0
 	gfx.SetBufferSRV(3, *m_NewAlive);			// t1
-	gfx.SetDynamicDescriptor(4, 0, m_SpriteTex.GetSRV());
-	gfx.SetPipelineState(m_DrawPSO);
+	gfx.SetDynamicDescriptor(4, 0, m_SpriteTextures[m_Settings.textureIndex].GetSRV());
+	// 블렌드 모드에 따른 다른 PSO 설정
+	gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_DrawAdditivePSO : m_DrawAlphaPSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 }

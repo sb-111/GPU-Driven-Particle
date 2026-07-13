@@ -14,11 +14,15 @@
 #define ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE 32
 #define ARGS_DRAW_INSTANCE_COUNT 36
 
-// Uniform, RandomUniform, NonUniform, RandomNonUniform
+// Mode: Uniform, RandomUniform, NonUniform, RandomNonUniform
 #define UNIFORM_MODE 0
 #define RANDOM_UNIFORM_MODE 1
 #define NON_UNIFORM_MODE 2
 #define RANDOM_NON_UNIFORM_MODE 3
+
+// Blend Mode: Additive, Alpha
+#define BLEND_ADDITIVE_MODE 0
+#define BLEND_ALPHA_MODE 1
 
 
 #ifdef __cplusplus
@@ -88,10 +92,10 @@
 		float4x4 viewProj;
 
 		float3 camRight;
-		float pad0;
+		int blendMode;
 
 		float3 camUp;
-		float pad1;
+		float pad0;
 	};
 #ifdef __cplusplus
 	}

@@ -69,11 +69,18 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	float3 worldPos = p.position + mul(finalMat, localPos);
 
 	
-	VSOutput output;
+	VSOutput output = (VSOutput)0;
 	output.pos = mul(drawParams.viewProj, float4(worldPos, 1.0f));
 	output.color.rgb = lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge);
-	output.color.rgb *= brightness;
-	output.color.a = p.color.a;
+	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)
+	{
+		output.color.rgb *= brightness;	// 가산: 더하는 빛의 양을 줄임(색 어두워짐 = 페이드)
+		output.color.a = 1.0f; // 가산은 알파 안읽음.
+	}
+	else // BLEND_ALPHA_MODE
+	{
+		output.color.a = p.color.a * brightness; // 알파: 불투명도를 줄임(색은 유지, 투명해짐)
+	}
 	output.uv = (corner * 0.5f + 0.5f);
 	output.uv.y = 1 - output.uv.y;
 

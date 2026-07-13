@@ -18,6 +18,8 @@ namespace GP
 		RandomNonUniform,
 		Count
 	};
+	enum class EBlendMode : int {Additive, Alpha, Count};
+	enum class ETexture : int {Fire, Smoke, Spark, Count};
 
 	// ImGui 튜닝 값 모은 구조체 
 	struct ParticleSettings
@@ -50,5 +52,8 @@ namespace GP
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
 
 		// Renderer
+		int blendMode = (int)EBlendMode::Additive;
+		int textureIndex = (int)ETexture::Fire;
+
 	};
 }

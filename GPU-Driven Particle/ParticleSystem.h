@@ -68,9 +68,9 @@ namespace GP {
 		RootSignature m_GraphicsRootSig;
 
 		ComputePSO m_KickoffPSO, m_EmitPSO, m_SimulatePSO;
-		GraphicsPSO m_DrawPSO;
+		GraphicsPSO m_DrawAdditivePSO, m_DrawAlphaPSO;
 
-		Texture m_SpriteTex;
+		Texture m_SpriteTextures[(int)ETexture::Count];
 	};
 
 
