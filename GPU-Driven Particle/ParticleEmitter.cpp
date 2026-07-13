@@ -26,6 +26,15 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.dirSpread = s.dirSpread;
 	params.posSpread = s.posSpread;
 
+	// UI에서는 deg 값을 GPU에서는 radian으로 보도록 변환
+	params.spinSpeedMin = DirectX::XMConvertToRadians(s.spinSpeedMin);
+	params.spinSpeedMax = DirectX::XMConvertToRadians(s.spinSpeedMax);
+	params.initAngleMin = DirectX::XMConvertToRadians(s.initAngleMin);
+	params.initAngleMax = DirectX::XMConvertToRadians(s.initAngleMax);
+	params.sizeMode = s.sizeMode;
+	params.sizeMin = { s.sizeMin[0], s.sizeMin[1] ,s.sizeMin[2] };
+	params.sizeMax = { s.sizeMax[0], s.sizeMax[1] ,s.sizeMax[2] };
+
 	return params;
 }
 void GP::ParticleEmitter::Update(float dt, const ParticleSettings& s)

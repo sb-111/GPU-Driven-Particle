@@ -24,21 +24,23 @@ namespace GP
 	// g_ParticleParams 그룹별로 순회하며 위젯 생성
 	inline const UIParamDesc g_ParticleParams[] =
 	{
-		{ "Spawn Rate",    EParamGroup::Emitter,  EParamType::Float,  offsetof(ParticleSettings, spawnRate),    0.0f,  20000.0f },
+		{ "Spawn Rate",    EParamGroup::Emitter,  EParamType::Float,  offsetof(ParticleSettings, spawnRate),    0.0f,  10000.0f },
 		{ "Burst Count",   EParamGroup::Emitter,  EParamType::Int,    offsetof(ParticleSettings, burstCount),   0.0f,  200000.0f },
 
 		{ "LifeTime Min",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMin),  0.05f, 10.0f },
 		{ "LifeTime Max",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMax),  0.05f, 10.0f },
 		{ "Speed Min",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMin),     0.0f,  30.0f },
 		{ "Speed Max",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMax),     0.0f,  30.0f },
+		{ "Spin Speed Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMin), 0.0f,  360.0f  },
+		{ "Spin Speed Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMax), 0.0f,  360.0f  },
+		{ "Init Angle Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMin), 0.0f,  360.0f  },
+		{ "Init Angle Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMax), 0.0f,  360.0f  },
 		{ "Dir Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, dirSpread),    0.0f,  5.0f },
 		{ "Pos Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, posSpread),    0.0f,  10.0f },
 		{ "Start Color",   EParamGroup::Emit,    EParamType::Color4, offsetof(ParticleSettings, startColor),   0.0f,  1.0f },
 
 		{ "Gravity",       EParamGroup::Simulate,   EParamType::Float3, offsetof(ParticleSettings, gravity),     -20.0f, 20.0f },
 		{ "End Color",     EParamGroup::Simulate,   EParamType::Color4, offsetof(ParticleSettings, endColor),     0.0f,  1.0f },
-
-		{ "Particle Size", EParamGroup::Renderer, EParamType::Float,  offsetof(ParticleSettings, particleSize), 0.001f, 0.5f },
 	};
 
 	inline ParticleSettings MakeFirePreset()
@@ -59,6 +61,8 @@ namespace GP
 		ImGui::Separator();
 
 		static const char* kGroupNames[(int)EParamGroup::Count] = { "Emitter", "Emit", "Simulate", "Renderer" };
+		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
+
 		for (int g = 0; g < (int)EParamGroup::Count; ++g)
 		{
 			// 접혀있으면(false) 스킵
@@ -76,6 +80,25 @@ namespace GP
 				case EParamType::Int:    ImGui::SliderInt(p.name, (int*)ptr, (int)p.minV, (int)p.maxV); break;
 				case EParamType::Color4: ImGui::ColorEdit4(p.name, (float*)ptr); break;
 				case EParamType::Float3: ImGui::SliderFloat3(p.name, (float*)ptr, p.minV, p.maxV); break;
+				}
+			}
+			if (g == (int)EParamGroup::Renderer)
+			{
+				ImGui::Combo("Size Mode", &s.sizeMode, kSizeModeNames, (int)EUniformMode::Count);
+				switch ((EUniformMode)s.sizeMode)
+				{
+				case EUniformMode::Uniform: ImGui::SliderFloat("Size", &s.sizeMin[0], 0.001f, 0.5f); break;
+				case EUniformMode::RandomUniform:
+					ImGui::SliderFloat("Size Min", &s.sizeMin[0], 0.001f, 0.5f); 
+					ImGui::SliderFloat("Size Max", &s.sizeMax[0], 0.001f, 0.5f);
+					break;
+				case EUniformMode::NonUniform:
+					ImGui::SliderFloat2("Size XY", s.sizeMin, 0.001f, 0.5f);
+					break;
+				case EUniformMode::RandomNonUniform:
+					ImGui::SliderFloat2("Size Min XY", s.sizeMin, 0.001f, 0.5f);
+					ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
+					break;
 				}
 			}
 		}

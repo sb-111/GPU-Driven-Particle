@@ -10,26 +10,37 @@ namespace GP
 	{
 		Sprite, Mesh, Ribbon
 	};
-	enum class ESpriteSizeMode : int
+	enum class EUniformMode : int
 	{
 		Uniform,
 		RandomUniform,
 		NonUniform,
-		RandomNonUniform
+		RandomNonUniform,
+		Count
 	};
 
 	// ImGui 튜닝 값 모은 구조체 
 	struct ParticleSettings
 	{
 		// Emitter
-		float spawnRate     = 5000.0f;	
+		float spawnRate     = 1000000.0f;	
 		int   burstCount    = 0;		
 
 		// Particle Emit
 		float lifeTimeMin   = 2.0f;
 		float lifeTimeMax   = 4.0f;
-		float speedMin      = 3.0f;		
+		float speedMin      = 3.0f;	// 속도 관련
 		float speedMax      = 5.0f;
+
+		float spinSpeedMin = 1.0f; // 회전 관련
+		float spinSpeedMax = 3.0f;
+		float initAngleMin	= 1.0f;
+		float initAngleMax	= 5.0f;
+
+		int sizeMode = (int)EUniformMode::Uniform; // 스프라이트는 x,y만 사용
+		float sizeMin[3] = { 0.05f, 0.05f, 0.0f };
+		float sizeMax[3] = { 1.0f, 1.0f , 0.0f};
+
 		float dirSpread     = 0.3f;		
 		float posSpread     = 0.1f;		
 		float startColor[4] = { 1.0f, 0.45f, 0.1f, 1.0f };
@@ -39,6 +50,5 @@ namespace GP
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
 
 		// Renderer
-		float particleSize  = 0.05f;
 	};
 }

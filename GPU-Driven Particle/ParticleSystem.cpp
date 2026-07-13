@@ -186,10 +186,10 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 	ParticleDrawCB cb;
 	cb.camRight = ToF3(camera.GetRight());
 	cb.camUp = ToF3(camera.GetUp());
-	cb.particleSize = m_Settings.particleSize;
 	DirectX::XMStoreFloat4x4(
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
+
 
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
 	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0

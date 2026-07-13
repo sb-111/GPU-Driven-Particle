@@ -14,6 +14,13 @@
 #define ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE 32
 #define ARGS_DRAW_INSTANCE_COUNT 36
 
+// Uniform, RandomUniform, NonUniform, RandomNonUniform
+#define UNIFORM_MODE 0
+#define RANDOM_UNIFORM_MODE 1
+#define NON_UNIFORM_MODE 2
+#define RANDOM_NON_UNIFORM_MODE 3
+
+
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
 #else
@@ -31,13 +38,14 @@
 
 	struct Particle
 	{
-		float3 position;
-		float lifeTime;
-
-		
-		float3 velocity;
-		float initialLife; // 태어날 때 수명
+		float3 position; float lifeTime;
+		float3 velocity; float initialLife; // 태어날 때 수명
 		float4 color;
+
+		// size: Uniform이면 x, NonUniform은 x, y / z는 메시용
+		float3 size;	 float spinSpeed;
+		float3 angle; // 스프라이트는 z만 사용
+		float pad0;
 	};
 
 	struct GP_CB_ALIGN ParticleFrameCB
@@ -56,6 +64,17 @@
 		float lifeTimeMin;		// life
 		float lifeTimeMax;
 
+		float spinSpeedMin;
+		float spinSpeedMax;
+		float initAngleMin;
+		float initAngleMax;
+
+		int sizeMode;
+		float3 sizeMin;
+
+		float3 sizeMax;
+		float pad_size;
+
 		float3 gravity;
 		uint randomeSeed;
 
@@ -63,17 +82,16 @@
 		float posSpread;
 		float pad0;
 		float pad1;
-
 	};
 	struct GP_CB_ALIGN ParticleDrawCB
 	{
 		float4x4 viewProj;
 
 		float3 camRight;
-		float particleSize;
+		float pad0;
 
 		float3 camUp;
-		float pad0;
+		float pad1;
 	};
 #ifdef __cplusplus
 	}

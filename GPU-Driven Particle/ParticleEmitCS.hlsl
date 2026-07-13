@@ -34,10 +34,10 @@ void main( uint3 id : SV_DispatchThreadID )
 		return;
 
 	// Dead list consume
-	uint prevDead; 
+	uint prevDead;
 	Counters.InterlockedAdd(COUNTER_DEAD, -1, prevDead); // dead count 감소
 
-	if(prevDead == 0)
+	if (prevDead == 0)
 	{
 		uint dummy;
 		Counters.InterlockedAdd(4, 1, dummy);
@@ -55,14 +55,38 @@ void main( uint3 id : SV_DispatchThreadID )
 	                       rand01(seed) * 2.0 - 1.0,
 	                       rand01(seed) * 2.0 - 1.0);
 
-	Particle p;
+	Particle p = (Particle)0;
 	p.position = params.emitterPosition + offset * params.posSpread;
 	p.velocity = normalize(params.emitterDirection + spread * params.dirSpread) *
-	lerp(params.speedMin, params.speedMax , rand01(seed));
+	lerp(params.speedMin, params.speedMax, rand01(seed));
 	p.lifeTime = lerp(params.lifeTimeMin, params.lifeTimeMax, rand01(seed));
 	p.initialLife = p.lifeTime;
 	p.color = float4(params.startColor.rgb * lerp(0.6f, 1.0f, rand01(seed)), 1.0f);
-
+	p.spinSpeed = lerp(params.spinSpeedMin, params.spinSpeedMax, rand01(seed));
+	p.angle.z = lerp(params.initAngleMin, params.initAngleMax, rand01(seed));
+	// 스레드별로 다른 모드가 아니므로 다른 분기 안탐
+	float3 uniformSizeMin = float3(params.sizeMin.x, params.sizeMin.x, params.sizeMin.x);
+	float3 uniformSizeMax = float3(params.sizeMax.x, params.sizeMax.x, params.sizeMax.x);
+	switch (params.sizeMode)
+	{
+		case UNIFORM_MODE:
+			p.size = uniformSizeMin;
+			break;
+		case RANDOM_UNIFORM_MODE:
+			p.size = lerp(uniformSizeMin, uniformSizeMax, rand01(seed));
+			break;
+		case NON_UNIFORM_MODE:
+			p.size = params.sizeMin;
+			break;
+		case RANDOM_NON_UNIFORM_MODE:
+			p.size = lerp(params.sizeMin, params.sizeMax, rand01(seed));
+			break;
+		default: // Uniform fallback
+			p.size = uniformSizeMin;
+			break;
+	}
+	
+	
 	// 풀의 빈 인덱스에 새 파티클 덮어쓰기
 	g_ParticleBuffer[poolIndex] = p;
 
