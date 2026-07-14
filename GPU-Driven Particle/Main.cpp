@@ -87,9 +87,14 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널 - ParticleSystem이 가진 ParticleSettings를 넘겨 드로우
-		DrawParticlePanel(m_Particles.GetSettings());
+		if (DrawParticlePanel(m_Particles.GetSettings(), m_Paused))
+		{
+			// 재시작 플래그 반환되면 파티클 시스템 초기화
+			m_Particles.ResetEmitter();
+		}
 
-		m_Particles.Update(deltaT);
+		// 멈춤 요청 들어오면 이미터 업데이트 정지
+		m_Particles.Update(m_Paused ? 0.0f : deltaT);
 	}
 
 	// ==============================================================
@@ -147,6 +152,8 @@ private:
 	GraphicsPSO   m_ScenePSO;
 	ByteAddressBuffer m_FloorVB;
 	ByteAddressBuffer m_FloorIB;
+
+	bool m_Paused = false;
 };
 
 CREATE_APPLICATION(ParticleApp)

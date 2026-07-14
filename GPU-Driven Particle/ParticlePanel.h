@@ -27,7 +27,7 @@ namespace GP
 	inline const UIParamDesc g_ParticleParams[] =
 	{
 		{ "Spawn Rate",    EParamGroup::Emitter,  EParamType::Float,  offsetof(ParticleSettings, spawnRate),    0.0f,  1000000.0f , "%.0f", ImGuiSliderFlags_Logarithmic},
-		//{ "Burst Count",   EParamGroup::Emitter,  EParamType::Int,    offsetof(ParticleSettings, burstCount),   0.0f,  200000.0f },
+		{ "Burst Count",   EParamGroup::Emitter,  EParamType::Int,    offsetof(ParticleSettings, burstCount),   0.0f,  1000000.0f, "%.0f", ImGuiSliderFlags_Logarithmic },
 
 		{ "LifeTime Min",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMin),  0.05f, 10.0f },
 		{ "LifeTime Max",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMax),  0.05f, 10.0f },
@@ -53,7 +53,7 @@ namespace GP
 	inline ParticleSettings MakeSmokePreset()
 	{
 		ParticleSettings s{};
-		s.spawnRate = 15.0f;
+		s.spawnRate = 30.0f;
 		s.lifeTimeMin = 4.0f;   s.lifeTimeMax = 5.0f;
 		s.speedMin = 0.5f;      s.speedMax = 1.0f;
 		s.spinSpeedMin = 0.0f;  s.spinSpeedMax = 20.0f;
@@ -62,6 +62,28 @@ namespace GP
 		s.sizeMin[0] = 0.45f;   s.sizeMin[1] = 0.45f;
 		s.dirSpread = 0.4f;
 		s.posSpread = 0.3f;
+		s.startColor[0] = 0.7f; s.startColor[1] = 0.7f; s.startColor[2] = 0.7f; s.startColor[3] = 1.0f; 
+		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
+		s.endColor[0] = 0.35f;   s.endColor[1] = 0.35f;   s.endColor[2] = 0.35f;   s.endColor[3] = 1.0f;
+		s.blendMode = (int)EBlendMode::Alpha;
+		s.textureIndex = (int)ETexture::Smoke;
+		return s;
+	}
+	inline ParticleSettings MakeArtifactPreset() // 미정렬 문제 아티팩트 재현용
+	{
+		ParticleSettings s{};
+		s.spawnRate = 15.0f;
+		s.burstCount = 200000;
+		s.loopMode = (int)ELoopMode::Infinite;
+		s.loopDuration = 1.7f;
+		s.lifeTimeMin = 4.0f;   s.lifeTimeMax = 5.0f;
+		s.speedMin = 0.5f;      s.speedMax = 1.0f;
+		s.spinSpeedMin = 0.0f;  s.spinSpeedMax = 20.0f;
+		s.initAngleMin = 0.0f;  s.initAngleMax = 360.0f;
+		s.sizeMode = (int)EUniformMode::Uniform;
+		s.sizeMin[0] = 0.45f;   s.sizeMin[1] = 0.45f; // 나중에 작은 걸로 보고 싶으면 슬라이더에서 0.1f로 조정(uniform)
+		s.dirSpread = 0.945f;
+		s.posSpread = 0.3f;
 		s.startColor[0] = 1.0f; s.startColor[1] = 0.0f; s.startColor[2] = 0.0f; s.startColor[3] = 1.0f; // 빨강
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.endColor[0] = 0.0f;   s.endColor[1] = 0.0f;   s.endColor[2] = 1.0f;   s.endColor[3] = 1.0f;   // 파랑
@@ -69,18 +91,25 @@ namespace GP
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
 	}
-
-	inline void DrawParticlePanel(ParticleSettings& s)
+	inline bool DrawParticlePanel(ParticleSettings& s, bool& paused)
 	{
+		bool restart = false;
+
 		if (!ImGui::Begin("Particle Tuning"))
 		{
 			ImGui::End();
-			return;
+			return restart;
 		}
 
-		if (ImGui::Button("Fire")) s = MakeFirePreset();
+		if (ImGui::Button("Fire")) { s = MakeFirePreset(); restart = true; }
 		ImGui::SameLine();
-		if (ImGui::Button("Smoke")) s = MakeSmokePreset();
+		if (ImGui::Button("Smoke")) { s = MakeSmokePreset(); restart = true; }
+		ImGui::SameLine();
+		if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
+		ImGui::SameLine();
+		if (ImGui::Button("Restart")) restart = true;
+		ImGui::SameLine();
+		ImGui::Checkbox("Pause", &paused);
 
 		ImGui::Separator();
 
@@ -88,7 +117,10 @@ namespace GP
 		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
 		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha"};
 		static const char* kTextureNames[(int)ETexture::Count] = { "Fire", "Smoke", "Spark" };
-
+		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
+		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
+		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
+	
 		for (int g = 0; g < (int)EParamGroup::Count; ++g)
 		{
 			// 접혀있으면(false) 스킵
@@ -108,8 +140,31 @@ namespace GP
 				case EParamType::Float3: ImGui::SliderFloat3(p.name, (float*)ptr, p.minV, p.maxV); break;
 				}
 			}
+			if (g == (int)EParamGroup::Emitter)
+			{
+				ImGui::Combo("Loop Mode", &s.loopMode, kLoopModeNames, (int)ELoopMode::Count);
+				ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
+				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
+					ImGui::SliderInt("Loop Count", &s.loopCount, 1, 20);
+			}
 			if (g == (int)EParamGroup::Emit)
 			{
+				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Count);
+				switch ((EShapeType)s.shapeType)
+				{
+				case EShapeType::Point:
+					break;                                   
+				case EShapeType::Box:
+					ImGui::SliderFloat3("Box Extents", s.boxExtents, 0.0f, 20.0f);
+					break;
+				case EShapeType::Sphere:
+					ImGui::SliderFloat("Sphere Radius", &s.sphereRadius, 0.0f, 10.0f);
+					ImGui::Checkbox("Surface Only", &s.sphereSurfaceOnly);
+					break;
+				}
+				ImGui::Combo("Velocity Mode", &s.velocityMode, kVelocityNames, (int)EVelocityMode::Count);
+				if ((EVelocityMode)s.velocityMode == EVelocityMode::VelocityInCone)
+					ImGui::SliderFloat("Cone Angle", &s.coneAngle, 0.0f, 89.0f);
 				ImGui::Combo("Size Mode", &s.sizeMode, kSizeModeNames, (int)EUniformMode::Count);
 				switch ((EUniformMode)s.sizeMode)
 				{
@@ -135,5 +190,6 @@ namespace GP
 		}
 
 		ImGui::End();
+		return restart;
 	}
 }

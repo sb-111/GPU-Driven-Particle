@@ -24,6 +24,16 @@
 #define BLEND_ADDITIVE_MODE 0
 #define BLEND_ALPHA_MODE 1
 
+// Shape Type: (Emit 그룹에서 방출 모양 결정용)
+#define POINT_TYPE 0
+#define BOX_TYPE 1
+#define SPHERE_TYPE 2
+#define CONE_TYPE 3
+
+#define VELOCITY_MODE 0
+#define VELOCITY_FROM_POINT_MODE 1
+#define VELOCITY_IN_CONE_MODE 2
+
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -77,7 +87,7 @@
 		float3 sizeMin;
 
 		float3 sizeMax;
-		float pad_size;
+		int shapeType;
 
 		float3 gravity;
 		uint randomeSeed;
@@ -86,6 +96,13 @@
 		float posSpread;
 		float pad0;
 		float pad1;
+
+		float3 shapeData;
+		int velocityMode;
+
+		// 콘 앵글 추가하기 (velocity용)
+		float coneAngle;
+		float3 pad2;
 	};
 	struct GP_CB_ALIGN ParticleDrawCB
 	{

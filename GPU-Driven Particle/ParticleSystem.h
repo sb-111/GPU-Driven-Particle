@@ -39,7 +39,7 @@ namespace GP {
 		void UpdateGPU(ComputeContext& cpt);
 		void Draw(GraphicsContext& gfx, const Camera& camera);
 		void EndFrame();
-
+		void ResetEmitter() { m_Emitter.ResetEmitter(); }
 		ParticleSettings& GetSettings() { return m_Settings; } 
 	private:
 		// UpdateGPU의 내부 패스들 
