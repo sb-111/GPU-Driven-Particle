@@ -120,6 +120,7 @@ namespace GP
 		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
 		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
 		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
+		static const char* kAlignmentModeNames[(int)EAlignmentMode::Count] = { "Unaligned", "Velocity aligned"};
 	
 		for (int g = 0; g < (int)EParamGroup::Count; ++g)
 		{
@@ -185,6 +186,7 @@ namespace GP
 			if (g == (int)EParamGroup::Renderer)
 			{
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
+				ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
 				ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
 			}
 		}

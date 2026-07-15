@@ -16,6 +16,7 @@ namespace GP
 	enum class ETexture : int {Fire, Smoke, Spark, Count};
 	enum class EShapeType: int {Point, Box, Sphere, Cone, Count};
 	enum class EVelocityMode : int { Velocity, VelocityFromPoint, VelocityInCone, Count};
+	enum class EAlignmentMode : int { UnAligned, VelocityAligned, Count}; // up을 뭐로 정의할지: 카메라 up, 속도벡터를 쿼드에 투영한 걸 up
 	// ImGui 튜닝 값 모은 구조체 
 	struct ParticleSettings
 	{
@@ -58,6 +59,7 @@ namespace GP
 
 		// Renderer
 		int blendMode = (int)EBlendMode::Additive;
+		int alignmentMode = (int)EAlignmentMode::UnAligned;
 		int textureIndex = (int)ETexture::Fire;
 
 	};

@@ -37,9 +37,6 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	float2 scaledSize = p.size.xy * sizeScale;
 
 	float age = p.initialLife - p.lifeTime; // 증가하는 값
-	float angleZ = p.angle.z + p.spinSpeed * age;
-	float s = sin(angleZ);
-	float c = cos(angleZ);
 
 	// Scale
 	float3x3 scaleMat = float3x3(
@@ -47,25 +44,55 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 		0, scaledSize.y, 0,
 		0, 0, 1
 	);
-	// Rotation(Z축 회전 = roll),
+	
+	// Rotation(Z축 회전 = roll) - UnAlignment에서 스핀용 
+	float angleZ = (drawParams.alignmentMode == ALIGN_VELOCITY_MODE) ? 0.0f : (p.angle.z + p.spinSpeed * age);
+	float s = sin(angleZ);
+	float c = cos(angleZ);
 	float3x3 rotationMatZ = float3x3(
 	    c, -s, 0,
 		s, c, 0,
 		0, 0, 1
 	);
+	
 	// Rotaion (로컬 기저 -> 카메라 기저)
-	float3 camBack = cross(drawParams.camRight, drawParams.camUp);
-	float3x3 screenAlignedRotationMat = float3x3(
-			drawParams.camRight.x, drawParams.camUp.x, camBack.x,
-			drawParams.camRight.y, drawParams.camUp.y, camBack.y,
-			drawParams.camRight.z, drawParams.camUp.z, camBack.z
+	//float3 camBack = cross(drawParams.camRight, drawParams.camUp);
+	float3 basisRight;
+	float3 basisUp;
+	float3 basisForward = -drawParams.camForward; // 카메라의 역방향이 새 기저의 forward
+	// up 성분을 뭘로 할지
+	switch (drawParams.alignmentMode)
+	{
+		case ALIGN_UNALIGNED_MODE:
+			// 카메라 up을 따라감
+			basisUp = drawParams.camUp;
+			break;
+		case ALIGN_VELOCITY_MODE:
+		{
+			// 쿼드 평면 법선과 파티클의 속도벡터 내적
+			float vDotn = dot(p.velocity, basisForward);
+			float3 projected = p.velocity - vDotn * basisForward;
+			// 투영 길이가 없으면 카메라 up으로 fallback
+			basisUp = (dot(projected, projected) > 1e-6f) ? normalize(projected) : drawParams.camUp;
+			break;
+		}
+		default:
+			basisUp = drawParams.camUp;
+			break;
+	}
+	// 두개의 외적으로 Right 구하기
+	basisRight = cross(basisUp, basisForward);
+	float3x3 basisRotationMat = float3x3(
+			// 각 열의 의미: right, up, forward (새 기저의)
+			basisRight.x, basisUp.x, basisForward.x,
+			basisRight.y, basisUp.y, basisForward.y,
+			basisRight.z, basisUp.z, basisForward.z
 	);
+	// S->R(로컬에서 z축 회전)->R(월드 기저로 옮김)
+	float3x3 finalMat = mul(basisRotationMat, mul(rotationMatZ, scaleMat));
 	
 	float2 corner = QuadVert[vid]; // Instance 내 정점
 	float3 localPos = float3(corner, 0);
-	// S->R(로컬에서 z축 회전)->R(월드 기저로 옮김)
-	float3x3 finalMat = mul(screenAlignedRotationMat, mul(rotationMatZ, scaleMat));
-	
 	float3 worldPos = p.position + mul(finalMat, localPos);
 
 	

@@ -189,13 +189,15 @@ void GP::ParticleSystem::UpdateDrawArgs(ComputeContext& cpt)
 
 void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 {
-	ParticleDrawCB cb;
+	ParticleDrawCB cb = {};
 	cb.camRight = ToF3(camera.GetRight());
 	cb.camUp = ToF3(camera.GetUp());
+	cb.camForward = ToF3(camera.GetForward());
 	DirectX::XMStoreFloat4x4(
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
 	cb.blendMode = m_Settings.blendMode;
+	cb.alignmentMode = m_Settings.alignmentMode;
 
 	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
 	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0

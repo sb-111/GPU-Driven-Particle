@@ -34,6 +34,9 @@
 #define VELOCITY_FROM_POINT_MODE 1
 #define VELOCITY_IN_CONE_MODE 2
 
+#define ALIGN_UNALIGNED_MODE 0
+#define ALIGN_VELOCITY_MODE 1
+
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -112,6 +115,9 @@
 		int blendMode;
 
 		float3 camUp;
+		int alignmentMode;
+
+		float3 camForward;
 		float pad0;
 	};
 #ifdef __cplusplus
