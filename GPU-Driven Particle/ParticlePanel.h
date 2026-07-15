@@ -38,7 +38,6 @@ namespace GP
 		{ "Init Angle Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMin), 0.0f,  360.0f  },
 		{ "Init Angle Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMax), 0.0f,  360.0f  },
 		{ "Dir Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, dirSpread),    0.0f,  5.0f },
-		{ "Pos Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, posSpread),    0.0f,  10.0f },
 		{ "Start Color",   EParamGroup::Emit,    EParamType::Color4, offsetof(ParticleSettings, startColor),   0.0f,  1.0f },
 
 		{ "Gravity",       EParamGroup::Simulate,   EParamType::Float3, offsetof(ParticleSettings, gravity),     -20.0f, 20.0f },
@@ -61,7 +60,8 @@ namespace GP
 		s.sizeMode = (int)EUniformMode::Uniform;
 		s.sizeMin[0] = 0.45f;   s.sizeMin[1] = 0.45f;
 		s.dirSpread = 0.4f;
-		s.posSpread = 0.3f;
+		s.shapeType = (int)EShapeType::Box;
+		s.boxExtents[0] = 0.3f; s.boxExtents[1] = 0.3f; s.boxExtents[2] = 0.3f;
 		s.startColor[0] = 0.7f; s.startColor[1] = 0.7f; s.startColor[2] = 0.7f; s.startColor[3] = 1.0f; 
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.endColor[0] = 0.35f;   s.endColor[1] = 0.35f;   s.endColor[2] = 0.35f;   s.endColor[3] = 1.0f;
@@ -83,7 +83,8 @@ namespace GP
 		s.sizeMode = (int)EUniformMode::Uniform;
 		s.sizeMin[0] = 0.45f;   s.sizeMin[1] = 0.45f; // 나중에 작은 걸로 보고 싶으면 슬라이더에서 0.1f로 조정(uniform)
 		s.dirSpread = 0.945f;
-		s.posSpread = 0.3f;
+		s.shapeType = (int)EShapeType::Box;
+		s.boxExtents[0] = 0.3f; s.boxExtents[1] = 0.3f; s.boxExtents[2] = 0.3f;
 		s.startColor[0] = 1.0f; s.startColor[1] = 0.0f; s.startColor[2] = 0.0f; s.startColor[3] = 1.0f; // 빨강
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.endColor[0] = 0.0f;   s.endColor[1] = 0.0f;   s.endColor[2] = 1.0f;   s.endColor[3] = 1.0f;   // 파랑
@@ -150,7 +151,7 @@ namespace GP
 			}
 			if (g == (int)EParamGroup::Emit)
 			{
-				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Count);
+				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Sphere);
 				switch ((EShapeType)s.shapeType)
 				{
 				case EShapeType::Point:
