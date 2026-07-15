@@ -21,6 +21,7 @@ namespace GP
 		float maxV;		// 최대 값
 		const char* format = "%.3f";
 		ImGuiSliderFlags flags = 0;
+		bool (*visibleIf)(const ParticleSettings&) = nullptr;
 	};
 
 	// g_ParticleParams 그룹별로 순회하며 위젯 생성
@@ -33,10 +34,14 @@ namespace GP
 		{ "LifeTime Max",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMax),  0.05f, 10.0f },
 		{ "Speed Min",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMin),     0.0f,  30.0f },
 		{ "Speed Max",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMax),     0.0f,  30.0f },
-		{ "Spin Speed Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMin), 0.0f,  360.0f  },
-		{ "Spin Speed Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMax), 0.0f,  360.0f  },
-		{ "Init Angle Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMin), 0.0f,  360.0f  },
-		{ "Init Angle Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMax), 0.0f,  360.0f  },
+		{ "Spin Speed Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMin), 0.0f,  360.0f, "%.3f", 0,
+			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
+		{ "Spin Speed Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMax), 0.0f,  360.0f, "%.3f", 0,
+			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
+		{ "Init Angle Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMin), 0.0f,  360.0f, "%.3f", 0,
+			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
+		{ "Init Angle Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMax), 0.0f,  360.0f, "%.3f", 0,
+			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
 		{ "Dir Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, dirSpread),    0.0f,  5.0f },
 		{ "Start Color",   EParamGroup::Emit,    EParamType::Color4, offsetof(ParticleSettings, startColor),   0.0f,  1.0f },
 
@@ -132,6 +137,8 @@ namespace GP
 			for (const UIParamDesc& p : g_ParticleParams)
 			{
 				if ((int)p.group != g) // 같은 그룹 아니면 스킵
+					continue;
+				if (p.visibleIf && !p.visibleIf(s)) // 보이지 않아야 하면 스킵
 					continue;
 				void* ptr = (uint8_t*)&s + p.offset;	// 인스턴스 시작 주소 + 필드 offset
 				switch (p.type)
