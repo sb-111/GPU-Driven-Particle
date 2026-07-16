@@ -11,6 +11,8 @@
 #include <fstream>
 #include "Texture.h"
 
+#include "BitonicSort.h"
+
 namespace GP { class Camera; }
 class GraphicsContext;
 class ComputeContext;
@@ -46,7 +48,8 @@ namespace GP {
 		void BindResources(ComputeContext& cpt);   
 		void KickoffPass(ComputeContext& cpt);     
 		void EmitPass(ComputeContext& cpt);        
-		void SimulatePass(ComputeContext& cpt);    
+		void SimulatePass(ComputeContext& cpt);
+		void SortPass(ComputeContext& cpt);
 		void UpdateDrawArgs(ComputeContext& cpt);  
 
 		uint32_t m_maxParticle = 0;
@@ -71,6 +74,8 @@ namespace GP {
 		GraphicsPSO m_DrawAdditivePSO, m_DrawAlphaPSO;
 
 		Texture m_SpriteTextures[(int)ETexture::Count];
+
+		BitonicSort m_BitonicSorter;
 	};
 
 
