@@ -135,7 +135,22 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
 
-	for (auto& e : m_Emitters)
+	// Emitter 거리별로 정렬 (앞에 있는 Emitter가 올라와야 자연스러움)
+	// 거리 먼 순서대로 정렬되는 게 목표 (back to front)
+	Math::Vector3 camPos = camera.GetPosition();
+	std::vector<ParticleEmitter*> sortedEmitters;
+	for (const auto& e : m_Emitters)
+	{
+		sortedEmitters.push_back(e.get());
+	}
+	std::sort(sortedEmitters.begin(), sortedEmitters.end(),
+		[&](ParticleEmitter* a, ParticleEmitter* b) {
+			float distanceA = Math::LengthSquare(a->GetPosition() - camPos);
+			float distanceB = Math::LengthSquare(b->GetPosition() - camPos);
+			return distanceA > distanceB;
+		});
+		
+	for (auto& e : sortedEmitters)
 		e->Draw(gfx, cb);
 }
 

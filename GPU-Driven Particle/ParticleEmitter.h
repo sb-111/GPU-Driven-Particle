@@ -37,6 +37,7 @@ namespace GP
 		void ResetEmitter();
 		uint32_t GetCurrentSpawnCount() const { return m_CurrentSpawnCount; }
 		ParticleSettings& GetSettings() { return m_Settings; }
+		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
 
 		// Emitter 별 Pass (Particle System이 호출)
 		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams);
