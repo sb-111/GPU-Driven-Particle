@@ -38,7 +38,7 @@ namespace GP {
 		// 이미터 갱신, CB 준비
 		void Update(float dt);
 
-		void UpdateGPU(ComputeContext& cpt);
+		void UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams);
 		void Draw(GraphicsContext& gfx, const Camera& camera);
 		void EndFrame();
 		void ResetEmitter() { m_Emitter.ResetEmitter(); }
@@ -58,6 +58,7 @@ namespace GP {
 			Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f))
 		};
 		ParticleFrameCB m_FrameParams = {};
+		ParticleViewCB m_ViewParams = {};
 
 		// GPU 리소스
 		StructuredBuffer m_Pool;
@@ -76,6 +77,7 @@ namespace GP {
 		Texture m_SpriteTextures[(int)ETexture::Count];
 
 		BitonicSort m_BitonicSorter;
+		StructuredBuffer m_SortKeys;
 	};
 
 

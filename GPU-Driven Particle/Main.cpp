@@ -105,7 +105,12 @@ public:
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
 
 		// =============== 컴퓨트: 파티클 시뮬레이션 ==============
-		m_Particles.UpdateGPU(gfx.GetComputeContext());
+		// View 데이터 (이미터/시스템은 카메라를 모름)
+		ParticleViewCB viewCB;
+		Math::Vector3 camPos = m_Camera.GetPosition();
+		viewCB.camPos = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
+		viewCB.pad0 = 0.0f;
+		m_Particles.UpdateGPU(gfx.GetComputeContext(), viewCB);
 
 		// =============== 그래픽스 공통 준비 ==============
 		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true); // RTV
@@ -144,7 +149,7 @@ private:
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
 	CameraController m_CamController{ m_Camera };
 
-	static const uint32_t m_ParticleNum = 1000000;
+	static const uint32_t m_ParticleNum = 1 << 20;
 	ParticleSystem m_Particles;
 
 	// 씬(바닥)

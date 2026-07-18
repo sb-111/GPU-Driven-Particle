@@ -5,11 +5,16 @@ cbuffer ParticleCB : register(b0)
 {
 	ParticleFrameCB params;
 };
+cbuffer ViewCB : register(b1)
+{
+	ParticleViewCB viewParams;
+};
 RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0); // UAV
 RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer AliveList2 : register(u2);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
+RWStructuredBuffer<float> SortKeys : register(u6);
 
 [numthreads(64,1,1)]
 void main(uint3 id : SV_DispatchThreadID)
@@ -41,6 +46,7 @@ void main(uint3 id : SV_DispatchThreadID)
 		uint prevAlive;
 		Counters.InterlockedAdd(COUNTER_AFTER_SIMULATE, 1, prevAlive);
 		AliveList2.Store(prevAlive * 4, index);
+		SortKeys[prevAlive] = -length(viewParams.camPos - p.position); // 거리에 -를 붙여야 정렬 후에 back to front
 	}
 	
 }

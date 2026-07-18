@@ -107,6 +107,13 @@
 		float coneAngle;
 		float3 pad2;
 	};
+	// View 파라미터
+	struct GP_CB_ALIGN ParticleViewCB
+	{
+		float3 camPos;
+		float pad0;
+	};
+
 	struct GP_CB_ALIGN ParticleDrawCB
 	{
 		float4x4 viewProj;

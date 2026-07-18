@@ -42,6 +42,8 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	};
 	m_IndirectArgsBuffer.Create(L"IndirectArgsBuffer", 12, sizeof(uint32_t), argsInit.data());
 
+	m_SortKeys.Create(L"Sort Keys", m_maxParticle, sizeof(float));
+
 	// 셰이더 컴파일
 	auto partVS = CompileShader(L"ParticleVS.hlsl", L"main", L"vs_6_2");
 	auto partPS = CompileShader(L"ParticlePS.hlsl", L"main", L"ps_6_2");
@@ -51,15 +53,19 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	ASSERT(partVS && partPS && particleKickoffCS && particleEmitCS && particleSimulateCS
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
+	m_BitonicSorter.Init();
+
 	// 루트 시그 - 컴퓨트용
-	m_ComputeRootSig.Reset(7, 0);
-	m_ComputeRootSig[0].InitAsConstantBuffer(0); // b0
+	m_ComputeRootSig.Reset(9, 0);
+	m_ComputeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
 	m_ComputeRootSig[1].InitAsBufferUAV(0);		// u0
 	m_ComputeRootSig[2].InitAsBufferUAV(1);		// u1
 	m_ComputeRootSig[3].InitAsBufferUAV(2);		// u2
 	m_ComputeRootSig[4].InitAsBufferUAV(3);		// u3
 	m_ComputeRootSig[5].InitAsBufferUAV(4);		// u4
 	m_ComputeRootSig[6].InitAsBufferUAV(5);		// u5
+	m_ComputeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
+	m_ComputeRootSig[8].InitAsBufferUAV(6); // u6 
 	m_ComputeRootSig.Finalize(L"ParticleCompute");
 
 	m_KickoffPSO.SetRootSignature(m_ComputeRootSig);
@@ -115,12 +121,14 @@ void GP::ParticleSystem::Update(float dt)
 	m_FrameParams = m_Emitter.MakeParams(m_Settings, dt);
 }
 
-void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt)
+void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams)
 {
+	m_ViewParams = viewParams;
 	BindResources(cpt);
 	KickoffPass(cpt);
 	EmitPass(cpt);
 	SimulatePass(cpt);
+	SortPass(cpt);
 	UpdateDrawArgs(cpt);
 }
 
@@ -133,6 +141,7 @@ void GP::ParticleSystem::BindResources(ComputeContext& cpt)
 	cpt.TransitionResource(m_DeadList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
 	// 루트 시그 + 버퍼 바인딩
 	cpt.SetRootSignature(m_ComputeRootSig);
@@ -142,8 +151,10 @@ void GP::ParticleSystem::BindResources(ComputeContext& cpt)
 	cpt.SetBufferUAV(4, m_DeadList);			// u3
 	cpt.SetBufferUAV(5, m_Counters);			// u4
 	cpt.SetBufferUAV(6, m_IndirectArgsBuffer);	// u5
+	cpt.SetBufferUAV(8, m_SortKeys);			// u6
 
 	cpt.SetDynamicConstantBufferView(0, sizeof(m_FrameParams), &m_FrameParams);
+	cpt.SetDynamicConstantBufferView(7, sizeof(m_ViewParams), &m_ViewParams); // b1
 }
 
 void GP::ParticleSystem::KickoffPass(ComputeContext& cpt)
@@ -171,8 +182,19 @@ void GP::ParticleSystem::SimulatePass(ComputeContext& cpt)
 	cpt.InsertUAVBarrier(m_DeadList);
 	cpt.InsertUAVBarrier(m_Counters);
 
+	// SortKeys 버퍼 양수 최대로 밀기
+	cpt.FillBuffer(m_SortKeys, 0, 1e30f, m_maxParticle * sizeof(float));
+	cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
 	cpt.SetPipelineState(m_SimulatePSO);
 	cpt.DispatchIndirect(m_IndirectArgsBuffer, ARGS_SIMULATE_DISPATCH_X);
+}
+
+void GP::ParticleSystem::SortPass(ComputeContext& cpt)
+{
+	if (m_Settings.blendMode != (int)EBlendMode::Alpha)
+		return;
+	m_BitonicSorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_maxParticle);
 }
 
 void GP::ParticleSystem::UpdateDrawArgs(ComputeContext& cpt)
