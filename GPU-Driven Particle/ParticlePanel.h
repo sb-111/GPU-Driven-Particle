@@ -194,6 +194,8 @@ namespace GP
 			if (g == (int)EParamGroup::Renderer)
 			{
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
+				if (s.blendMode == (int)EBlendMode::Alpha)
+					ImGui::Checkbox("Depth Sort", &s.sortEnabled);
 				ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
 				ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
 			}

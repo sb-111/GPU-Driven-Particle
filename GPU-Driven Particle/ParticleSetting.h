@@ -61,6 +61,7 @@ namespace GP
 		int blendMode = (int)EBlendMode::Additive;
 		int alignmentMode = (int)EAlignmentMode::UnAligned;
 		int textureIndex = (int)ETexture::Fire;
+		bool sortEnabled = true; // 알파 모드에서만 의미 있음, before/after 비교용
 
 	};
 }

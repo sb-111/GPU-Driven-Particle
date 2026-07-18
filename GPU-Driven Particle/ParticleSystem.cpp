@@ -192,7 +192,7 @@ void GP::ParticleSystem::SimulatePass(ComputeContext& cpt)
 
 void GP::ParticleSystem::SortPass(ComputeContext& cpt)
 {
-	if (m_Settings.blendMode != (int)EBlendMode::Alpha)
+	if (m_Settings.blendMode != (int)EBlendMode::Alpha || !m_Settings.sortEnabled)
 		return;
 	m_BitonicSorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_maxParticle);
 }
