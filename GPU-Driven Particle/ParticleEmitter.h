@@ -1,23 +1,57 @@
 ﻿#pragma once
+#include "pch.h"
 #include "ParticleShared.h"
 #include "ParticleSetting.h"
 #include "VectorMath.h"
+#include "GpuBuffer.h"
+#include "RootSignature.h"
+#include "PipelineState.h"
+#include "Texture.h"
+#include "BitonicSort.h"
+
+class ComputeContext;
+class GraphicsContext;
 
 namespace GP
 {
+	// Emitter들이 공유하는 자원
+	struct ParticleSharedResources
+	{
+		RootSignature computeRootSig;
+		RootSignature graphicsRootSig;
+		ComputePSO kickoffPSO, emitPSO, simulatePSO;
+		GraphicsPSO drawAdditivePSO, drawAlphaPSO;
+		Texture spriteTextures[(int)ETexture::Count];
+		BitonicSort sorter;
+	};
+
 	class ParticleEmitter
 	{
 	public:
 		explicit ParticleEmitter(const Math::OrthogonalTransform& transform)
 			: m_EmitterTransform(transform) {}
-		void Init();
-		void Update(float dt, const ParticleSettings& s); // 튜닝 값은 Settings에서 읽음
+		void Init(uint32_t maxParticles, ParticleSharedResources* shared, uint32_t index);
+
+		// 루프 및 버스트 제어, 요청 스폰량 계산 + FrameCB 준비
+		void Update(float dt);
 		void ResetEmitter();
 		uint32_t GetCurrentSpawnCount() const { return m_CurrentSpawnCount; }
+		ParticleSettings& GetSettings() { return m_Settings; }
 
-		// ParticleSettings -> ParticleFrameCB
-		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const; 
+		// Emitter 별 Pass (Particle System이 호출)
+		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams);
+		void KickoffPass(ComputeContext& cpt);
+		void EmitPass(ComputeContext& cpt);
+		void SimulatePass(ComputeContext& cpt);
+		void SortPass(ComputeContext& cpt);
+		void UpdateDrawArgs(ComputeContext& cpt);
+		void Draw(GraphicsContext& gfx, ParticleDrawCB cb);
+		void EndFrame();
+
 	private:
+		// ParticleSettings -> ParticleFrameCB
+		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const;
+
 		Math::OrthogonalTransform m_EmitterTransform;
 		float m_AgeInLoop = 0.0f;	// 현재 루프에서 경과 시간
 		bool m_Active = true;		// 이미터 생존 여부
@@ -28,7 +62,21 @@ namespace GP
 		uint32_t m_CurrentSpawnCount = 0; // 이번 프레임 스폰 수
 		uint32_t m_FrameCount = 0;		  // 프레임 카운터
 
+		uint32_t m_maxParticle = 0;
+		ParticleSettings m_Settings;
+		ParticleFrameCB m_FrameParams = {};
+		//ParticleViewCB m_ViewParams = {};
 
+		// GPU Resource - 이미터마다 독립적
+		StructuredBuffer m_Pool;
+		ByteAddressBuffer m_AliveList1, m_AliveList2, m_DeadList, m_Counters;
+		IndirectArgsBuffer m_IndirectArgsBuffer;
+		StructuredBuffer m_SortKeys;
+		ByteAddressBuffer* m_CurrentAlive = &m_AliveList1; // 핑퐁 스왑용
+		ByteAddressBuffer* m_NewAlive = &m_AliveList2;
+
+		// Emitter들이 공유
+		ParticleSharedResources* m_Shared = nullptr;
 	};
 
 

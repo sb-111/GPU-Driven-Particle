@@ -17,33 +17,17 @@ static inline GP::float3 ToF3(const Math::Vector3& v)
 	return r;
 }
 
-void GP::ParticleSystem::Init(uint32_t maxParticles)
+void GP::ParticleSystem::Init(uint32_t maxParticlesPerEmitter)
 {
-	// 버퍼 초기화
-	m_maxParticle = maxParticles;
-	std::vector<Particle> zeroInit(maxParticles);
-	m_Pool.Create(L"Particle Pool", maxParticles, sizeof(Particle), zeroInit.data());
-	m_AliveList1.Create(L"Alive1", maxParticles, sizeof(uint32_t));
-	m_AliveList2.Create(L"Alive2", maxParticles, sizeof(uint32_t));
-	std::vector<uint32_t> deadInit(maxParticles);
-	for (uint32_t i = 0; i < maxParticles; i++)
-	{
-		deadInit[i] = i;
-	}
-	m_DeadList.Create(L"Dead", maxParticles, sizeof(uint32_t), deadInit.data());
+	m_maxParticle = maxParticlesPerEmitter;
+	InitSharedResources();
 
-	std::vector<uint32_t> counterInit = { 0, maxParticles, 0, 0 }; // alive, dead, realEmit, afterSim
-	m_Counters.Create(L"Counters", 4, sizeof(uint32_t), counterInit.data());
+	// 기본 Emitter 하나로 시작
+	AddEmitter(Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)));
+}
 
-	std::vector<uint32_t> argsInit = {
-			0, 1, 1, 0, // emit dispatch
-			0, 1, 1, 0, // simulate dispatch
-			6, 0, 0, 0 // draw: 파티클당 정점 6개 고정, 인스턴스 수는 GPU가 채움
-	};
-	m_IndirectArgsBuffer.Create(L"IndirectArgsBuffer", 12, sizeof(uint32_t), argsInit.data());
-
-	m_SortKeys.Create(L"Sort Keys", m_maxParticle, sizeof(float));
-
+void GP::ParticleSystem::InitSharedResources()
+{
 	// 셰이더 컴파일
 	auto partVS = CompileShader(L"ParticleVS.hlsl", L"main", L"vs_6_2");
 	auto partPS = CompileShader(L"ParticlePS.hlsl", L"main", L"ps_6_2");
@@ -53,164 +37,96 @@ void GP::ParticleSystem::Init(uint32_t maxParticles)
 	ASSERT(partVS && partPS && particleKickoffCS && particleEmitCS && particleSimulateCS
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
-	m_BitonicSorter.Init();
+	m_Shared.sorter.Init();
 
 	// 루트 시그 - 컴퓨트용
-	m_ComputeRootSig.Reset(9, 0);
-	m_ComputeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
-	m_ComputeRootSig[1].InitAsBufferUAV(0);		// u0
-	m_ComputeRootSig[2].InitAsBufferUAV(1);		// u1
-	m_ComputeRootSig[3].InitAsBufferUAV(2);		// u2
-	m_ComputeRootSig[4].InitAsBufferUAV(3);		// u3
-	m_ComputeRootSig[5].InitAsBufferUAV(4);		// u4
-	m_ComputeRootSig[6].InitAsBufferUAV(5);		// u5
-	m_ComputeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
-	m_ComputeRootSig[8].InitAsBufferUAV(6); // u6 
-	m_ComputeRootSig.Finalize(L"ParticleCompute");
+	m_Shared.computeRootSig.Reset(9, 0);
+	m_Shared.computeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
+	m_Shared.computeRootSig[1].InitAsBufferUAV(0);		// u0
+	m_Shared.computeRootSig[2].InitAsBufferUAV(1);		// u1
+	m_Shared.computeRootSig[3].InitAsBufferUAV(2);		// u2
+	m_Shared.computeRootSig[4].InitAsBufferUAV(3);		// u3
+	m_Shared.computeRootSig[5].InitAsBufferUAV(4);		// u4
+	m_Shared.computeRootSig[6].InitAsBufferUAV(5);		// u5
+	m_Shared.computeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
+	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
+	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
-	m_KickoffPSO.SetRootSignature(m_ComputeRootSig);
-	m_KickoffPSO.SetComputeShader(particleKickoffCS->GetBufferPointer(), particleKickoffCS->GetBufferSize());
-	m_KickoffPSO.Finalize();
+	m_Shared.kickoffPSO.SetRootSignature(m_Shared.computeRootSig);
+	m_Shared.kickoffPSO.SetComputeShader(particleKickoffCS->GetBufferPointer(), particleKickoffCS->GetBufferSize());
+	m_Shared.kickoffPSO.Finalize();
 
-	m_EmitPSO.SetRootSignature(m_ComputeRootSig);
-	m_EmitPSO.SetComputeShader(particleEmitCS->GetBufferPointer(), particleEmitCS->GetBufferSize());
-	m_EmitPSO.Finalize();
+	m_Shared.emitPSO.SetRootSignature(m_Shared.computeRootSig);
+	m_Shared.emitPSO.SetComputeShader(particleEmitCS->GetBufferPointer(), particleEmitCS->GetBufferSize());
+	m_Shared.emitPSO.Finalize();
 
-	m_SimulatePSO.SetRootSignature(m_ComputeRootSig);
-	m_SimulatePSO.SetComputeShader(particleSimulateCS->GetBufferPointer(), particleSimulateCS->GetBufferSize());
-	m_SimulatePSO.Finalize();
+	m_Shared.simulatePSO.SetRootSignature(m_Shared.computeRootSig);
+	m_Shared.simulatePSO.SetComputeShader(particleSimulateCS->GetBufferPointer(), particleSimulateCS->GetBufferSize());
+	m_Shared.simulatePSO.Finalize();
 
 	// 루트 시그 - 드로우용
 	// b0 카메라, t0 풀, t1 alive
-	m_GraphicsRootSig.Reset(5, 1); // 스태틱 샘플러 1개
-	m_GraphicsRootSig[0].InitAsConstantBuffer(0);
-	m_GraphicsRootSig[1].InitAsConstantBuffer(1);
-	m_GraphicsRootSig[2].InitAsBufferSRV(0);
-	m_GraphicsRootSig[3].InitAsBufferSRV(1);
-	m_GraphicsRootSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
-	m_GraphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_Shared.graphicsRootSig.Reset(5, 1); // 스태틱 샘플러 1개
+	m_Shared.graphicsRootSig[0].InitAsConstantBuffer(0);
+	m_Shared.graphicsRootSig[1].InitAsConstantBuffer(1);
+	m_Shared.graphicsRootSig[2].InitAsBufferSRV(0);
+	m_Shared.graphicsRootSig[3].InitAsBufferSRV(1);
+	m_Shared.graphicsRootSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_Shared.graphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw");
 
-	m_GraphicsRootSig.Finalize(L"ParticleDraw"); 
-
-	m_DrawAdditivePSO.SetRootSignature(m_GraphicsRootSig);
+	m_Shared.drawAdditivePSO.SetRootSignature(m_Shared.graphicsRootSig);
 	// 인풋 레이아웃 X - 정점 버퍼 대신 SV_VertexID로 SRV(풀)를 직접 읽음
-	m_DrawAdditivePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	m_DrawAdditivePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
-	m_DrawAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
-	m_DrawAdditivePSO.SetRasterizerState(RasterizerDefault);
-	m_DrawAdditivePSO.SetBlendState(BlendAdditive);              // 가산블렌딩
-	m_DrawAdditivePSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
-	m_DrawAdditivePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
-	m_DrawAdditivePSO.Finalize();
+	m_Shared.drawAdditivePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	m_Shared.drawAdditivePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
+	m_Shared.drawAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
+	m_Shared.drawAdditivePSO.SetRasterizerState(RasterizerDefault);
+	m_Shared.drawAdditivePSO.SetBlendState(BlendAdditive);              // 가산블렌딩
+	m_Shared.drawAdditivePSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
+	m_Shared.drawAdditivePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
+	m_Shared.drawAdditivePSO.Finalize();
 
-	m_DrawAlphaPSO = m_DrawAdditivePSO;
-	m_DrawAlphaPSO.SetBlendState(BlendTraditional);
-	m_DrawAlphaPSO.Finalize();
+	m_Shared.drawAlphaPSO = m_Shared.drawAdditivePSO;
+	m_Shared.drawAlphaPSO.SetBlendState(BlendTraditional);
+	m_Shared.drawAlphaPSO.Finalize();
 
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =
 		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds" };
 	for (int i = 0; i < (int)ETexture::Count; ++i)
-		ASSERT(LoadDDSTexture(m_SpriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
-	
+		ASSERT(LoadDDSTexture(m_Shared.spriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
+}
+
+void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)
+{
+	auto emitter = std::make_unique<ParticleEmitter>(transform);
+	emitter->Init(m_maxParticle, &m_Shared, (uint32_t)m_Emitters.size());
+	m_Emitters.push_back(std::move(emitter));
 }
 
 void GP::ParticleSystem::Update(float dt)
 {
-	m_Emitter.Update(dt, m_Settings);
-	m_FrameParams = m_Emitter.MakeParams(m_Settings, dt);
+	for (auto& e : m_Emitters)
+		e->Update(dt);
 }
 
 void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams)
 {
-	m_ViewParams = viewParams;
-	BindResources(cpt);
-	KickoffPass(cpt);
-	EmitPass(cpt);
-	SimulatePass(cpt);
-	SortPass(cpt);
-	UpdateDrawArgs(cpt);
-}
-
-void GP::ParticleSystem::BindResources(ComputeContext& cpt)
-{
-	// UAV 전환
-	cpt.TransitionResource(m_Pool, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(*m_CurrentAlive, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(*m_NewAlive, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(m_DeadList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-	// 루트 시그 + 버퍼 바인딩
-	cpt.SetRootSignature(m_ComputeRootSig);
-	cpt.SetBufferUAV(1, m_Pool);				// u0
-	cpt.SetBufferUAV(2, *m_CurrentAlive);		// u1
-	cpt.SetBufferUAV(3, *m_NewAlive);			// u2
-	cpt.SetBufferUAV(4, m_DeadList);			// u3
-	cpt.SetBufferUAV(5, m_Counters);			// u4
-	cpt.SetBufferUAV(6, m_IndirectArgsBuffer);	// u5
-	cpt.SetBufferUAV(8, m_SortKeys);			// u6
-
-	cpt.SetDynamicConstantBufferView(0, sizeof(m_FrameParams), &m_FrameParams);
-	cpt.SetDynamicConstantBufferView(7, sizeof(m_ViewParams), &m_ViewParams); // b1
-}
-
-void GP::ParticleSystem::KickoffPass(ComputeContext& cpt)
-{
-	cpt.SetPipelineState(m_KickoffPSO);
-	cpt.Dispatch(1, 1, 1);
-}
-
-void GP::ParticleSystem::EmitPass(ComputeContext& cpt)
-{
-	// 대기: 킥오프의 카운터 쓰기(COUNTER_REAL) 완료
-	cpt.InsertUAVBarrier(m_Counters);
-	// 대기 겸 용도 변경: 지시서를 커맨드 프로세서가 읽을 수 있게
-	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-
-	cpt.SetPipelineState(m_EmitPSO);
-	cpt.DispatchIndirect(m_IndirectArgsBuffer, ARGS_EMIT_DISPATCH_X);
-}
-
-void GP::ParticleSystem::SimulatePass(ComputeContext& cpt)
-{
-	// 대기: emit의 UAV 쓰기
-	cpt.InsertUAVBarrier(*m_CurrentAlive);
-	cpt.InsertUAVBarrier(m_Pool);
-	cpt.InsertUAVBarrier(m_DeadList);
-	cpt.InsertUAVBarrier(m_Counters);
-
-	// SortKeys 버퍼 양수 최대로 밀기
-	cpt.FillBuffer(m_SortKeys, 0, 1e30f, m_maxParticle * sizeof(float));
-	cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-	cpt.SetPipelineState(m_SimulatePSO);
-	cpt.DispatchIndirect(m_IndirectArgsBuffer, ARGS_SIMULATE_DISPATCH_X);
-}
-
-void GP::ParticleSystem::SortPass(ComputeContext& cpt)
-{
-	if (m_Settings.blendMode != (int)EBlendMode::Alpha || !m_Settings.sortEnabled)
-		return;
-	m_BitonicSorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_maxParticle);
-}
-
-void GP::ParticleSystem::UpdateDrawArgs(ComputeContext& cpt)
-{
-	// simulation이 확정한 생존자 수를 args 복사
-	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	cpt.CopyBufferRegion(m_IndirectArgsBuffer, ARGS_DRAW_INSTANCE_COUNT, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
-	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
-
-	// Draw가 읽을 리소스 SRV 전환
-	cpt.TransitionResource(m_Pool, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	cpt.TransitionResource(*m_NewAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	// 모든 Emitter에 대해 Pass 실행
+	for (auto& e : m_Emitters)
+	{
+		e->BindResources(cpt, viewParams);
+		e->KickoffPass(cpt);
+		e->EmitPass(cpt);
+		e->SimulatePass(cpt);
+		e->SortPass(cpt);
+		e->UpdateDrawArgs(cpt);
+	}
 }
 
 void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 {
+	// 카메라 관련은 모든 Emitter 공통
 	ParticleDrawCB cb = {};
 	cb.camRight = ToF3(camera.GetRight());
 	cb.camUp = ToF3(camera.GetUp());
@@ -218,22 +134,13 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 	DirectX::XMStoreFloat4x4(
 		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
 		camera.GetViewProj());
-	cb.blendMode = m_Settings.blendMode;
-	cb.alignmentMode = m_Settings.alignmentMode;
 
-	gfx.SetRootSignature(m_GraphicsRootSig);	// 루트 인자보다 먼저
-	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0
-	gfx.SetDynamicConstantBufferView(1, sizeof(m_FrameParams), &m_FrameParams);
-	gfx.SetBufferSRV(2, m_Pool);				// t0
-	gfx.SetBufferSRV(3, *m_NewAlive);			// t1
-	gfx.SetDynamicDescriptor(4, 0, m_SpriteTextures[m_Settings.textureIndex].GetSRV());
-	// 블렌드 모드에 따른 다른 PSO 설정
-	gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_DrawAdditivePSO : m_DrawAlphaPSO);
-	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
+	for (auto& e : m_Emitters)
+		e->Draw(gfx, cb);
 }
 
 void GP::ParticleSystem::EndFrame()
 {
-	std::swap(m_CurrentAlive, m_NewAlive);
+	for (auto& e : m_Emitters)
+		e->EndFrame();
 }

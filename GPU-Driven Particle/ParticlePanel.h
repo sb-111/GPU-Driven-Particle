@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "ParticleSetting.h"
+#include "ParticleSystem.h"
 #include "imgui/imgui.h"
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 
 
 namespace GP
@@ -97,15 +99,43 @@ namespace GP
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
 	}
-	inline bool DrawParticlePanel(ParticleSettings& s, bool& paused)
+	inline void DrawParticlePanel(ParticleSystem& system, bool& paused)
 	{
-		bool restart = false;
-
 		if (!ImGui::Begin("Particle Tuning"))
 		{
 			ImGui::End();
-			return restart;
+			return;
 		}
+
+		// Emitter 선택 및 추가
+		static int selected = 0;
+		int emitterCount = (int)system.GetEmitterCount();
+		if (selected >= emitterCount) selected = emitterCount - 1;
+
+		char curName[32];
+		sprintf_s(curName, "Emitter %d", selected); // Emitter 네임
+		ImGui::SetNextItemWidth(120.0f);
+		if (ImGui::BeginCombo("##EmitterSelect", curName))
+		{
+			for (int i = 0; i < emitterCount; ++i)
+			{
+				char name[32];
+				sprintf_s(name, "Emitter %d", i);
+				// 클릭되면 true -> selected 변경
+				if (ImGui::Selectable(name, i == selected)) selected = i;
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Add Emitter") && emitterCount < 8)
+		{
+			// Emitter 추가
+			system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(3.0f * emitterCount, 0.0f, 0.0f)));
+			selected = emitterCount;
+		}
+		// 선택된 Emitter의 Settings를 편집
+		ParticleSettings& s = system.GetEmitter(selected).GetSettings();
+		bool restart = false;
 
 		if (ImGui::Button("Fire")) { s = MakeFirePreset(); restart = true; }
 		ImGui::SameLine();
@@ -202,6 +232,9 @@ namespace GP
 		}
 
 		ImGui::End();
-		return restart;
+
+		// 프리셋/재시작 버튼 눌린 경우, 선택된 Emitter만 리셋
+		if (restart)
+			system.GetEmitter(selected).ResetEmitter();
 	}
 }
