@@ -114,25 +114,23 @@
 		float coneAngle;
 		float3 pad2;
 	};
-	// View 파라미터
+	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB
-	{
-		float3 camPos;
-		float pad0;
-	};
-
-	struct GP_CB_ALIGN ParticleDrawCB
 	{
 		float4x4 viewProj;
 
-		float3 camRight;
+		float3 camPos; float pad0;
+		float3 camRight; float pad1;
+		float3 camUp; float pad2;
+		float3 camForward; float pad3;
+	};
+	// Emitter 별 렌더 설정
+	struct GP_CB_ALIGN ParticleDrawCB
+	{
 		int blendMode;
-
-		float3 camUp;
 		int alignmentMode;
-
-		float3 camForward;
-		float pad0;
+		int pad0;
+		int pad1;
 	};
 #ifdef __cplusplus
 	}

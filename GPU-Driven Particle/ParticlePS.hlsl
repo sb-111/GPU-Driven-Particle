@@ -7,7 +7,7 @@ struct PSInput
 };
 Texture2D g_SpriteTex : register(t2);
 SamplerState g_LinearClamp : register(s0);
-cbuffer DrawCB : register(b0)
+cbuffer DrawCB : register(b2)
 {
 	ParticleDrawCB drawParams;
 }

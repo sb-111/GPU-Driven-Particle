@@ -239,17 +239,17 @@ void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 	cpt.TransitionResource(*m_NewAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void GP::ParticleEmitter::Draw(GraphicsContext& gfx, ParticleDrawCB cb)
+void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 {
-	cb.blendMode = m_Settings.blendMode;
-	cb.alignmentMode = m_Settings.alignmentMode;
+	ParticleDrawCB drawCB = {};
+	drawCB.blendMode = m_Settings.blendMode;
+	drawCB.alignmentMode = m_Settings.alignmentMode;
 
-	gfx.SetRootSignature(m_Shared->graphicsRootSig);	// 루트 인자보다 먼저
-	gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb); // b0
-	gfx.SetDynamicConstantBufferView(1, sizeof(m_FrameParams), &m_FrameParams);
-	gfx.SetBufferSRV(2, m_Pool);				// t0
-	gfx.SetBufferSRV(3, *m_NewAlive);			// t1
-	gfx.SetDynamicDescriptor(4, 0, m_Shared->spriteTextures[m_Settings.textureIndex].GetSRV());
+	gfx.SetDynamicConstantBufferView(1, sizeof(m_FrameParams), &m_FrameParams); // b1
+	gfx.SetDynamicConstantBufferView(2, sizeof(drawCB), &drawCB);               // b2
+	gfx.SetBufferSRV(3, m_Pool);												// t0
+	gfx.SetBufferSRV(4, *m_NewAlive);											// t1
+	gfx.SetDynamicDescriptor(5, 0, m_Shared->spriteTextures[m_Settings.textureIndex].GetSRV()); // t2
 	// 블렌드 모드에 따른 다른 PSO 설정
 	gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

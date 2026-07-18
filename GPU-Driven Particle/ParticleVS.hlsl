@@ -6,13 +6,17 @@ static const float2 QuadVert[6] =
     float2(-1, -1), float2(1, -1), float2(1, 1) // 좌하→우하→우상 (CCW)
 };
 
-cbuffer VSConstants : register(b0)
+cbuffer ViewCB : register(b0)
 {
-	ParticleDrawCB drawParams;
+	ParticleViewCB viewParams;
 }
-cbuffer ParticleParams : register(b1)
+cbuffer FrameCB : register(b1)
 {
 	ParticleFrameCB frameParams;
+}
+cbuffer DrawCB : register(b2)
+{
+	ParticleDrawCB drawParams;
 }
 StructuredBuffer<Particle> g_ParticleBuffer : register(t0);
 ByteAddressBuffer NewAliveList : register(t1);
@@ -59,13 +63,13 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	//float3 camBack = cross(drawParams.camRight, drawParams.camUp);
 	float3 basisRight;
 	float3 basisUp;
-	float3 basisForward = -drawParams.camForward; // 카메라의 역방향이 새 기저의 forward
+	float3 basisForward = -viewParams.camForward; // 카메라의 역방향이 새 기저의 forward
 	// up 성분을 뭘로 할지
 	switch (drawParams.alignmentMode)
 	{
 		case ALIGN_UNALIGNED_MODE:
 			// 카메라 up을 따라감
-			basisUp = drawParams.camUp;
+			basisUp = viewParams.camUp;
 			break;
 		case ALIGN_VELOCITY_MODE:
 		{
@@ -73,11 +77,11 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 			float vDotn = dot(p.velocity, basisForward);
 			float3 projected = p.velocity - vDotn * basisForward;
 			// 투영 길이가 없으면 카메라 up으로 fallback
-			basisUp = (dot(projected, projected) > 1e-6f) ? normalize(projected) : drawParams.camUp;
+			basisUp = (dot(projected, projected) > 1e-6f) ? normalize(projected) : viewParams.camUp;
 			break;
 		}
 		default:
-			basisUp = drawParams.camUp;
+			basisUp = viewParams.camUp;
 			break;
 	}
 	// 두개의 외적으로 Right 구하기
@@ -97,7 +101,7 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 
 	
 	VSOutput output = (VSOutput)0;
-	output.pos = mul(drawParams.viewProj, float4(worldPos, 1.0f));
+	output.pos = mul(viewParams.viewProj, float4(worldPos, 1.0f));
 	output.color.rgb = lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge);
 	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)
 	{

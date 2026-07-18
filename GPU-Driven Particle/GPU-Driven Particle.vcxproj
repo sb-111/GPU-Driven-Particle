@@ -160,6 +160,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
   <ItemGroup>
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="MathConvert.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticlePanel.h" />
     <ClInclude Include="ParticleSetting.h" />

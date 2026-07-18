@@ -68,6 +68,9 @@
     <ClInclude Include="BitonicSort.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="MathConvert.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\TrianglePS.hlsl">

@@ -12,6 +12,7 @@
 
 #include "Camera.h"
 #include "CameraController.h"
+#include "MathConvert.h"
 
 using namespace GameCore;
 using namespace Graphics;
@@ -22,6 +23,16 @@ __declspec(align(16)) struct VSConstants
 {
 	Math::Matrix4 viewProj;
 };
+static ParticleViewCB makeViewCB(const Camera& camera)
+{
+	ParticleViewCB cb = {};
+	cb.viewProj = ToF4x4(camera.GetViewProj());
+	cb.camPos = ToF3(camera.GetPosition());
+	cb.camUp = ToF3(camera.GetUp());
+	cb.camForward = ToF3(camera.GetForward());
+	cb.camRight = ToF3(camera.GetRight());
+	return cb;
+}
 
 class ParticleApp : public IGameApp
 {
@@ -99,13 +110,11 @@ public:
 	void RenderScene(void) override
 	{
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
+		m_Camera.Update();
 
 		// =============== 컴퓨트: 파티클 시뮬레이션 ==============
 		// View 데이터 (이미터/시스템은 카메라를 모름)
-		ParticleViewCB viewCB;
-		Math::Vector3 camPos = m_Camera.GetPosition();
-		viewCB.camPos = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
-		viewCB.pad0 = 0.0f;
+		ParticleViewCB viewCB = makeViewCB(m_Camera);
 		m_Particles.UpdateGPU(gfx.GetComputeContext(), viewCB);
 
 		// =============== 그래픽스 공통 준비 ==============
@@ -119,7 +128,6 @@ public:
 		gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
 		gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
 
-		m_Camera.Update();
 		VSConstants cb;
 		cb.viewProj = m_Camera.GetViewProj();
 
@@ -133,7 +141,7 @@ public:
 		gfx.DrawIndexed(6, 0, 0);
 
 		// =============== 파티클 ==============
-		m_Particles.Draw(gfx, m_Camera);
+		m_Particles.Draw(gfx, viewCB);
 
 		gfx.Finish();
 

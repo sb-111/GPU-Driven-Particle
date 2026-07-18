@@ -3,19 +3,10 @@
 #include "GraphicsCommon.h"
 #include "BufferManager.h"   // g_SceneColorBuffer / g_SceneDepthBuffer
 #include "CommandContext.h"
-#include "Camera.h"
 
 using namespace GameCore;
 using namespace Graphics;
 using namespace DirectX;
-
-// Vector3 형(16바이트) -> 자체 정의 GP::float3(12바이트) 변환
-static inline GP::float3 ToF3(const Math::Vector3& v)
-{
-	GP::float3 r;
-	DirectX::XMStoreFloat3((DirectX::XMFLOAT3*)&r, v);
-	return r;
-}
 
 void GP::ParticleSystem::Init(uint32_t maxParticlesPerEmitter)
 {
@@ -65,15 +56,15 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.simulatePSO.Finalize();
 
 	// 루트 시그 - 드로우용
-	// b0 카메라, t0 풀, t1 alive
-	m_Shared.graphicsRootSig.Reset(5, 1); // 스태틱 샘플러 1개
-	m_Shared.graphicsRootSig[0].InitAsConstantBuffer(0);
-	m_Shared.graphicsRootSig[1].InitAsConstantBuffer(1);
-	m_Shared.graphicsRootSig[2].InitAsBufferSRV(0);
-	m_Shared.graphicsRootSig[3].InitAsBufferSRV(1);
-	m_Shared.graphicsRootSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	m_Shared.graphicsRootSig.Reset(6, 1); // 스태틱 샘플러 1개
+	m_Shared.graphicsRootSig[0].InitAsConstantBuffer(0); // ViewCB (b0)
+	m_Shared.graphicsRootSig[1].InitAsConstantBuffer(1); // FrameCB (b1)
+	m_Shared.graphicsRootSig[2].InitAsConstantBuffer(2); // DrawCB (b2)
+	m_Shared.graphicsRootSig[3].InitAsBufferSRV(0);		 // pool (t0) 
+	m_Shared.graphicsRootSig[4].InitAsBufferSRV(1);		 // alive (t1)
+	m_Shared.graphicsRootSig[5].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL); // 텍스처 (t2)
 	m_Shared.graphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw");
+	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT); 
 
 	m_Shared.drawAdditivePSO.SetRootSignature(m_Shared.graphicsRootSig);
 	// 인풋 레이아웃 X - 정점 버퍼 대신 SV_VertexID로 SRV(풀)를 직접 읽음
@@ -124,20 +115,15 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	}
 }
 
-void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
+void GP::ParticleSystem::Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB)
 {
-	// 카메라 관련은 모든 Emitter 공통
-	ParticleDrawCB cb = {};
-	cb.camRight = ToF3(camera.GetRight());
-	cb.camUp = ToF3(camera.GetUp());
-	cb.camForward = ToF3(camera.GetForward());
-	DirectX::XMStoreFloat4x4(
-		reinterpret_cast<DirectX::XMFLOAT4X4*>(&cb.viewProj),
-		camera.GetViewProj());
+	// Draw 중에는 graphicsRootSig 안바뀜
+	gfx.SetRootSignature(m_Shared.graphicsRootSig);               
+	gfx.SetDynamicConstantBufferView(0, sizeof(viewCB), &viewCB); // b0
 
 	// Emitter 거리별로 정렬 (앞에 있는 Emitter가 올라와야 자연스러움)
 	// 거리 먼 순서대로 정렬되는 게 목표 (back to front)
-	Math::Vector3 camPos = camera.GetPosition();
+	Math::Vector3 camPos(viewCB.camPos.x, viewCB.camPos.y, viewCB.camPos.z);
 	std::vector<ParticleEmitter*> sortedEmitters;
 	for (const auto& e : m_Emitters)
 	{
@@ -149,9 +135,9 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const Camera& camera)
 			float distanceB = Math::LengthSquare(b->GetPosition() - camPos);
 			return distanceA > distanceB;
 		});
-		
+
 	for (auto& e : sortedEmitters)
-		e->Draw(gfx, cb);
+		e->Draw(gfx);
 }
 
 void GP::ParticleSystem::EndFrame()

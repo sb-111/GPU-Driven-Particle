@@ -46,7 +46,7 @@ namespace GP
 		void SimulatePass(ComputeContext& cpt);
 		void SortPass(ComputeContext& cpt);
 		void UpdateDrawArgs(ComputeContext& cpt);
-		void Draw(GraphicsContext& gfx, ParticleDrawCB cb);
+		void Draw(GraphicsContext& gfx);
 		void EndFrame();
 
 	private:

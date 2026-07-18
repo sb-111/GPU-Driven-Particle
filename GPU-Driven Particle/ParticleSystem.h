@@ -9,7 +9,6 @@
 #include <memory>
 #include "Texture.h"
 
-namespace GP { class Camera; }
 class GraphicsContext;
 class ComputeContext;
 
@@ -39,7 +38,7 @@ namespace GP {
 		void Update(float dt);
 
 		void UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams);
-		void Draw(GraphicsContext& gfx, const Camera& camera);
+		void Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB);
 		void EndFrame();
 
 		size_t GetEmitterCount() const { return m_Emitters.size(); }
