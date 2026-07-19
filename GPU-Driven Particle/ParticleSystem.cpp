@@ -3,6 +3,7 @@
 #include "GraphicsCommon.h"
 #include "BufferManager.h"   // g_SceneColorBuffer / g_SceneDepthBuffer
 #include "CommandContext.h"
+#include "CubeMesh.h"
 
 using namespace GameCore;
 using namespace Graphics;
@@ -22,13 +23,18 @@ void GP::ParticleSystem::InitSharedResources()
 	// 셰이더 컴파일
 	auto partVS = CompileShader(L"ParticleVS.hlsl", L"main", L"vs_6_2");
 	auto partPS = CompileShader(L"ParticlePS.hlsl", L"main", L"ps_6_2");
+	auto meshParticleVS = CompileShader(L"MeshParticleVS.hlsl", L"main", L"vs_6_2");
+	auto meshParticlePS = CompileShader(L"MeshParticlePS.hlsl", L"main", L"ps_6_2");
 	auto particleKickoffCS = CompileShader(L"ParticleKickoffCS.hlsl", L"main", L"cs_6_2");
 	auto particleEmitCS = CompileShader(L"ParticleEmitCS.hlsl", L"main", L"cs_6_2");
 	auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
-	ASSERT(partVS && partPS && particleKickoffCS && particleEmitCS && particleSimulateCS
+	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && particleKickoffCS && particleEmitCS && particleSimulateCS 
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 	m_Shared.sorter.Init();
+
+	m_Shared.meshVertexBuffer.Create(L"Cube Vertex Buffer", 24, sizeof(MeshVertex), kCubeVertices);
+	m_Shared.meshIndexBuffer.Create(L"Cube Index Buffer", 36, sizeof(uint16_t), kCubeIndices);
 
 	// 루트 시그 - 컴퓨트용
 	m_Shared.computeRootSig.Reset(9, 0);
@@ -80,6 +86,21 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.drawAlphaPSO = m_Shared.drawAdditivePSO;
 	m_Shared.drawAlphaPSO.SetBlendState(BlendTraditional);
 	m_Shared.drawAlphaPSO.Finalize();
+
+	static const D3D12_INPUT_ELEMENT_DESC meshLayout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	};
+	m_Shared.meshAdditivePSO = m_Shared.drawAdditivePSO;
+	m_Shared.meshAdditivePSO.SetInputLayout(3, meshLayout);
+	m_Shared.meshAdditivePSO.SetVertexShader(meshParticleVS->GetBufferPointer(), meshParticleVS->GetBufferSize());
+	m_Shared.meshAdditivePSO.SetPixelShader(meshParticlePS->GetBufferPointer(), meshParticlePS->GetBufferSize());
+	m_Shared.meshAdditivePSO.Finalize();
+
+	m_Shared.meshAlphaPSO = m_Shared.meshAdditivePSO;
+	m_Shared.meshAlphaPSO.SetBlendState(BlendTraditional);
+	m_Shared.meshAlphaPSO.Finalize();
 
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =

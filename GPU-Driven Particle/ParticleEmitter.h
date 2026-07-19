@@ -23,6 +23,9 @@ namespace GP
 		GraphicsPSO drawAdditivePSO, drawAlphaPSO;
 		Texture spriteTextures[(int)ETexture::Count];
 		BitonicSort sorter;
+
+		GraphicsPSO meshAdditivePSO, meshAlphaPSO;
+		ByteAddressBuffer meshVertexBuffer, meshIndexBuffer;
 	};
 
 	class ParticleEmitter

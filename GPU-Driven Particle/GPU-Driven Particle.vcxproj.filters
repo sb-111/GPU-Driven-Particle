@@ -71,6 +71,9 @@
     <ClInclude Include="MathConvert.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMesh.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\TrianglePS.hlsl">
@@ -100,6 +103,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="BitonicSort.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="MeshParticleVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="MeshParticlePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

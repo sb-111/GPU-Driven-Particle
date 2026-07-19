@@ -1,7 +1,7 @@
 ﻿#include "ParticleEmitter.h"
 #include "CommandContext.h"
 #include "MathConvert.h"
-
+#include "GraphicsCommon.h"
 void GP::ParticleEmitter::Init(uint32_t maxParticles, ParticleSharedResources* shared, uint32_t index)
 {
 	m_maxParticle = maxParticles;
@@ -27,7 +27,7 @@ void GP::ParticleEmitter::Init(uint32_t maxParticles, ParticleSharedResources* s
 			0, 1, 1, 0, // emit dispatch
 			0, 1, 1, 0, // simulate dispatch
 			6, 0, 0, 0, // draw: 파티클당 정점 6개 고정, 인스턴스 수는 GPU가 채움
-			0, 0, 0, 0, 0 // drawIndexed: 메시 렌더러용 (TODO)
+			36, 0, 0, 0, 0 // drawIndexed: (인덱스 수, 인스턴스 수)
 	};
 	m_IndirectArgsBuffer.Create(L"IndirectArgsBuffer" + tag, 17, sizeof(uint32_t), argsInit.data());
 
@@ -260,10 +260,20 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 	gfx.SetBufferSRV(3, m_Pool);												// t0
 	gfx.SetBufferSRV(4, *m_NewAlive);											// t1
 	gfx.SetDynamicDescriptor(5, 0, m_Shared->spriteTextures[m_Settings.textureIndex].GetSRV()); // t2
-	// 블렌드 모드에 따른 다른 PSO 설정
-	gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
+	if (m_Settings.rendererType == (int)EParticleRenderer::Sprite)
+	{
+		// 블렌드 모드에 따른 다른 PSO 설정
+		gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
+		gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
+	}
+	else if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)
+	{
+		gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->meshAdditivePSO : m_Shared->meshAlphaPSO);
+		gfx.SetVertexBuffer(0, m_Shared->meshVertexBuffer.VertexBufferView());
+		gfx.SetIndexBuffer(m_Shared->meshIndexBuffer.IndexBufferView());
+		gfx.ExecuteIndirect(Graphics::DrawIndexedIndirectCommandSignature, m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INDEX_COUNT);
+	}
 }
 
 void GP::ParticleEmitter::EndFrame()

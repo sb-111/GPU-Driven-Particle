@@ -69,6 +69,7 @@ namespace Graphics
 
     extern CommandSignature DispatchIndirectCommandSignature;
     extern CommandSignature DrawIndirectCommandSignature;
+	extern CommandSignature DrawIndexedIndirectCommandSignature;
 
     enum eDefaultTexture
     {

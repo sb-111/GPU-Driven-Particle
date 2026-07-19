@@ -84,6 +84,7 @@ namespace Graphics
     CommandSignature DispatchIndirectCommandSignature(1);
 	// 전역으로 존재
     CommandSignature DrawIndirectCommandSignature(1);
+	CommandSignature DrawIndexedIndirectCommandSignature(1);
 
     RootSignature g_CommonRS;
     ComputePSO g_GenerateMipsLinearPSO[4] =
@@ -250,8 +251,11 @@ void Graphics::InitializeCommonState(void)
     DispatchIndirectCommandSignature[0].Dispatch(); // Type을 Dispatch로
     DispatchIndirectCommandSignature.Finalize();	// Type에 따른 ByteStride 계산 -> 커맨드 시그니처 생성
 
-    DrawIndirectCommandSignature[0].Draw();			// Tpye을 Draw로
+    DrawIndirectCommandSignature[0].Draw();			// Type을 Draw로
     DrawIndirectCommandSignature.Finalize();
+
+	DrawIndexedIndirectCommandSignature[0].DrawIndexed(); // Type을 DrawIndexed로
+	DrawIndexedIndirectCommandSignature.Finalize();
 
 
     g_CommonRS.Reset(4, 3);
@@ -287,5 +291,6 @@ void Graphics::DestroyCommonState(void)
 
     DispatchIndirectCommandSignature.Destroy();
     DrawIndirectCommandSignature.Destroy();
+	DrawIndexedIndirectCommandSignature.Destroy();
     
 }

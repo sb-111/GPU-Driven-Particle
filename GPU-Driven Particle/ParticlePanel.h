@@ -232,7 +232,7 @@ namespace GP
 			}
 			if (g == (int)EParamGroup::Renderer)
 			{
-				ImGui::Combo("Renderer", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
+				ImGui::Combo("Renderer##type", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
 				if (s.blendMode == (int)EBlendMode::Alpha)
 					ImGui::Checkbox("Depth Sort", &s.sortEnabled);
