@@ -38,6 +38,11 @@ namespace GP
 		float initAngleMin	= 1.0f;
 		float initAngleMax	= 5.0f;
 
+		float rotationRateMin = 90.0f; // 태어날 때 회전 속력 랜덤 범위 (deg/s)
+		float rotationRateMax = 360.0f;
+		float rotationAxis[3] = { 0.0f, 0.0f, 1.0f }; // 태어날 때 회전 축
+		bool randomRotationAxis = true;				  // 회전 축 랜덤으로 줄지
+
 		int sizeMode = (int)EUniformMode::Uniform; // 스프라이트는 x,y만 사용
 		float sizeMin[3] = { 0.05f, 0.05f, 0.0f };
 		float sizeMax[3] = { 1.0f, 1.0f , 0.0f};
@@ -58,6 +63,7 @@ namespace GP
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
 
 		// Renderer
+		int rendererType = (int)EParticleRenderer::Sprite;
 		int blendMode = (int)EBlendMode::Additive;
 		int alignmentMode = (int)EAlignmentMode::UnAligned;
 		int textureIndex = (int)ETexture::Fire;

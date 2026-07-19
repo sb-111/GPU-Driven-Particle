@@ -157,6 +157,7 @@ namespace GP
 		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
 		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
 		static const char* kAlignmentModeNames[(int)EAlignmentMode::Count] = { "Unaligned", "Velocity aligned"};
+		static const char* kRendererNames[(int)EParticleRenderer::Count] = { "Sprite", "Mesh", "Ribbon"};
 	
 		for (int g = 0; g < (int)EParamGroup::Count; ++g)
 		{
@@ -209,7 +210,7 @@ namespace GP
 				{
 				case EUniformMode::Uniform: ImGui::SliderFloat("Size", &s.sizeMin[0], 0.001f, 0.5f); break;
 				case EUniformMode::RandomUniform:
-					ImGui::SliderFloat("Size Min", &s.sizeMin[0], 0.001f, 0.5f); 
+					ImGui::SliderFloat("Size Min", &s.sizeMin[0], 0.001f, 0.5f);
 					ImGui::SliderFloat("Size Max", &s.sizeMax[0], 0.001f, 0.5f);
 					break;
 				case EUniformMode::NonUniform:
@@ -220,14 +221,27 @@ namespace GP
 					ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
 					break;
 				}
+				// 메시 회전 (Rotation Rate 방식)
+				if (s.rendererType == (int)EParticleRenderer::Mesh)
+				{
+					ImGui::SliderFloat2("Rotation Rate", &s.rotationRateMin, 0.0f, 720.0f, "%.0f deg/s");
+					ImGui::Checkbox("Random Rotation Axis", &s.randomRotationAxis);
+					if (!s.randomRotationAxis)
+						ImGui::SliderFloat3("Rotation Axis", s.rotationAxis, -1.0f, 1.0f);
+				}
 			}
 			if (g == (int)EParamGroup::Renderer)
 			{
+				ImGui::Combo("Renderer", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
 				if (s.blendMode == (int)EBlendMode::Alpha)
 					ImGui::Checkbox("Depth Sort", &s.sortEnabled);
-				ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
-				ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
+				// 스프라이트 전용 설정
+				if (s.rendererType == (int)EParticleRenderer::Sprite)
+				{
+					ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
+					ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
+				}
 			}
 		}
 

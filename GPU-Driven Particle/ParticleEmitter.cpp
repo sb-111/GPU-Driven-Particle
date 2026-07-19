@@ -1,5 +1,6 @@
 ﻿#include "ParticleEmitter.h"
 #include "CommandContext.h"
+#include "MathConvert.h"
 
 void GP::ParticleEmitter::Init(uint32_t maxParticles, ParticleSharedResources* shared, uint32_t index)
 {
@@ -92,6 +93,15 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.sizeMode = s.sizeMode;
 	params.sizeMin = { s.sizeMin[0], s.sizeMin[1] ,s.sizeMin[2] };
 	params.sizeMax = { s.sizeMax[0], s.sizeMax[1] ,s.sizeMax[2] };
+
+	params.rotationRateMin = DirectX::XMConvertToRadians(s.rotationRateMin);
+	params.rotationRateMax = DirectX::XMConvertToRadians(s.rotationRateMax);
+	float3 axis = { s.rotationAxis[0], s.rotationAxis[1], s.rotationAxis[2] };
+	float axisLengthSq = axis.x * axis.x + axis.y * axis.y + axis.z * axis.z;
+	if (axisLengthSq < 1e-6f)
+		axis = { 0.0f, 0.0f, 1.0f }; // 축이 0이면 기본 축으로
+	params.rotationAxis = axis;
+	params.useRandomAxis = s.randomRotationAxis ? 1 : 0;
 
 	return params;
 }

@@ -44,6 +44,7 @@
 #define ALIGN_UNALIGNED_MODE 0
 #define ALIGN_VELOCITY_MODE 1
 
+#define PI 3.1415926535f
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -70,6 +71,11 @@
 		float3 size;	 float spinSpeed;
 		float3 angle; // 스프라이트는 z만 사용
 		float pad0;
+
+		// mesh
+		float4 orientation; // Quaternion
+		float3 angularVelocity; // 각속도
+		float pad1;
 	};
 
 	struct GP_CB_ALIGN ParticleFrameCB
@@ -104,8 +110,8 @@
 
 		float dirSpread;
 		float posSpread;
-		float pad0;
-		float pad1;
+		float rotationRateMin; // for mesh (rad)
+		float rotationRateMax; // for mesh
 
 		float3 shapeData;
 		int velocityMode;
@@ -113,6 +119,9 @@
 		// 콘 앵글 추가하기 (velocity용)
 		float coneAngle;
 		float3 pad2;
+
+		float3 rotationAxis; // for mesh
+		int useRandomAxis;	 // for mesh
 	};
 	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB

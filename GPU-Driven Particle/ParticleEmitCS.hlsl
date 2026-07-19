@@ -1,5 +1,5 @@
 ﻿#include "ParticleShared.h"
-
+#include "Quaternion.hlsli"
 cbuffer ParticleCB : register(b0)
 {
 	ParticleFrameCB params;
@@ -108,7 +108,25 @@ void main( uint3 id : SV_DispatchThreadID )
 			p.size = uniformSizeMin;
 			break;
 	}
-	
+
+	// ======= mesh renderer가 소비 (태어날 때 orientation, angularVelocity 정해야 함) =======
+
+	// orientation은 현재 무조건 랜덤
+	float3 randomAxisForOrientation = float3(rand01(seed) * 2.0 - 1.0,
+	                       rand01(seed) * 2.0 - 1.0,
+	                       rand01(seed) * 2.0 - 1.0);
+	float3 normalizedRandomAxisForOrientation = normalize(randomAxisForOrientation);
+	float randomAngle = rand01(seed) * PI;
+	p.orientation = QuatFromAxisAngle(normalizedRandomAxisForOrientation, randomAngle);
+	// 각속도의 축은 랜덤 유무 정할 수 있음, 회전 속도는 UI에서 min/max로부터 랜덤
+	float3 randomAxisForAngularVelocity = float3(rand01(seed) * 2.0 - 1.0,
+	                       rand01(seed) * 2.0 - 1.0,
+	                       rand01(seed) * 2.0 - 1.0);
+	float3 normalizedRandomAxisForAngularVelocity = normalize(randomAxisForAngularVelocity);
+	float3 rotationAxis = params.useRandomAxis ?  normalizedRandomAxisForAngularVelocity : params.rotationAxis; // 축 정하기
+	rotationAxis = normalize(rotationAxis);
+	float randomSpeed = lerp(params.rotationRateMin, params.rotationRateMax, rand01(seed)); // 속력 정하기
+	p.angularVelocity = rotationAxis * randomSpeed; // 각속도 = 축 * 속력
 	
 	// 풀의 빈 인덱스에 새 파티클 덮어쓰기
 	g_ParticleBuffer[poolIndex] = p;

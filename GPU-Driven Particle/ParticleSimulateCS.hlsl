@@ -1,5 +1,5 @@
 ﻿#include "ParticleShared.h"
-
+#include "Quaternion.hlsli"
 
 cbuffer ParticleCB : register(b0)
 {
@@ -41,6 +41,19 @@ void main(uint3 id : SV_DispatchThreadID)
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
 		p.position += p.velocity * params.deltaTime;
+
+		// for mesh renderer
+		float angularVelocityLength = length(p.angularVelocity);
+		if(angularVelocityLength > 1e-6f) // 회전있는 파티클만 회전
+		{
+			float3 axis = p.angularVelocity / angularVelocityLength; // 회전 축 (각속도에서 속력 분리하고 남은 것)
+			float angle = angularVelocityLength * params.deltaTime; // 이번 프레임에 돈 각도(rad)
+
+			float4 dq = QuatFromAxisAngle(axis, angle);
+			p.orientation = normalize(QuatMul(p.orientation, dq)); // dq 먼저(로컬 좌표일 때 적용)
+
+		}
+		
 		g_ParticleBuffer[index] = p;
 
 		uint prevAlive;
