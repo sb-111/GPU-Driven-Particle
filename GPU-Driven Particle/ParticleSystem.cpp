@@ -104,7 +104,8 @@ void GP::ParticleSystem::InitSharedResources()
 
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =
-		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds" };
+		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
+		  "SpriteAtlasTextures/boom3.dds", "SpriteAtlasTextures/exp2_0.dds" };
 	for (int i = 0; i < (int)ETexture::Count; ++i)
 		ASSERT(LoadDDSTexture(m_Shared.spriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
 }

@@ -119,8 +119,8 @@
 		// 콘 앵글 추가하기 (velocity용)
 		float coneAngle;
 		int useRandomInitOrientation; // for mesh (끄면 identity)
-		float pad2;
-		float pad3;
+		int subImagesX; // 아틀라스 격자 (1이면 단일 이미지)
+		int subImagesY;
 
 		float3 rotationAxis; // for mesh
 		int useRandomAxis;	 // for mesh

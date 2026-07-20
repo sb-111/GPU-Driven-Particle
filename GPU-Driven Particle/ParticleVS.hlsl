@@ -112,9 +112,15 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	{
 		output.color.a = p.color.a * brightness; // 알파: 불투명도를 줄임(색은 유지, 투명해짐)
 	}
-	output.uv = (corner * 0.5f + 0.5f);
-	output.uv.y = 1 - output.uv.y;
-
+	float2 uv = (corner * 0.5f + 0.5f);
+	uv.y = 1 - uv.y;
+	uint totalFrames = frameParams.subImagesX * frameParams.subImagesY;
+	uint frameNumber = normalizedAge * totalFrames; // subImageX/Y가 1,1 고정이면 0
+	frameNumber = min(frameNumber, totalFrames - 1);
+	uint2 cellNumber = uint2(frameNumber % frameParams.subImagesX, frameNumber / frameParams.subImagesX);
+	float2 cellSize = float2(1.0f /  frameParams.subImagesX, 1.0f / frameParams.subImagesY);
+	float2 subUV = (cellNumber + uv) * cellSize;  // 1,1이면 일반 uv와 같아짐
+	output.uv = subUV;
 	
 	return output;
 }

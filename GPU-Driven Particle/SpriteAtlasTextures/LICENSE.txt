@@ -1,0 +1,14 @@
+SpriteAtlasTextures 라이선스 정보
+=================================
+
+boom3.png / boom3.dds
+  - 원본: "Explosion Sheet" by StumpyStrust
+  - 출처: https://opengameart.org/content/explosion-sheet
+  - 라이선스: CC0 1.0 (Public Domain) - https://creativecommons.org/publicdomain/zero/1.0/
+  - boom3.dds는 boom3.png를 무압축 RGBA DDS로 변환한 파생물
+
+exp2_0.png / exp2_0.dds
+  - 원본: "explosion" by Cuzco
+  - 출처: https://opengameart.org/content/explosion
+  - 라이선스: CC0 1.0 (Public Domain) - https://creativecommons.org/publicdomain/zero/1.0/
+  - exp2_0.dds는 exp2_0.png를 무압축 RGBA DDS로 변환한 파생물

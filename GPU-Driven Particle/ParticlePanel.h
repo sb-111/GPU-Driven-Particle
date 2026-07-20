@@ -162,7 +162,7 @@ namespace GP
 		static const char* kGroupNames[(int)EParamGroup::Count] = { "Emitter", "Emit", "Simulate", "Renderer" };
 		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
 		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha"};
-		static const char* kTextureNames[(int)ETexture::Count] = { "Fire", "Smoke", "Spark" };
+		static const char* kTextureNames[(int)ETexture::Count] = { "Fire", "Smoke", "Spark", "Boom (8x8)", "Explosion (4x4)" };
 		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
 		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
 		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
@@ -252,6 +252,8 @@ namespace GP
 				{
 					ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
 					ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
+					ImGui::SliderInt("SubImages X", &s.subImagesX, 1, 16);
+					ImGui::SliderInt("SubImages Y", &s.subImagesY, 1, 16);
 				}
 			}
 		}

@@ -13,7 +13,7 @@ namespace GP
 		Count
 	};
 	enum class EBlendMode : int {Additive, Alpha, Count};
-	enum class ETexture : int {Fire, Smoke, Spark, Count};
+	enum class ETexture : int {Fire, Smoke, Spark, Boom, Explosion, Count};
 	enum class EShapeType: int {Point, Box, Sphere, Cone, Count};
 	enum class EVelocityMode : int { Velocity, VelocityFromPoint, VelocityInCone, Count};
 	enum class EAlignmentMode : int { UnAligned, VelocityAligned, Count}; // up을 뭐로 정의할지: 카메라 up, 속도벡터를 쿼드에 투영한 걸 up
@@ -68,6 +68,8 @@ namespace GP
 		int blendMode = (int)EBlendMode::Additive;
 		int alignmentMode = (int)EAlignmentMode::UnAligned;
 		int textureIndex = (int)ETexture::Fire;
+		int subImagesX = 1; // 아틀라스 격자 개수
+		int subImagesY = 1;
 		bool sortEnabled = true; // 알파 모드에서만 의미 있음, before/after 비교용
 
 	};

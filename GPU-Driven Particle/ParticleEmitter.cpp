@@ -103,6 +103,8 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.rotationAxis = axis;
 	params.useRandomAxis = s.randomRotationAxis ? 1 : 0;
 	params.useRandomInitOrientation = s.randomInitOrientation ? 1 : 0;
+	params.subImagesX = s.subImagesX;
+	params.subImagesY = s.subImagesY;
 
 	return params;
 }
