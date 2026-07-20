@@ -84,7 +84,10 @@ void main( uint3 id : SV_DispatchThreadID )
 	}
 	p.lifeTime = lerp(params.lifeTimeMin, params.lifeTimeMax, rand01(seed));
 	p.initialLife = p.lifeTime;
-	p.color = float4(params.startColor.rgb * lerp(0.6f, 1.0f, rand01(seed)), 1.0f);
+	// TODO: 랜덤 사용시 0.6~1.0 랜덤 구간 설정할 수 있도록 변경
+	float4 randomColor = float4(params.startColor.rgb * lerp(0.6f, 1.0f, rand01(seed)), params.startColor.a);
+	p.color = params.useRandomSpawnBrightness ?
+		randomColor : params.startColor;
 	p.spinSpeed = lerp(params.spinSpeedMin, params.spinSpeedMax, rand01(seed));
 	p.angle.z = lerp(params.initAngleMin, params.initAngleMax, rand01(seed));
 	// 스레드별로 다른 모드가 아니므로 다른 분기 안탐

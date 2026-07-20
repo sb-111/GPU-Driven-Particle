@@ -55,6 +55,7 @@
 #ifdef __cplusplus
 	#include <cstdint>
 	namespace GP{
+	struct float2 { float x, y; };
 	struct float3 { float x, y, z; };
 	struct float4 { float x, y, z, w; };
 	struct float4x4 { float m[16]; };
@@ -124,6 +125,10 @@
 
 		float3 rotationAxis; // for mesh
 		int useRandomAxis;	 // for mesh
+
+		int useRandomSpawnBrightness; // 스폰 시 밝기 랜덤으로 줄지
+		int useSizeOverLife; // 수명 따라 사이즈 감쇠 줄지
+		float2 pad4;
 	};
 	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB

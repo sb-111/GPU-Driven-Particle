@@ -36,10 +36,8 @@ VSOutput main(VSInput input)
 	uint index = NewAliveList.Load(input.iid * 4);
 	Particle p = g_ParticleBuffer[index];
 
-	// 나이 기반 페이드
 	float normalizedAge = 1.0f - (p.lifeTime / p.initialLife); // 0 -> 1 (progress)
-	float brightness = 1.0f - normalizedAge; // 시간 흐르면 밝기 감소 (fade)
-	float sizeScale = 1.0f - (normalizedAge * normalizedAge); // 시간 흐르면 사이즈 감소 (fade)
+	float sizeScale = frameParams.useSizeOverLife ? 1.0f - (normalizedAge * normalizedAge) : 1.0f; // 시간 흐르면 사이즈 감소 (fade)
 
 	float3 scaledSize = p.size.xyz * sizeScale;
 	float3x3 scaleMat = float3x3(
@@ -57,15 +55,6 @@ VSOutput main(VSInput input)
 	output.normal = normalDir;
 	output.uv = input.uv;
 
-	output.color.rgb = lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge);
-	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)
-	{
-		output.color.rgb *= brightness; // 가산: 더하는 빛의 양을 줄임(색 어두워짐 = 페이드)
-		output.color.a = 1.0f; // 가산은 알파 안읽음.
-	}
-	else // BLEND_ALPHA_MODE
-	{
-		output.color.a = p.color.a * brightness; // 알파: 불투명도를 줄임(색은 유지, 투명해짐)
-	}
+	output.color = lerp(p.color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
 	return output;
 }

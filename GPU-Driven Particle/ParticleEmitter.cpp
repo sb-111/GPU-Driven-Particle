@@ -105,6 +105,8 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.useRandomInitOrientation = s.randomInitOrientation ? 1 : 0;
 	params.subImagesX = s.subImagesX;
 	params.subImagesY = s.subImagesY;
+	params.useRandomSpawnBrightness = s.randomSpawnBrightness ? 1 : 0;
+	params.useSizeOverLife = s.sizeOverLife ? 1 : 0;
 
 	return params;
 }

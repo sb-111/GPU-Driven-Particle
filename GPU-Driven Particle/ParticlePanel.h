@@ -72,7 +72,7 @@ namespace GP
 		s.boxExtents[0] = 0.3f; s.boxExtents[1] = 0.3f; s.boxExtents[2] = 0.3f;
 		s.startColor[0] = 0.7f; s.startColor[1] = 0.7f; s.startColor[2] = 0.7f; s.startColor[3] = 1.0f; 
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
-		s.endColor[0] = 0.35f;   s.endColor[1] = 0.35f;   s.endColor[2] = 0.35f;   s.endColor[3] = 1.0f;
+		s.endColor[0] = 0.35f;   s.endColor[1] = 0.35f;   s.endColor[2] = 0.35f;   s.endColor[3] = 0.0f; // a=0: 수명 끝 페이드아웃
 		s.blendMode = (int)EBlendMode::Alpha;
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
@@ -95,7 +95,7 @@ namespace GP
 		s.boxExtents[0] = 0.3f; s.boxExtents[1] = 0.3f; s.boxExtents[2] = 0.3f;
 		s.startColor[0] = 1.0f; s.startColor[1] = 0.0f; s.startColor[2] = 0.0f; s.startColor[3] = 1.0f; // 빨강
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
-		s.endColor[0] = 0.0f;   s.endColor[1] = 0.0f;   s.endColor[2] = 1.0f;   s.endColor[3] = 1.0f;   // 파랑
+		s.endColor[0] = 0.0f;   s.endColor[1] = 0.0f;   s.endColor[2] = 1.0f;   s.endColor[3] = 0.0f;   // 파랑, a=0: 수명 끝 페이드아웃
 		s.blendMode = (int)EBlendMode::Alpha;
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
@@ -197,8 +197,13 @@ namespace GP
 				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
 					ImGui::SliderInt("Loop Count", &s.loopCount, 1, 20);
 			}
+			if (g == (int)EParamGroup::Simulate)
+			{
+				ImGui::Checkbox("Size Over Life", &s.sizeOverLife);
+			}
 			if (g == (int)EParamGroup::Emit)
 			{
+				ImGui::Checkbox("Random Spawn Brightness", &s.randomSpawnBrightness);
 				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Sphere);
 				switch ((EShapeType)s.shapeType)
 				{

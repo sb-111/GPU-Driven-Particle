@@ -35,8 +35,7 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	Particle p = g_ParticleBuffer[index];
 
 	float normalizedAge = 1.0f - (p.lifeTime / p.initialLife); // 0 -> 1 (progress)
-	float brightness = 1.0f - normalizedAge;				   // 시간 흐르면 밝기 감소 (fade)
-	float sizeScale = 1.0f - (normalizedAge * normalizedAge);  // 시간 흐르면 사이즈 감소 (fade)
+	float sizeScale = frameParams.useSizeOverLife ? 1.0f - (normalizedAge * normalizedAge) : 1.0f; // 시간 흐르면 사이즈 감소 (fade)
 
 	float2 scaledSize = p.size.xy * sizeScale;
 
@@ -102,16 +101,8 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	
 	VSOutput output = (VSOutput)0;
 	output.pos = mul(viewParams.viewProj, float4(worldPos, 1.0f));
-	output.color.rgb = lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge);
-	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)
-	{
-		output.color.rgb *= brightness;	// 가산: 더하는 빛의 양을 줄임(색 어두워짐 = 페이드)
-		output.color.a = 1.0f; // 가산은 알파 안읽음.
-	}
-	else // BLEND_ALPHA_MODE
-	{
-		output.color.a = p.color.a * brightness; // 알파: 불투명도를 줄임(색은 유지, 투명해짐)
-	}
+	output.color = lerp(p.color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
+	
 	float2 uv = (corner * 0.5f + 0.5f);
 	uv.y = 1 - uv.y;
 	uint totalFrames = frameParams.subImagesX * frameParams.subImagesY;

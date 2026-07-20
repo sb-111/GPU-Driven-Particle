@@ -48,9 +48,10 @@ namespace GP
 		float sizeMin[3] = { 0.05f, 0.05f, 0.0f };
 		float sizeMax[3] = { 1.0f, 1.0f , 0.0f};
 
-		float dirSpread     = 0.3f;		
-		float posSpread     = 0.1f;		
+		float dirSpread     = 0.3f;
+		float posSpread     = 0.1f;
 		float startColor[4] = { 1.0f, 0.45f, 0.1f, 1.0f };
+		bool randomSpawnBrightness = true; // 스폰 시 밝기 랜덤으로 줄지 (랜덤이면 현재는 0.6~1.0f 사이, TODO: 그 랜덤 값 범위 지정도 할 수 있게 변경) 
 
 		int shapeType = (int)EShapeType::Point;
 		int velocityMode = (int)EVelocityMode::Velocity;
@@ -62,6 +63,7 @@ namespace GP
 		// Particle Simulate
 		float gravity[3]    = { 0.0f, -9.8f, 0.0f };
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
+		bool sizeOverLife = true; // 수명 따라 사이즈 감쇠 줄지
 
 		// Renderer
 		int rendererType = (int)EParticleRenderer::Sprite;
