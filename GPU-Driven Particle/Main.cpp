@@ -98,7 +98,7 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);

@@ -42,6 +42,7 @@ namespace GP
 		float rotationRateMax = 360.0f;
 		float rotationAxis[3] = { 0.0f, 0.0f, 1.0f }; // 태어날 때 회전 축
 		bool randomRotationAxis = true;				  // 회전 축 랜덤으로 줄지
+		bool randomInitOrientation = true;			  // 초기 자세 랜덤으로 줄지 (끄면 identity)
 
 		int sizeMode = (int)EUniformMode::Uniform; // 스프라이트는 x,y만 사용
 		float sizeMin[3] = { 0.05f, 0.05f, 0.0f };

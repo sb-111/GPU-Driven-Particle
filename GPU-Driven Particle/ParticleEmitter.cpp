@@ -102,6 +102,7 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 		axis = { 0.0f, 0.0f, 1.0f }; // 축이 0이면 기본 축으로
 	params.rotationAxis = axis;
 	params.useRandomAxis = s.randomRotationAxis ? 1 : 0;
+	params.useRandomInitOrientation = s.randomInitOrientation ? 1 : 0;
 
 	return params;
 }

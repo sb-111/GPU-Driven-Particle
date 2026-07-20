@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ParticleSetting.h"
 #include "ParticleSystem.h"
+#include "Camera.h"
 #include "imgui/imgui.h"
 #include <cstddef>
 #include <cstdint>
@@ -99,7 +100,7 @@ namespace GP
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
 	}
-	inline void DrawParticlePanel(ParticleSystem& system, bool& paused)
+	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
 		{
@@ -146,6 +147,15 @@ namespace GP
 		if (ImGui::Button("Restart")) restart = true;
 		ImGui::SameLine();
 		ImGui::Checkbox("Pause", &paused);
+
+		
+		Math::Vector3 camPos = camera.GetPosition();
+		float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
+		if (ImGui::DragFloat3("Camera Pos", camPosF, 0.1f))
+		{
+			Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
+			camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
+		}
 
 		ImGui::Separator();
 
@@ -228,6 +238,7 @@ namespace GP
 					ImGui::Checkbox("Random Rotation Axis", &s.randomRotationAxis);
 					if (!s.randomRotationAxis)
 						ImGui::SliderFloat3("Rotation Axis", s.rotationAxis, -1.0f, 1.0f);
+					ImGui::Checkbox("Random Init Orientation", &s.randomInitOrientation);
 				}
 			}
 			if (g == (int)EParamGroup::Renderer)

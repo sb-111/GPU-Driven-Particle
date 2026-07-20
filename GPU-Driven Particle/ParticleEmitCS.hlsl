@@ -111,13 +111,13 @@ void main( uint3 id : SV_DispatchThreadID )
 
 	// ======= mesh renderer가 소비 (태어날 때 orientation, angularVelocity 정해야 함) =======
 
-	// orientation은 현재 무조건 랜덤
+	// orientation -> random이면 랜덤 축에 대해서 랜덤 각도만큼 회전, 아니면 항등
 	float3 randomAxisForOrientation = float3(rand01(seed) * 2.0 - 1.0,
 	                       rand01(seed) * 2.0 - 1.0,
 	                       rand01(seed) * 2.0 - 1.0);
 	float3 normalizedRandomAxisForOrientation = normalize(randomAxisForOrientation);
 	float randomAngle = rand01(seed) * PI;
-	p.orientation = QuatFromAxisAngle(normalizedRandomAxisForOrientation, randomAngle);
+	p.orientation = params.useRandomInitOrientation ? QuatFromAxisAngle(normalizedRandomAxisForOrientation, randomAngle) : float4(0.0f, 0.0f, 0.0f, 1.0f);
 	// 각속도의 축은 랜덤 유무 정할 수 있음, 회전 속도는 UI에서 min/max로부터 랜덤
 	float3 randomAxisForAngularVelocity = float3(rand01(seed) * 2.0 - 1.0,
 	                       rand01(seed) * 2.0 - 1.0,
