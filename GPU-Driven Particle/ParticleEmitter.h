@@ -55,6 +55,7 @@ namespace GP
 	private:
 		// ParticleSettings -> ParticleFrameCB
 		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const;
+		bool NeedsSort() const { return m_Settings.blendMode == (int)EBlendMode::Alpha && m_Settings.sortEnabled; }
 
 		Math::OrthogonalTransform m_EmitterTransform;
 		float m_AgeInLoop = 0.0f;	// 현재 루프에서 경과 시간

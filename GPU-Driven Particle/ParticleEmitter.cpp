@@ -253,8 +253,10 @@ void GP::ParticleEmitter::SimulatePass(ComputeContext& cpt)
 	cpt.InsertUAVBarrier(m_DeadList);
 	cpt.InsertUAVBarrier(m_Counters);
 
-	// SortKeys 버퍼 양수 최대로 밀기
+	// 알파이고 소트 켜져있을 때만 
+	if (NeedsSort())
 	{
+		// SortKeys 버퍼 양수 최대로 밀기
 		ScopedTimer _profClear(L"Sort Key Clear", cpt);
 		cpt.FillBuffer(m_SortKeys, 0, 1e30f, m_SortN * sizeof(float));
 		cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -267,7 +269,7 @@ void GP::ParticleEmitter::SimulatePass(ComputeContext& cpt)
 
 void GP::ParticleEmitter::SortPass(ComputeContext& cpt)
 {
-	if (m_Settings.blendMode != (int)EBlendMode::Alpha || !m_Settings.sortEnabled)
+	if (!NeedsSort())
 		return;
 	m_Shared->sorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_SortN);
 }
