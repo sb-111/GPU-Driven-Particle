@@ -121,6 +121,33 @@ void GP::ParticleEmitter::Update(float dt)
 		return;
 	}
 
+	// 상한 정하기 (원래 max 풀 개수 기준으로 sort pass dispatch 횟수가 결정되었는데,이를 줄이기 위함)
+	// (살아있는 파티클 수 예측) -> 2의 거듭제곱으로 만들어야함
+	uint32_t baseTerm = (uint32_t)std::ceil(m_Settings.spawnRate * m_Settings.lifeTimeMax);
+	uint32_t burstTerm = (m_Settings.burstCount > 0 && m_Settings.loopDuration > 0) ? m_Settings.burstCount * std::ceil(m_Settings.lifeTimeMax / m_Settings.loopDuration) : 0;
+	uint32_t estimate = baseTerm + burstTerm;
+	estimate = std::min(estimate, m_maxParticle);
+	uint32_t target = 64;
+	while (target < estimate) { target <<= 1; }
+	// spawnRate가 급격히 감소하면 예측량이 줄지만, 실제 살아있는 파티클은 예측량보다 클 수 있음
+	// 예측량까지만 정렬을 하니까 다 정렬되지 않는 문제가 있을 수 있음 -> 보수적으로 줄여야 함
+	if (target >= m_SortN)
+	{
+		m_SortN = target;
+		m_Timer = 0.0f;
+	}
+	else
+	{
+		m_Timer += dt;
+		if (m_Timer > m_Settings.lifeTimeMax)
+		{
+			// 내부적으로 누적한 타이머가 최대 시간을 넘으면 m_SortN 줄여도 됨
+			m_SortN = target;
+			m_Timer = 0.0f;
+		}
+	}
+
+
 	// 이미터 나이 증가
 	m_AgeInLoop += dt;
 	if (m_AgeInLoop >= m_Settings.loopDuration)
@@ -201,12 +228,14 @@ void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewC
 
 void GP::ParticleEmitter::KickoffPass(ComputeContext& cpt)
 {
+	ScopedTimer _prof(L"Kickoff", cpt);
 	cpt.SetPipelineState(m_Shared->kickoffPSO);
 	cpt.Dispatch(1, 1, 1);
 }
 
 void GP::ParticleEmitter::EmitPass(ComputeContext& cpt)
 {
+	ScopedTimer _prof(L"Emit", cpt);
 	// 대기: 킥오프의 카운터 쓰기(COUNTER_REAL) 완료
 	cpt.InsertUAVBarrier(m_Counters);
 	// 대기 겸 용도 변경: 지시서를 커맨드 프로세서가 읽을 수 있게
@@ -225,9 +254,13 @@ void GP::ParticleEmitter::SimulatePass(ComputeContext& cpt)
 	cpt.InsertUAVBarrier(m_Counters);
 
 	// SortKeys 버퍼 양수 최대로 밀기
-	cpt.FillBuffer(m_SortKeys, 0, 1e30f, m_maxParticle * sizeof(float));
-	cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	{
+		ScopedTimer _profClear(L"Sort Key Clear", cpt);
+		cpt.FillBuffer(m_SortKeys, 0, 1e30f, m_SortN * sizeof(float));
+		cpt.TransitionResource(m_SortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	}
 
+	ScopedTimer _prof(L"Simulate", cpt);
 	cpt.SetPipelineState(m_Shared->simulatePSO);
 	cpt.DispatchIndirect(m_IndirectArgsBuffer, ARGS_SIMULATE_DISPATCH_X);
 }
@@ -236,11 +269,12 @@ void GP::ParticleEmitter::SortPass(ComputeContext& cpt)
 {
 	if (m_Settings.blendMode != (int)EBlendMode::Alpha || !m_Settings.sortEnabled)
 		return;
-	m_Shared->sorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_maxParticle);
+	m_Shared->sorter.Sort(cpt, *m_NewAlive, m_SortKeys, m_SortN);
 }
 
 void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 {
+	ScopedTimer _prof(L"Copy Args", cpt);
 	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	// simulationCS가 확정한 생존자 수 복사
 	// ARGS_DRAW_INSTANCE_COUNT 구간 (for Sprite)
@@ -256,6 +290,7 @@ void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 
 void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 {
+	ScopedTimer _prof(L"Particle Draw", gfx);
 	ParticleDrawCB drawCB = {};
 	drawCB.blendMode = m_Settings.blendMode;
 	drawCB.alignmentMode = m_Settings.alignmentMode;

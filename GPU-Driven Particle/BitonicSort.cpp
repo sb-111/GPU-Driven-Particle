@@ -23,6 +23,7 @@ void GP::BitonicSort::Init()
 void GP::BitonicSort::Sort(ComputeContext& cpt, GpuBuffer& aliveList, GpuBuffer& sortKeys, uint32_t N)
 {
 	ASSERT(((N & (N - 1)) == 0 && N >= 64), "N이 2의 거듭제곱이어야 함");
+	ScopedTimer _prof(L"Bitonic Sort", cpt);
 	cpt.TransitionResource(aliveList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	cpt.TransitionResource(sortKeys, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 

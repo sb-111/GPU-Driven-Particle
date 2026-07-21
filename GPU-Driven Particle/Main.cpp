@@ -109,7 +109,7 @@ public:
 	// ==============================================================
 	void RenderScene(void) override
 	{
-		GraphicsContext& gfx = GraphicsContext::Begin(L"Clear");
+		GraphicsContext& gfx = GraphicsContext::Begin(L"Frame");
 		m_Camera.Update();
 
 		// =============== 컴퓨트: 파티클 시뮬레이션 ==============

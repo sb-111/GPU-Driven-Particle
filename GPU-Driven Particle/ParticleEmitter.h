@@ -81,6 +81,10 @@ namespace GP
 
 		// Emitter들이 공유
 		ParticleSharedResources* m_Shared = nullptr;
+
+		// 이번 프레임에 살아있는 파티클의 예측량(2의 거듭제곱 상한)
+		uint32_t m_SortN = 64;
+		float m_Timer = 0.0f;
 	};
 
 
