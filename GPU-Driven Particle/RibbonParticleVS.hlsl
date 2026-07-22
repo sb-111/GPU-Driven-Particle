@@ -49,19 +49,21 @@ VSOutput main(uint vid: SV_VertexID, uint iid: SV_InstanceID)
 	float prevHalfWidth = prevParticle.size.x / 2.0f;
 	float currentHalfWidth = currentParticle.size.x / 2.0f;
 
-	//float3 v0 = prevParticle.position + prevHalfWidth * widthVector;
-	//float3 v3 = prevParticle.position - prevHalfWidth * widthVector;
-	//float3 v1 = currentParticle.position + currentHalfWidth * widthVector;
-	//float3 v2 = currentParticle.position - currentHalfWidth * widthVector;
 
 	// 조립할 월드상 정점 생성
 	float3 localPos = float3(QuadVert[vid], 0.0f);
 	float3 particlePos = (localPos.x < 0.0f) ? prevParticle.position : currentParticle.position;
 	float halfWidth = (localPos.x < 0.0f) ? prevHalfWidth : currentHalfWidth;
-	float3 worldPos = particlePos + halfWidth * localPos.y * widthVector;
+	float normalizedAge = (localPos.x < 0.0f) ?
+		1.0f - (prevParticle.lifeTime / prevParticle.initialLife) :
+		1.0f - (currentParticle.lifeTime / currentParticle.initialLife);
 
+	halfWidth = frameParams.useSizeOverLife ? halfWidth * (1.0f - normalizedAge * normalizedAge) : halfWidth;
+	
+	float3 worldPos = particlePos + halfWidth * localPos.y * widthVector;
+	float4 color = (localPos.x < 0.0f) ? prevParticle.color : currentParticle.color;
 	output.pos = mul(viewParams.viewProj, float4(worldPos, 1.0f));
-	output.color = float4(1.0f, 0.0f, 0.0f, 1.0f);
+	output.color = lerp(color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
 	output.uv = QuadVert[vid] * 0.5f + 0.5f;
 	output.uv.y = 1 - output.uv.y;
 	return output;
