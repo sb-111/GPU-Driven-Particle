@@ -59,7 +59,14 @@ void main(uint3 id : SV_DispatchThreadID)
 		uint prevAlive;
 		Counters.InterlockedAdd(COUNTER_AFTER_SIMULATE, 1, prevAlive);
 		AliveList2.Store(prevAlive * 4, index);
-		SortKeys[prevAlive] = -length(viewParams.camPos - p.position); // 거리에 -를 붙여야 정렬 후에 back to front
+		if (params.keyMode == SORT_KEY_DEPTH)
+		{
+			SortKeys[prevAlive] = -length(viewParams.camPos - p.position); // 거리에 -를 붙여야 정렬 후에 back to front
+		}
+		else
+		{
+			SortKeys[prevAlive] = p.initialLife - p.lifeTime;
+		}
 	}
 	
 }

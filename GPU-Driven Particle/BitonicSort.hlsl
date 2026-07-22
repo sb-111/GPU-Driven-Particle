@@ -1,5 +1,5 @@
 ﻿RWByteAddressBuffer AliveList : register(u0);       // 정렬 대상: 파티클 풀 인덱스
-RWStructuredBuffer<float> SortKeys : register(u1);  // 정렬 기준: 슬롯별 깊이 키
+RWStructuredBuffer<float> SortKeys : register(u1);  // 정렬 기준: 슬롯별 깊이 키 or 파티클 나이
 
 cbuffer SortParams : register(b0)
 {

@@ -25,10 +25,12 @@ void GP::ParticleSystem::InitSharedResources()
 	auto partPS = CompileShader(L"ParticlePS.hlsl", L"main", L"ps_6_2");
 	auto meshParticleVS = CompileShader(L"MeshParticleVS.hlsl", L"main", L"vs_6_2");
 	auto meshParticlePS = CompileShader(L"MeshParticlePS.hlsl", L"main", L"ps_6_2");
+	auto ribbonParticleVS = CompileShader(L"RibbonParticleVS.hlsl", L"main", L"vs_6_2");
 	auto particleKickoffCS = CompileShader(L"ParticleKickoffCS.hlsl", L"main", L"cs_6_2");
 	auto particleEmitCS = CompileShader(L"ParticleEmitCS.hlsl", L"main", L"cs_6_2");
 	auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
-	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && particleKickoffCS && particleEmitCS && particleSimulateCS 
+	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS &&
+		particleKickoffCS && particleEmitCS && particleSimulateCS 
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 	m_Shared.sorter.Init();
@@ -62,13 +64,14 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.simulatePSO.Finalize();
 
 	// 루트 시그 - 드로우용
-	m_Shared.graphicsRootSig.Reset(6, 1); // 스태틱 샘플러 1개
+	m_Shared.graphicsRootSig.Reset(7, 1); // 스태틱 샘플러 1개
 	m_Shared.graphicsRootSig[0].InitAsConstantBuffer(0); // ViewCB (b0)
 	m_Shared.graphicsRootSig[1].InitAsConstantBuffer(1); // FrameCB (b1)
 	m_Shared.graphicsRootSig[2].InitAsConstantBuffer(2); // DrawCB (b2)
 	m_Shared.graphicsRootSig[3].InitAsBufferSRV(0);		 // pool (t0) 
 	m_Shared.graphicsRootSig[4].InitAsBufferSRV(1);		 // alive (t1)
 	m_Shared.graphicsRootSig[5].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL); // 텍스처 (t2)
+	m_Shared.graphicsRootSig[6].InitAsBufferSRV(3);		 // Counters (t3)
 	m_Shared.graphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT); 
 
@@ -102,6 +105,13 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.meshAlphaPSO.SetBlendState(BlendTraditional);
 	m_Shared.meshAlphaPSO.Finalize();
 
+	// 리본 PSO
+	m_Shared.ribbonAdditivePSO = m_Shared.drawAdditivePSO;
+	m_Shared.ribbonAdditivePSO.SetVertexShader(ribbonParticleVS->GetBufferPointer(), ribbonParticleVS->GetBufferSize());
+	m_Shared.ribbonAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
+	m_Shared.ribbonAdditivePSO.SetRasterizerState(RasterizerTwoSided);
+	m_Shared.ribbonAdditivePSO.Finalize();
+	
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =
 		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",

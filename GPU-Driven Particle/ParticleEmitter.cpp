@@ -108,7 +108,15 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.useRandomSpawnBrightness = s.randomSpawnBrightness ? 1 : 0;
 	params.useSizeOverLife = s.sizeOverLife ? 1 : 0;
 
+	params.keyMode = m_Settings.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
+
 	return params;
+}
+bool GP::ParticleEmitter::NeedsSort() const
+{
+	// 알파이고, 소팅 원할 때만 or 리본이면 정렬 필요
+	return (m_Settings.blendMode == (int)EBlendMode::Alpha && m_Settings.sortEnabled)||
+		m_Settings.rendererType == (int)EParticleRenderer::Ribbon;
 }
 void GP::ParticleEmitter::Update(float dt)
 {
@@ -288,6 +296,7 @@ void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 	// Draw가 읽을 리소스 SRV 전환
 	cpt.TransitionResource(m_Pool, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	cpt.TransitionResource(*m_NewAlive, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
 void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
@@ -302,6 +311,8 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 	gfx.SetBufferSRV(3, m_Pool);												// t0
 	gfx.SetBufferSRV(4, *m_NewAlive);											// t1
 	gfx.SetDynamicDescriptor(5, 0, m_Shared->spriteTextures[m_Settings.textureIndex].GetSRV()); // t2
+	gfx.SetBufferSRV(6, m_Counters);											// t3
+	
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	if (m_Settings.rendererType == (int)EParticleRenderer::Sprite)
 	{
@@ -315,6 +326,12 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 		gfx.SetVertexBuffer(0, m_Shared->meshVertexBuffer.VertexBufferView());
 		gfx.SetIndexBuffer(m_Shared->meshIndexBuffer.IndexBufferView());
 		gfx.ExecuteIndirect(Graphics::DrawIndexedIndirectCommandSignature, m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INDEX_COUNT);
+	}
+	else if (m_Settings.rendererType == (int)EParticleRenderer::Ribbon)
+	{
+		// 리본용 pso 설정
+		gfx.SetPipelineState(m_Shared->ribbonAdditivePSO);
+		gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 	}
 }
 

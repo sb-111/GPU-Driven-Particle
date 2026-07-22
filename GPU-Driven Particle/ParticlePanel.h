@@ -100,6 +100,29 @@ namespace GP
 		s.textureIndex = (int)ETexture::Smoke;
 		return s;
 	}
+	inline ParticleSettings MakeRibbonPreset() // 리본 검증용
+	{
+		ParticleSettings s{};
+		s.spawnRate = 60.0f;
+		s.lifeTimeMin = 2.0f;   s.lifeTimeMax = 2.0f;   // 고정 수명: 중간에 끊겨서 팝핑 방지
+		s.speedMin = 4.0f;      s.speedMax = 4.0f;      // 고정 속도
+		s.spinSpeedMin = 0.0f;  s.spinSpeedMax = 0.0f;
+		s.initAngleMin = 0.0f;  s.initAngleMax = 0.0f;
+		s.dirSpread = 0.0f;
+		s.randomSpawnBrightness = false;
+		s.shapeType = (int)EShapeType::Point;
+		s.velocityMode = (int)EVelocityMode::Velocity;
+		s.sizeMode = (int)EUniformMode::Uniform;
+		s.sizeMin[0] = 0.2f;    s.sizeMin[1] = 0.2f;
+		s.sizeOverLife = true;  
+		s.startColor[0] = 1.0f; s.startColor[1] = 0.6f; s.startColor[2] = 0.2f; s.startColor[3] = 1.0f;
+		s.endColor[0] = 1.0f;   s.endColor[1] = 0.2f;   s.endColor[2] = 0.0f;   s.endColor[3] = 0.0f;
+		s.gravity[0] = 0.0f;    s.gravity[1] = -9.8f;   s.gravity[2] = 0.0f;
+		s.blendMode = (int)EBlendMode::Additive;
+		s.rendererType = (int)EParticleRenderer::Ribbon;
+		s.textureIndex = (int)ETexture::Fire;
+		return s;
+	}
 	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
@@ -143,6 +166,8 @@ namespace GP
 		if (ImGui::Button("Smoke")) { s = MakeSmokePreset(); restart = true; }
 		ImGui::SameLine();
 		if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
+		ImGui::SameLine();
+		if (ImGui::Button("Ribbon")) { s = MakeRibbonPreset(); restart = true; }
 		ImGui::SameLine();
 		if (ImGui::Button("Restart")) restart = true;
 		ImGui::SameLine();
