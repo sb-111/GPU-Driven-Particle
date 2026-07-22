@@ -58,6 +58,7 @@ namespace GP
 		// ParticleSettings -> ParticleFrameCB
 		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const;
 		bool NeedsSort() const;
+		void UpdateOrbit(float dt);
 
 		Math::OrthogonalTransform m_EmitterTransform;
 		float m_AgeInLoop = 0.0f;	// 현재 루프에서 경과 시간
@@ -88,6 +89,10 @@ namespace GP
 		// 이번 프레임에 살아있는 파티클의 예측량(2의 거듭제곱 상한)
 		uint32_t m_SortN = 64;
 		float m_Timer = 0.0f;
+
+		// 궤도 운동 상태
+		float m_OrbitAngle = 0.0f;
+		Math::Vector3 m_OrbitCenter = Math::Vector3(Math::kZero);
 	};
 
 

@@ -27,6 +27,10 @@ namespace GP
 		float loopDuration  = 2.0f;		// 루프 지속 시간
 		int   loopCount		= 3;		// 루프 몇번 돌지
 
+		bool  orbitEnabled  = false;	// 이미터 궤도 운동할지 (데모용)
+		float orbitRadius   = 2.0f;
+		float orbitSpeed    = 2.0f;		// rad/s
+
 		// Particle Emit
 		float lifeTimeMin   = 2.0f;
 		float lifeTimeMax   = 4.0f;

@@ -221,6 +221,12 @@ namespace GP
 				ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
 				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
 					ImGui::SliderInt("Loop Count", &s.loopCount, 1, 20);
+				ImGui::Checkbox("Orbit", &s.orbitEnabled);
+				if (s.orbitEnabled)
+				{
+					ImGui::SliderFloat("Orbit Radius", &s.orbitRadius, 0.1f, 10.0f);
+					ImGui::SliderFloat("Orbit Speed", &s.orbitSpeed, 0.1f, 10.0f, "%.2f rad/s");
+				}
 			}
 			if (g == (int)EParamGroup::Simulate)
 			{

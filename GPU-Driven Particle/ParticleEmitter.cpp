@@ -6,6 +6,7 @@ void GP::ParticleEmitter::Init(uint32_t maxParticles, ParticleSharedResources* s
 {
 	m_maxParticle = maxParticles;
 	m_Shared = shared;
+	m_OrbitCenter = m_EmitterTransform.GetTranslation();
 
 	// 버퍼 초기화
 	std::wstring tag = L" " + std::to_wstring(index); // Emitter 인덱스 
@@ -118,9 +119,26 @@ bool GP::ParticleEmitter::NeedsSort() const
 	return (m_Settings.blendMode == (int)EBlendMode::Alpha && m_Settings.sortEnabled)||
 		m_Settings.rendererType == (int)EParticleRenderer::Ribbon;
 }
+void GP::ParticleEmitter::UpdateOrbit(float dt)
+{
+	if (!m_Settings.orbitEnabled)
+	{
+		m_EmitterTransform.SetTranslation(m_OrbitCenter);
+		return;
+	}
+
+	m_OrbitAngle += m_Settings.orbitSpeed * dt;
+	if (m_OrbitAngle > 2.0f * PI)
+		m_OrbitAngle -= 2.0f * PI;
+
+	Math::Vector3 offset(m_Settings.orbitRadius * cosf(m_OrbitAngle), 0.0f,
+	                     m_Settings.orbitRadius * sinf(m_OrbitAngle));
+	m_EmitterTransform.SetTranslation(m_OrbitCenter + offset);
+}
 void GP::ParticleEmitter::Update(float dt)
 {
 	m_FrameCount++;
+	UpdateOrbit(dt);
 
 	if (!m_Active)
 	{
