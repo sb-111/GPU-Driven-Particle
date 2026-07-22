@@ -115,9 +115,9 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 }
 bool GP::ParticleEmitter::NeedsSort() const
 {
-	// 알파이고, 소팅 원할 때만 or 리본이면 정렬 필요
-	return (m_Settings.blendMode == (int)EBlendMode::Alpha && m_Settings.sortEnabled)||
-		m_Settings.rendererType == (int)EParticleRenderer::Ribbon;
+	// 알파(깊이 키) 또는 리본(나이 키)일 때, 토글이 켜져 있으면 정렬
+	return (m_Settings.blendMode == (int)EBlendMode::Alpha ||
+		m_Settings.rendererType == (int)EParticleRenderer::Ribbon) && m_Settings.sortEnabled;
 }
 void GP::ParticleEmitter::UpdateOrbit(float dt)
 {

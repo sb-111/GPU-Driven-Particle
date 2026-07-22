@@ -281,8 +281,8 @@ namespace GP
 			{
 				ImGui::Combo("Renderer##type", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
-				if (s.blendMode == (int)EBlendMode::Alpha)
-					ImGui::Checkbox("Depth Sort", &s.sortEnabled);
+				if (s.blendMode == (int)EBlendMode::Alpha || s.rendererType == (int)EParticleRenderer::Ribbon)
+					ImGui::Checkbox("Sort", &s.sortEnabled);
 				// 스프라이트 전용 설정
 				if (s.rendererType == (int)EParticleRenderer::Sprite)
 				{
