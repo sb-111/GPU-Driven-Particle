@@ -26,10 +26,11 @@ void GP::ParticleSystem::InitSharedResources()
 	auto meshParticleVS = CompileShader(L"MeshParticleVS.hlsl", L"main", L"vs_6_2");
 	auto meshParticlePS = CompileShader(L"MeshParticlePS.hlsl", L"main", L"ps_6_2");
 	auto ribbonParticleVS = CompileShader(L"RibbonParticleVS.hlsl", L"main", L"vs_6_2");
+	auto ribbonParticlePS = CompileShader(L"RibbonParticlePS.hlsl", L"main", L"ps_6_2");
 	auto particleKickoffCS = CompileShader(L"ParticleKickoffCS.hlsl", L"main", L"cs_6_2");
 	auto particleEmitCS = CompileShader(L"ParticleEmitCS.hlsl", L"main", L"cs_6_2");
 	auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
-	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS &&
+	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS && ribbonParticlePS &&
 		particleKickoffCS && particleEmitCS && particleSimulateCS 
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
@@ -108,7 +109,7 @@ void GP::ParticleSystem::InitSharedResources()
 	// 리본 PSO
 	m_Shared.ribbonAdditivePSO = m_Shared.drawAdditivePSO;
 	m_Shared.ribbonAdditivePSO.SetVertexShader(ribbonParticleVS->GetBufferPointer(), ribbonParticleVS->GetBufferSize());
-	m_Shared.ribbonAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
+	m_Shared.ribbonAdditivePSO.SetPixelShader(ribbonParticlePS->GetBufferPointer(), ribbonParticlePS->GetBufferSize());
 	m_Shared.ribbonAdditivePSO.SetRasterizerState(RasterizerTwoSided);
 	m_Shared.ribbonAdditivePSO.Finalize();
 	
