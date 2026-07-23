@@ -123,6 +123,29 @@ namespace GP
 		s.textureIndex = (int)ETexture::Fire;
 		return s;
 	}
+	inline ParticleSettings MakeOverdrawPreset() // 오버드로우 측정용: 평형 생존수 고정(spawnRate x lifeTime), 랜덤 요소 제거
+	{
+		ParticleSettings s{};
+		s.spawnRate = 10000.0f;                 // 평형 생존수 = 10000 x 2 = 20000
+		s.lifeTimeMin = 2.0f;   s.lifeTimeMax = 2.0f;
+		s.speedMin = 0.5f;      s.speedMax = 0.5f;
+		s.spinSpeedMin = 0.0f;  s.spinSpeedMax = 0.0f;
+		s.initAngleMin = 0.0f;  s.initAngleMax = 0.0f;
+		s.dirSpread = 2.0f;                     // 이미터 주변 공 형태로 뭉치게
+		s.randomSpawnBrightness = false;
+		s.shapeType = (int)EShapeType::Point;
+		s.velocityMode = (int)EVelocityMode::Velocity;
+		s.sizeMode = (int)EUniformMode::Uniform;
+		s.sizeMin[0] = 0.5f;    s.sizeMin[1] = 0.5f; // 큰 쿼드 = 픽셀 부하 극대화
+		s.sizeOverLife = false;
+		s.startColor[0] = 0.15f; s.startColor[1] = 0.18f; s.startColor[2] = 0.25f; s.startColor[3] = 1.0f;
+		s.endColor[0] = 0.15f;   s.endColor[1] = 0.18f;   s.endColor[2] = 0.25f;   s.endColor[3] = 1.0f;
+		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
+		s.blendMode = (int)EBlendMode::Additive;         // 정렬 변수 제거
+		s.rendererType = (int)EParticleRenderer::Sprite;
+		s.textureIndex = (int)ETexture::Fire;
+		return s;
+	}
 	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
@@ -168,6 +191,8 @@ namespace GP
 		if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
 		ImGui::SameLine();
 		if (ImGui::Button("Ribbon")) { s = MakeRibbonPreset(); restart = true; }
+		ImGui::SameLine();
+		if (ImGui::Button("Overdraw")) { s = MakeOverdrawPreset(); restart = true; }
 		ImGui::SameLine();
 		if (ImGui::Button("Restart")) restart = true;
 		ImGui::SameLine();
