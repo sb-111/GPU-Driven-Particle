@@ -66,5 +66,15 @@ VSOutput main(uint vid: SV_VertexID, uint iid: SV_InstanceID)
 	output.color = lerp(color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
 	output.uv = QuadVert[vid] * 0.5f + 0.5f;
 	output.uv.y = 1 - output.uv.y;
+
+	switch (frameParams.ribbonUVMode)
+	{
+		case RIBBON_UV_STRETCH:
+			output.uv.x = normalizedAge;
+			break;
+		case RIBBON_UV_TILE:
+		default:
+			break;
+	}
 	return output;
 }

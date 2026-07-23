@@ -109,8 +109,8 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.useRandomSpawnBrightness = s.randomSpawnBrightness ? 1 : 0;
 	params.useSizeOverLife = s.sizeOverLife ? 1 : 0;
 
-	params.keyMode = m_Settings.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
-
+	params.keyMode = s.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
+	params.ribbonUVMode = s.ribbonUVMode;
 	return params;
 }
 bool GP::ParticleEmitter::NeedsSort() const

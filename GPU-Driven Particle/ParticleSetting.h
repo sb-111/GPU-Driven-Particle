@@ -17,6 +17,7 @@ namespace GP
 	enum class EShapeType: int {Point, Box, Sphere, Cone, Count};
 	enum class EVelocityMode : int { Velocity, VelocityFromPoint, VelocityInCone, Count};
 	enum class EAlignmentMode : int { UnAligned, VelocityAligned, Count}; // up을 뭐로 정의할지: 카메라 up, 속도벡터를 쿼드에 투영한 걸 up
+	enum class ERibbonUVMode : int {Stretch, Tile, Count};
 	// ImGui 튜닝 값 모은 구조체 
 	struct ParticleSettings
 	{
@@ -77,6 +78,6 @@ namespace GP
 		int subImagesX = 1; // 아틀라스 격자 개수
 		int subImagesY = 1;
 		bool sortEnabled = true; // 알파 모드에서만 의미 있음, before/after 비교용
-
+		int ribbonUVMode = (int)ERibbonUVMode::Stretch; // 0: 전체, 1: 쿼드마다
 	};
 }

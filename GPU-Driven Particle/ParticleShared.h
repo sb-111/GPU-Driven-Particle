@@ -50,6 +50,9 @@
 #define SORT_KEY_DEPTH 0
 #define SORT_KEY_AGE 1
 
+// ribbon uv mode
+#define RIBBON_UV_STRETCH 0
+#define RIBBON_UV_TILE 1
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -134,10 +137,7 @@
 		int useRandomSpawnBrightness; // 스폰 시 밝기 랜덤으로 줄지
 		int useSizeOverLife; // 수명 따라 사이즈 감쇠 줄지
 		uint keyMode; // 정렬키를 뭘로 사용할지(뷰 깊이 0 or 파티클 나이 1(리본)) 
-		float pad4;
-
-
-
+		uint ribbonUVMode; // 리본 옵션: 0(전체), 1(쿼드마다)
 	};
 	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB

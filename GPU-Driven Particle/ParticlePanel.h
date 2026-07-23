@@ -193,6 +193,7 @@ namespace GP
 		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
 		static const char* kAlignmentModeNames[(int)EAlignmentMode::Count] = { "Unaligned", "Velocity aligned"};
 		static const char* kRendererNames[(int)EParticleRenderer::Count] = { "Sprite", "Mesh", "Ribbon"};
+		static const char* kRibbonUVModeNames[(int)ERibbonUVMode::Count] = { "Stretch", "Tile" };
 	
 		for (int g = 0; g < (int)EParamGroup::Count; ++g)
 		{
@@ -283,6 +284,9 @@ namespace GP
 				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
 				if (s.blendMode == (int)EBlendMode::Alpha || s.rendererType == (int)EParticleRenderer::Ribbon)
 					ImGui::Checkbox("Sort", &s.sortEnabled);
+				// 리본 전용 설정
+				if (s.rendererType == (int)EParticleRenderer::Ribbon)
+					ImGui::Combo("UV Mode", &s.ribbonUVMode, kRibbonUVModeNames, (int)ERibbonUVMode::Count);
 				// 스프라이트 전용 설정
 				if (s.rendererType == (int)EParticleRenderer::Sprite)
 				{
