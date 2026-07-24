@@ -141,8 +141,16 @@ public:
 		gfx.DrawIndexed(6, 0, 0);
 
 		// =============== 파티클 ==============
+		gfx.TransitionResource(g_SceneColorHalfBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		float halfBufferClear[4] = { 0.0f, 0.0f, 0.0f, 1.0f }; // a = 1
+		gfx.ClearColor(g_SceneColorHalfBuffer, halfBufferClear);
+		gfx.SetRenderTarget(g_SceneColorHalfBuffer.GetRTV());
+		gfx.SetViewportAndScissor(0, 0, g_SceneColorHalfBuffer.GetWidth(), g_SceneColorHalfBuffer.GetHeight());
 		m_Particles.Draw(gfx, viewCB);
 
+		// 파티클을 하프버퍼에 그린 후 SRV로 전환해서 메인 RT에 그리기
+		// 하프버퍼를 합성 Draw Pass에서 가져와서 기존 메인 렌더타겟이랑 합성할 것
+		m_Particles.CompositeToMain(gfx);
 		gfx.Finish();
 
 		m_Particles.EndFrame();   // 핑퐁 스왑

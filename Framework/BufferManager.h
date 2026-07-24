@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) Microsoft. All rights reserved.
 // This code is licensed under the MIT License (MIT).
 // THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF
@@ -26,6 +26,9 @@ namespace Graphics
     extern DepthBuffer g_SceneDepthBuffer;  // D32_FLOAT
     extern ColorBuffer g_SceneColorBuffer;  // R11G11B10_FLOAT
     extern ColorBuffer g_OverlayBuffer;     // R8G8B8A8_UNORM (UI overlay)
+
+	extern ColorBuffer g_SceneColorHalfBuffer;
+	extern DepthBuffer g_SceneDepthHalfBuffer;
 
     void InitializeRenderingBuffers(uint32_t NativeWidth, uint32_t NativeHeight );
     void ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t NativeHeight);

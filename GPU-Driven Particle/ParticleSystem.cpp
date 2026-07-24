@@ -30,8 +30,11 @@ void GP::ParticleSystem::InitSharedResources()
 	auto particleKickoffCS = CompileShader(L"ParticleKickoffCS.hlsl", L"main", L"cs_6_2");
 	auto particleEmitCS = CompileShader(L"ParticleEmitCS.hlsl", L"main", L"cs_6_2");
 	auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
+	auto screenQuadVS = CompileShader(L"ScreenQuadVS.hlsl", L"main", L"vs_6_2");
+	auto compositePS = CompileShader(L"CompositePS.hlsl", L"main", L"ps_6_2");
 	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS && ribbonParticlePS &&
-		particleKickoffCS && particleEmitCS && particleSimulateCS 
+		particleKickoffCS && particleEmitCS && particleSimulateCS && 
+		screenQuadVS && compositePS
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 	m_Shared.sorter.Init();
@@ -112,7 +115,21 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.ribbonAdditivePSO.SetPixelShader(ribbonParticlePS->GetBufferPointer(), ribbonParticlePS->GetBufferSize());
 	m_Shared.ribbonAdditivePSO.SetRasterizerState(RasterizerTwoSided);
 	m_Shared.ribbonAdditivePSO.Finalize();
-	
+
+	m_Shared.drawAdditiveHalfPSO = m_Shared.drawAdditivePSO;
+	m_Shared.drawAdditiveHalfPSO.SetRenderTargetFormats(1, &g_SceneColorHalfBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
+	m_Shared.drawAdditiveHalfPSO.SetDepthStencilState(DepthStateDisabled);
+	m_Shared.drawAdditiveHalfPSO.Finalize();
+
+	// 합성 패스용 PSO : 블렌드 모드 주의 
+	m_Shared.compositePSO = m_Shared.drawAdditivePSO;
+	m_Shared.compositePSO.SetVertexShader(screenQuadVS->GetBufferPointer(), screenQuadVS->GetBufferSize());
+	m_Shared.compositePSO.SetPixelShader(compositePS->GetBufferPointer(), compositePS->GetBufferSize());
+	m_Shared.compositePSO.SetBlendState(BlendAdditive); // TODO : 알파 추가 시 ONE + SRC_ALPHA 교체
+	m_Shared.compositePSO.SetDepthStencilState(DepthStateDisabled);
+	m_Shared.compositePSO.SetRenderTargetFormats(1, &g_SceneColorHalfBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
+	m_Shared.compositePSO.Finalize();
+
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =
 		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
@@ -172,7 +189,20 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB
 	for (auto& e : sortedEmitters)
 		e->Draw(gfx);
 }
+void GP::ParticleSystem::CompositeToMain(GraphicsContext& gfx)
+{
+	gfx.TransitionResource(g_SceneColorHalfBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	gfx.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 
+	gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+	gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+	gfx.SetPipelineState(m_Shared.compositePSO);
+	gfx.SetRootSignature(m_Shared.graphicsRootSig);
+	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	gfx.SetDynamicDescriptor(5, 0, g_SceneColorHalfBuffer.GetSRV());
+
+	gfx.Draw(3, 0);
+}
 void GP::ParticleSystem::EndFrame()
 {
 	for (auto& e : m_Emitters)

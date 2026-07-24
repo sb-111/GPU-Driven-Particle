@@ -28,6 +28,12 @@ namespace GP
 		ByteAddressBuffer meshVertexBuffer, meshIndexBuffer;
 
 		GraphicsPSO ribbonAdditivePSO, ribbonAlphaPSO;
+
+		// 스프라이트 가산용(하프)
+		GraphicsPSO drawAdditiveHalfPSO;
+
+		// 합성용
+		GraphicsPSO compositePSO;
 	};
 
 	class ParticleEmitter

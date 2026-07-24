@@ -335,7 +335,8 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 	if (m_Settings.rendererType == (int)EParticleRenderer::Sprite)
 	{
 		// 블렌드 모드에 따른 다른 PSO 설정
-		gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
+		//gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
+		gfx.SetPipelineState(m_Shared->drawAdditiveHalfPSO);
 		gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 	}
 	else if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)

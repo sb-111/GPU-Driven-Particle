@@ -43,6 +43,8 @@ namespace GP {
 
 		size_t GetEmitterCount() const { return m_Emitters.size(); }
 		ParticleEmitter& GetEmitter(size_t i) { return *m_Emitters[i]; }
+
+		void CompositeToMain(GraphicsContext& gfx);
 	private:
 		void InitSharedResources();
 
