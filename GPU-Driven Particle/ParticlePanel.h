@@ -8,6 +8,8 @@
 #include <cstdio>
 
 
+namespace GameCore { extern HWND g_hWnd; }
+
 namespace GP
 {
 	enum class EParamGroup : int { Emitter, Emit, Simulate, Renderer, Count };
@@ -146,6 +148,13 @@ namespace GP
 		s.textureIndex = (int)ETexture::Fire;
 		return s;
 	}
+	// 클라이언트 영역을 정확한 픽셀 크기로 변경 (WM_SIZE -> Display::Resize 경로로 렌더 해상도까지 갱신)
+	inline void SetClientSize(int width, int height)
+	{
+		RECT r{ 0, 0, width, height };
+		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
+		::SetWindowPos(GameCore::g_hWnd, nullptr, 0, 0, r.right - r.left, r.bottom - r.top, SWP_NOMOVE | SWP_NOZORDER);
+	}
 	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
@@ -199,6 +208,13 @@ namespace GP
 		ImGui::Checkbox("Pause", &paused);
 
 		
+		// 해상도 스냅 (오버드로우 측정용, 클라이언트 영역 기준)
+		if (ImGui::Button("1920x1129")) SetClientSize(1920, 1129);
+		ImGui::SameLine();
+		if (ImGui::Button("960x564")) SetClientSize(960, 564);
+		ImGui::SameLine();
+		ImGui::Text("Resolution");
+
 		Math::Vector3 camPos = camera.GetPosition();
 		float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
 		if (ImGui::DragFloat3("Camera Pos", camPosF, 0.1f))
