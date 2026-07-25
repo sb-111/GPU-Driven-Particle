@@ -23,7 +23,7 @@ namespace Graphics
     ColorBuffer g_SceneColorBuffer;
     ColorBuffer g_OverlayBuffer;
 
-	ColorBuffer g_SceneColorHalfBuffer;
+	ColorBuffer g_SceneColorHalfBuffer(Color(0.0f, 0.0f, 0.0f, 1.0f)); // clear 값 지정
 	DepthBuffer g_SceneDepthHalfBuffer;
 
     DXGI_FORMAT DefaultHdrColorFormat = DXGI_FORMAT_R11G11B10_FLOAT;

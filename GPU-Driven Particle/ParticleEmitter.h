@@ -20,19 +20,15 @@ namespace GP
 		RootSignature computeRootSig;
 		RootSignature graphicsRootSig;
 		ComputePSO kickoffPSO, emitPSO, simulatePSO;
-		GraphicsPSO drawAdditivePSO, drawAlphaPSO;
 		Texture spriteTextures[(int)ETexture::Count];
 		BitonicSort sorter;
 
-		GraphicsPSO meshAdditivePSO, meshAlphaPSO;
+		// [렌더러][해상도]
+		GraphicsPSO drawPSO[(int)EParticleRenderer::Count][2];
+
 		ByteAddressBuffer meshVertexBuffer, meshIndexBuffer;
 
-		GraphicsPSO ribbonAdditivePSO, ribbonAlphaPSO;
-
-		// 스프라이트 가산용(하프)
-		GraphicsPSO drawAdditiveHalfPSO;
-
-		// 합성용
+		// 저해상도 파티클 렌더 후 합성할 때만 사용
 		GraphicsPSO compositePSO;
 	};
 
@@ -57,7 +53,7 @@ namespace GP
 		void SimulatePass(ComputeContext& cpt);
 		void SortPass(ComputeContext& cpt);
 		void UpdateDrawArgs(ComputeContext& cpt);
-		void Draw(GraphicsContext& gfx);
+		void Draw(GraphicsContext& gfx, bool halfResolution);
 		void EndFrame();
 
 	private:

@@ -79,55 +79,76 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.graphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
 	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT); 
 
-	m_Shared.drawAdditivePSO.SetRootSignature(m_Shared.graphicsRootSig);
-	// 인풋 레이아웃 X - 정점 버퍼 대신 SV_VertexID로 SRV(풀)를 직접 읽음
-	m_Shared.drawAdditivePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	m_Shared.drawAdditivePSO.SetVertexShader(partVS->GetBufferPointer(), partVS->GetBufferSize());
-	m_Shared.drawAdditivePSO.SetPixelShader(partPS->GetBufferPointer(), partPS->GetBufferSize());
-	m_Shared.drawAdditivePSO.SetRasterizerState(RasterizerDefault);
-	m_Shared.drawAdditivePSO.SetBlendState(BlendAdditive);              // 가산블렌딩
-	m_Shared.drawAdditivePSO.SetDepthStencilState(DepthStateReadOnly);  // 테스트만, 쓰기 금지
-	m_Shared.drawAdditivePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
-	m_Shared.drawAdditivePSO.Finalize();
+	// 파티클 누적용 : 해상도 무관
+	// new.rgb = src.rgb x 1 + dest.rgb x (1-src.a) : pre-multiplied
+	// new.a = src.a x 0 + dest.a x (1-src.a)
+	// * 메인 RT는 R11G11B10 -> A설정 무시, 하프 RT(RGBA16F)에서만 쌓임
+	D3D12_BLEND_DESC blendParticle = BlendPreMultiplied;
+	blendParticle.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ZERO;
 
-	m_Shared.drawAlphaPSO = m_Shared.drawAdditivePSO;
-	m_Shared.drawAlphaPSO.SetBlendState(BlendTraditional);
-	m_Shared.drawAlphaPSO.Finalize();
+	// 합성용
+	// new.rgb = src.rgb x 1 + dest.rgb x src.a
+	D3D12_BLEND_DESC blendComposite = BlendAdditive;
+	blendComposite.RenderTarget[0].DestBlend = D3D12_BLEND_SRC_ALPHA;
 
 	static const D3D12_INPUT_ELEMENT_DESC meshLayout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
-	m_Shared.meshAdditivePSO = m_Shared.drawAdditivePSO;
-	m_Shared.meshAdditivePSO.SetInputLayout(3, meshLayout);
-	m_Shared.meshAdditivePSO.SetVertexShader(meshParticleVS->GetBufferPointer(), meshParticleVS->GetBufferSize());
-	m_Shared.meshAdditivePSO.SetPixelShader(meshParticlePS->GetBufferPointer(), meshParticlePS->GetBufferSize());
-	m_Shared.meshAdditivePSO.Finalize();
 
-	m_Shared.meshAlphaPSO = m_Shared.meshAdditivePSO;
-	m_Shared.meshAlphaPSO.SetBlendState(BlendTraditional);
-	m_Shared.meshAlphaPSO.Finalize();
+	/*
+	* 렌더러별 PSO 설정을 위한 구조체
+	*/
+	struct RendererPSODesc
+	{
+		IDxcBlob* vs;
+		IDxcBlob* ps;
+		const D3D12_INPUT_ELEMENT_DESC* layout; // 메시 렌더러만 사용
+		UINT layoutCount;
+		const D3D12_RASTERIZER_DESC* rasterizer;
+	};
+	const RendererPSODesc rendererDescs[(int)EParticleRenderer::Count] =
+	{
+		{ partVS.Get(),          partPS.Get(),          nullptr,    0, &RasterizerDefault  },
+		{ meshParticleVS.Get(),  meshParticlePS.Get(),  meshLayout, 3, &RasterizerDefault  },
+		{ ribbonParticleVS.Get(),ribbonParticlePS.Get(),nullptr,    0, &RasterizerTwoSided },
+	};
 
-	// 리본 PSO
-	m_Shared.ribbonAdditivePSO = m_Shared.drawAdditivePSO;
-	m_Shared.ribbonAdditivePSO.SetVertexShader(ribbonParticleVS->GetBufferPointer(), ribbonParticleVS->GetBufferSize());
-	m_Shared.ribbonAdditivePSO.SetPixelShader(ribbonParticlePS->GetBufferPointer(), ribbonParticlePS->GetBufferSize());
-	m_Shared.ribbonAdditivePSO.SetRasterizerState(RasterizerTwoSided);
-	m_Shared.ribbonAdditivePSO.Finalize();
+	// 풀/하프 PSO 변형용
+	const DXGI_FORMAT rtFormats[2] = { g_SceneColorBuffer.GetFormat(), g_SceneColorHalfBuffer.GetFormat() };
+	const DXGI_FORMAT dsvFormats[2] = { g_SceneDepthBuffer.GetFormat(), g_SceneDepthHalfBuffer.GetFormat() };
 
-	m_Shared.drawAdditiveHalfPSO = m_Shared.drawAdditivePSO;
-	m_Shared.drawAdditiveHalfPSO.SetRenderTargetFormats(1, &g_SceneColorHalfBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
-	m_Shared.drawAdditiveHalfPSO.SetDepthStencilState(DepthStateDisabled);
-	m_Shared.drawAdditiveHalfPSO.Finalize();
+	// 렌더러 x 해상도 조합별 PSO 초기화
+	for (int r = 0; r < (int)EParticleRenderer::Count; ++r)
+	{
+		const RendererPSODesc& desc = rendererDescs[r];
+		for (int res = 0; res < 2; ++res)
+		{
+			GraphicsPSO& pso = m_Shared.drawPSO[r][res];
+			pso.SetRootSignature(m_Shared.graphicsRootSig);
+			pso.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			pso.SetInputLayout(desc.layoutCount, desc.layout);
+			pso.SetVertexShader(desc.vs->GetBufferPointer(), desc.vs->GetBufferSize());
+			pso.SetPixelShader(desc.ps->GetBufferPointer(), desc.ps->GetBufferSize());
+			pso.SetRasterizerState(*desc.rasterizer);
+			pso.SetBlendState(blendParticle);
+			pso.SetDepthStencilState(DepthStateReadOnly); // 테스트만, 쓰기 금지
+			pso.SetRenderTargetFormat(rtFormats[res], dsvFormats[res]);
+			pso.Finalize();
+		}
+	}
 
-	// 합성 패스용 PSO : 블렌드 모드 주의 
-	m_Shared.compositePSO = m_Shared.drawAdditivePSO;
+	// 합성 패스 PSO : Depth Test off (풀스크린 삼각형의 z는 의미가 없음)
+	m_Shared.compositePSO.SetRootSignature(m_Shared.graphicsRootSig);
+	m_Shared.compositePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	m_Shared.compositePSO.SetInputLayout(0, nullptr);
 	m_Shared.compositePSO.SetVertexShader(screenQuadVS->GetBufferPointer(), screenQuadVS->GetBufferSize());
 	m_Shared.compositePSO.SetPixelShader(compositePS->GetBufferPointer(), compositePS->GetBufferSize());
-	m_Shared.compositePSO.SetBlendState(BlendAdditive); // TODO : 알파 추가 시 ONE + SRC_ALPHA 교체
+	m_Shared.compositePSO.SetRasterizerState(RasterizerDefault);
+	m_Shared.compositePSO.SetBlendState(blendComposite);
 	m_Shared.compositePSO.SetDepthStencilState(DepthStateDisabled);
-	m_Shared.compositePSO.SetRenderTargetFormats(1, &g_SceneColorHalfBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
+	m_Shared.compositePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
 	m_Shared.compositePSO.Finalize();
 
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
@@ -165,10 +186,39 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	}
 }
 
-void GP::ParticleSystem::Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB)
+void GP::ParticleSystem::Render(GraphicsContext& gfx, const ParticleViewCB& viewCB)
 {
-	// Draw 중에는 graphicsRootSig 안바뀜
-	gfx.SetRootSignature(m_Shared.graphicsRootSig);               
+	if (m_HalfResolution)
+	{
+		gfx.TransitionResource(g_SceneColorHalfBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		gfx.TransitionResource(g_SceneDepthHalfBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+
+		gfx.ClearColor(g_SceneColorHalfBuffer);
+		gfx.ClearDepth(g_SceneDepthHalfBuffer);
+
+		gfx.SetViewportAndScissor(0, 0, g_SceneColorHalfBuffer.GetWidth(), g_SceneColorHalfBuffer.GetHeight());
+		gfx.SetRenderTarget(g_SceneColorHalfBuffer.GetRTV(), g_SceneDepthHalfBuffer.GetDSV());
+
+		DrawEmitters(gfx, viewCB, true);
+		// 합성 패스
+		CompositeToMain(gfx);
+	}
+	else
+	{
+		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		gfx.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+
+		gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+		gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
+
+		DrawEmitters(gfx, viewCB, false);
+	}
+}
+
+void GP::ParticleSystem::DrawEmitters(GraphicsContext& gfx, const ParticleViewCB& viewCB, bool halfResolution)
+{
+	// Draw 중에는 graphicsRootSig 유지
+	gfx.SetRootSignature(m_Shared.graphicsRootSig);
 	gfx.SetDynamicConstantBufferView(0, sizeof(viewCB), &viewCB); // b0
 
 	// Emitter 거리별로 정렬 (앞에 있는 Emitter가 올라와야 자연스러움)
@@ -187,17 +237,19 @@ void GP::ParticleSystem::Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB
 		});
 
 	for (auto& e : sortedEmitters)
-		e->Draw(gfx);
+		e->Draw(gfx, halfResolution);
 }
+
 void GP::ParticleSystem::CompositeToMain(GraphicsContext& gfx)
 {
+	ScopedTimer _prof(L"Particle Composite", gfx);
 	gfx.TransitionResource(g_SceneColorHalfBuffer, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	gfx.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+	gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 
 	gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
-	gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV());
-	gfx.SetPipelineState(m_Shared.compositePSO);
+	gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV());
 	gfx.SetRootSignature(m_Shared.graphicsRootSig);
+	gfx.SetPipelineState(m_Shared.compositePSO);
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	gfx.SetDynamicDescriptor(5, 0, g_SceneColorHalfBuffer.GetSRV());
 

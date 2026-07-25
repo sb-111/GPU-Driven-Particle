@@ -38,16 +38,20 @@ namespace GP {
 		void Update(float dt);
 
 		void UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams);
-		void Draw(GraphicsContext& gfx, const ParticleViewCB& viewCB);
+		void Render(GraphicsContext& gfx, const ParticleViewCB& viewCB);
 		void EndFrame();
 
 		size_t GetEmitterCount() const { return m_Emitters.size(); }
 		ParticleEmitter& GetEmitter(size_t i) { return *m_Emitters[i]; }
+		bool& GetHalfResolution() { return m_HalfResolution; }
 
-		void CompositeToMain(GraphicsContext& gfx);
 	private:
 		void InitSharedResources();
+		void DrawEmitters(GraphicsContext& gfx, const ParticleViewCB& viewCB, bool halfResolution);
+		void CompositeToMain(GraphicsContext& gfx);
 
+		// half resolution 렌더 여부
+		bool m_HalfResolution = true;
 		uint32_t m_maxParticle = 0;
 		ParticleSharedResources m_Shared;
 		std::vector<std::unique_ptr<ParticleEmitter>> m_Emitters;

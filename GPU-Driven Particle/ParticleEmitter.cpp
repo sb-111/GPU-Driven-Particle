@@ -317,7 +317,7 @@ void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 	cpt.TransitionResource(m_Counters, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 }
 
-void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
+void GP::ParticleEmitter::Draw(GraphicsContext& gfx, bool halfResolution)
 {
 	ScopedTimer _prof(L"Particle Draw", gfx);
 	ParticleDrawCB drawCB = {};
@@ -332,24 +332,18 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx)
 	gfx.SetBufferSRV(6, m_Counters);											// t3
 	
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	if (m_Settings.rendererType == (int)EParticleRenderer::Sprite)
+	// PSO 선택(렌더러 타입, 해상도 따라)
+	gfx.SetPipelineState(m_Shared->drawPSO[m_Settings.rendererType][halfResolution ? 1 : 0]);
+
+	// 메시 드로우콜
+	if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)
 	{
-		// 블렌드 모드에 따른 다른 PSO 설정
-		//gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->drawAdditivePSO : m_Shared->drawAlphaPSO);
-		gfx.SetPipelineState(m_Shared->drawAdditiveHalfPSO);
-		gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
-	}
-	else if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)
-	{
-		gfx.SetPipelineState(m_Settings.blendMode == (int)EBlendMode::Additive ? m_Shared->meshAdditivePSO : m_Shared->meshAlphaPSO);
 		gfx.SetVertexBuffer(0, m_Shared->meshVertexBuffer.VertexBufferView());
 		gfx.SetIndexBuffer(m_Shared->meshIndexBuffer.IndexBufferView());
 		gfx.ExecuteIndirect(Graphics::DrawIndexedIndirectCommandSignature, m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INDEX_COUNT);
 	}
-	else if (m_Settings.rendererType == (int)EParticleRenderer::Ribbon)
+	else // 스프라이트, 리본 드로우콜
 	{
-		// 리본용 pso 설정
-		gfx.SetPipelineState(m_Shared->ribbonAdditivePSO);
 		gfx.DrawIndirect(m_IndirectArgsBuffer, ARGS_DRAW_VERTEX_COUNT_PER_INSTANCE);
 	}
 }

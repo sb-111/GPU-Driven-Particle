@@ -25,10 +25,11 @@ struct PSInput
 float4 main(PSInput input) : SV_TARGET
 {
 	float4 sampleColor = SpriteTex.Sample(LinearClamp, input.uv);
-	float4 finalColor = sampleColor * input.color;
+	float4 finalColor = sampleColor * input.color; // a = 텍스처 a x 수명 페이드
+	finalColor.rgb *= finalColor.a;
 	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)
 	{
-		finalColor.rgb *= finalColor.a; // 페이드 및 모양
+		finalColor.a = 0.0f; // 가산은 뒤를 안 가림
 	}
 	return finalColor;
 }
