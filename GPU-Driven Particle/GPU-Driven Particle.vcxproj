@@ -182,6 +182,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="SDFCollision.hlsli" />
     <None Include="Shaders\TriangleVS.hlsl" />
     <None Include="Shaders\TrianglePS.hlsl" />
   </ItemGroup>

@@ -111,6 +111,11 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 
 	params.keyMode = s.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
 	params.ribbonUVMode = s.ribbonUVMode;
+
+	params.collsionEnabled = s.collisionEnabled;
+	params.restitution = s.restitution;
+	params.friction = s.friction;
+
 	return params;
 }
 bool GP::ParticleEmitter::NeedsSort() const
@@ -225,7 +230,7 @@ void GP::ParticleEmitter::ResetEmitter()
 	m_CanBurst = true;
 }
 
-void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams)
+void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams)
 {
 	//m_ViewParams = viewParams;
 
@@ -250,6 +255,7 @@ void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewC
 
 	cpt.SetDynamicConstantBufferView(0, sizeof(m_FrameParams), &m_FrameParams);
 	cpt.SetDynamicConstantBufferView(7, sizeof(viewParams), &viewParams); // b1
+	cpt.SetDynamicConstantBufferView(9, sizeof(collisionParams), &collisionParams); // b2
 }
 
 void GP::ParticleEmitter::KickoffPass(ComputeContext& cpt)

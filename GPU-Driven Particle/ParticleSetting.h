@@ -69,6 +69,10 @@ namespace GP
 		float gravity[3]    = { 0.0f, -9.8f, 0.0f };
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
 		bool sizeOverLife = true; // 수명 따라 사이즈 감쇠 줄지
+		// Particle Simulate - Collision
+		bool collisionEnabled = false;
+		float restitution = 0.4f;
+		float friction = 0.2f;
 
 		// Renderer
 		int rendererType = (int)EParticleRenderer::Sprite;
@@ -79,5 +83,15 @@ namespace GP
 		int subImagesY = 1;
 		bool sortEnabled = true; // 알파 모드에서만 의미 있음, before/after 비교용
 		int ribbonUVMode = (int)ERibbonUVMode::Stretch; // 0: 전체, 1: 쿼드마다
+	};
+	struct CollisionSettings
+	{
+		bool planeEnabled = true;
+		float planeNormal[3] = { 0.0f, 1.0f, 0.0f };
+		float planeOffset = 0.0f;
+
+		bool sphereEnabled = false;
+		float sphereCenter[3] = { 0.0f, 1.5f, 0.0f };
+		float sphereRadius = 1.5f;
 	};
 }

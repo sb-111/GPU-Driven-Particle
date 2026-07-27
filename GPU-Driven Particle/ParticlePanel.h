@@ -276,6 +276,12 @@ namespace GP
 			if (g == (int)EParamGroup::Simulate)
 			{
 				ImGui::Checkbox("Size Over Life", &s.sizeOverLife);
+				ImGui::Checkbox("Collision", &s.collisionEnabled);
+				if (s.collisionEnabled)
+				{
+					ImGui::SliderFloat("Restitution", &s.restitution, 0.0f, 1.0f);
+					ImGui::SliderFloat("Friction", &s.friction, 0.0f, 1.0f);
+				}
 			}
 			if (g == (int)EParamGroup::Emit)
 			{
@@ -339,6 +345,23 @@ namespace GP
 					ImGui::SliderInt("SubImages X", &s.subImagesX, 1, 16);
 					ImGui::SliderInt("SubImages Y", &s.subImagesY, 1, 16);
 				}
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Scene Collision", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			CollisionSettings& c = system.GetCollisionSettings();
+			ImGui::Checkbox("Plane", &c.planeEnabled);
+			if (c.planeEnabled)
+			{
+				ImGui::SliderFloat3("Plane Normal", c.planeNormal, -1.0f, 1.0f);
+				ImGui::SliderFloat("Plane Offset", &c.planeOffset, -5.0f, 5.0f);
+			}
+			ImGui::Checkbox("Sphere", &c.sphereEnabled);
+			if (c.sphereEnabled)
+			{
+				ImGui::DragFloat3("Sphere Center", c.sphereCenter, 0.1f);
+				ImGui::SliderFloat("Collider Radius", &c.sphereRadius, 0.1f, 5.0f);
 			}
 		}
 

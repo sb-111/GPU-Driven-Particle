@@ -94,6 +94,9 @@
     <None Include="Quaternion.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="SDFCollision.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ParticleEmitCS.hlsl">

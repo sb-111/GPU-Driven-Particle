@@ -1,6 +1,6 @@
 ﻿#include "ParticleShared.h"
 #include "Quaternion.hlsli"
-
+#include "SDFCollision.hlsli"
 cbuffer ParticleCB : register(b0)
 {
 	ParticleFrameCB params;
@@ -9,6 +9,7 @@ cbuffer ViewCB : register(b1)
 {
 	ParticleViewCB viewParams;
 };
+
 RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0); // UAV
 RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer AliveList2 : register(u2);
@@ -41,7 +42,7 @@ void main(uint3 id : SV_DispatchThreadID)
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
 		p.position += p.velocity * params.deltaTime;
-
+		ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction);
 		// for mesh renderer
 		float angularVelocityLength = length(p.angularVelocity);
 		if(angularVelocityLength > 1e-6f) // 회전있는 파티클만 회전

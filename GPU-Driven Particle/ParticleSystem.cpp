@@ -45,7 +45,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.meshIndexBuffer.Create(L"Cube Index Buffer", 36, sizeof(uint16_t), kCubeIndices);
 
 	// 루트 시그 - 컴퓨트용
-	m_Shared.computeRootSig.Reset(9, 0);
+	m_Shared.computeRootSig.Reset(10, 0);
 	m_Shared.computeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
 	m_Shared.computeRootSig[1].InitAsBufferUAV(0);		// u0
 	m_Shared.computeRootSig[2].InitAsBufferUAV(1);		// u1
@@ -55,6 +55,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[6].InitAsBufferUAV(5);		// u5
 	m_Shared.computeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
 	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
+	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
 	m_Shared.kickoffPSO.SetRootSignature(m_Shared.computeRootSig);
@@ -189,10 +190,20 @@ void GP::ParticleSystem::Update(float dt)
 
 void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams)
 {
+	const CollisionSettings& c = m_CollisionSettings;
+	float nx = c.planeNormal[0], ny = c.planeNormal[1], nz = c.planeNormal[2];
+	float len = std::sqrt(nx * nx + ny * ny + nz * nz);
+	if (len < 1e-6f) { nx = 0.0f; ny = 1.0f; nz = 0.0f; len = 1.0f; }
+
+	ParticleCollisionCB collisionCB{};
+	collisionCB.collisionPlane = { nx / len, ny / len, nz / len, c.planeOffset };
+	collisionCB.collisionSphere = { c.sphereCenter[0], c.sphereCenter[1], c.sphereCenter[2], c.sphereRadius };
+	collisionCB.colliderMask = (c.planeEnabled ? COLLISION_PLANE : 0) | (c.sphereEnabled ? COLLISION_SPHERE : 0);
+
 	// 모든 Emitter에 대해 Pass 실행
 	for (auto& e : m_Emitters)
 	{
-		e->BindResources(cpt, viewParams);
+		e->BindResources(cpt, viewParams, collisionCB);
 		e->KickoffPass(cpt);
 		e->EmitPass(cpt);
 		e->SimulatePass(cpt);

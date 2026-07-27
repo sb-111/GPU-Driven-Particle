@@ -44,6 +44,7 @@ namespace GP {
 		size_t GetEmitterCount() const { return m_Emitters.size(); }
 		ParticleEmitter& GetEmitter(size_t i) { return *m_Emitters[i]; }
 		bool& GetHalfResolution() { return m_HalfResolution; }
+		CollisionSettings& GetCollisionSettings() { return m_CollisionSettings; }
 
 	private:
 		void InitSharedResources();
@@ -53,6 +54,7 @@ namespace GP {
 
 		// half resolution 렌더 여부
 		bool m_HalfResolution = true;
+		CollisionSettings m_CollisionSettings;
 		uint32_t m_maxParticle = 0;
 		ParticleSharedResources m_Shared;
 		std::vector<std::unique_ptr<ParticleEmitter>> m_Emitters;
