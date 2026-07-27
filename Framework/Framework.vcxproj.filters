@@ -143,6 +143,7 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="VolumeBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BufferManager.h" />
@@ -229,6 +230,7 @@
     <ClInclude Include="imgui\imconfig.h">
       <Filter>imgui</Filter>
     </ClInclude>
+    <ClInclude Include="VolumeBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Math\Functions.inl" />
