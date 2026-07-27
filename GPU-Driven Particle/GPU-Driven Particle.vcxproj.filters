@@ -129,5 +129,8 @@
     <FxCompile Include="DownSampleDepthPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="MeshSDFBakeCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
