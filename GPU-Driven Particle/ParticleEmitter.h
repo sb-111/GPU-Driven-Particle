@@ -28,6 +28,9 @@ namespace GP
 
 		ByteAddressBuffer meshVertexBuffer, meshIndexBuffer;
 
+		// DownSample용
+		GraphicsPSO downsampleDepthPSO;
+
 		// 저해상도 파티클 렌더 후 합성할 때만 사용
 		GraphicsPSO compositePSO;
 	};

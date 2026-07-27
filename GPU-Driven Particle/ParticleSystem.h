@@ -47,6 +47,7 @@ namespace GP {
 
 	private:
 		void InitSharedResources();
+		void DownSampleSceneDepth(GraphicsContext& gfx);
 		void DrawEmitters(GraphicsContext& gfx, const ParticleViewCB& viewCB, bool halfResolution);
 		void CompositeToMain(GraphicsContext& gfx);
 

@@ -32,9 +32,11 @@ void GP::ParticleSystem::InitSharedResources()
 	auto particleSimulateCS = CompileShader(L"ParticleSimulateCS.hlsl", L"main", L"cs_6_2");
 	auto screenQuadVS = CompileShader(L"ScreenQuadVS.hlsl", L"main", L"vs_6_2");
 	auto compositePS = CompileShader(L"CompositePS.hlsl", L"main", L"ps_6_2");
+	auto downsampleDepthPS = CompileShader(L"DownSampleDepthPS.hlsl", L"main", L"ps_6_2");
+
 	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS && ribbonParticlePS &&
 		particleKickoffCS && particleEmitCS && particleSimulateCS && 
-		screenQuadVS && compositePS
+		screenQuadVS && compositePS && downsampleDepthPS
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 	m_Shared.sorter.Init();
@@ -138,6 +140,19 @@ void GP::ParticleSystem::InitSharedResources()
 			pso.Finalize();
 		}
 	}
+	// Down Sample PSO : SV_Depth로 깊이만 출력
+	D3D12_DEPTH_STENCIL_DESC downsampleDepthDesc = DepthStateReadWrite;
+	downsampleDepthDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS; // 이전 프레임 깊이때문에 깊이 안써지는 것 방지
+	m_Shared.downsampleDepthPSO.SetRootSignature(m_Shared.graphicsRootSig);
+	m_Shared.downsampleDepthPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+	m_Shared.downsampleDepthPSO.SetInputLayout(0, nullptr);
+	m_Shared.downsampleDepthPSO.SetVertexShader(screenQuadVS->GetBufferPointer(), screenQuadVS->GetBufferSize());
+	m_Shared.downsampleDepthPSO.SetRasterizerState(RasterizerDefault);
+	m_Shared.downsampleDepthPSO.SetPixelShader(downsampleDepthPS->GetBufferPointer(), downsampleDepthPS->GetBufferSize());
+	m_Shared.downsampleDepthPSO.SetBlendState(BlendDisable);
+	m_Shared.downsampleDepthPSO.SetDepthStencilState(downsampleDepthDesc);
+	m_Shared.downsampleDepthPSO.SetRenderTargetFormats(0, nullptr, g_SceneDepthHalfBuffer.GetFormat());
+	m_Shared.downsampleDepthPSO.Finalize();
 
 	// 합성 패스 PSO : Depth Test off (풀스크린 삼각형의 z는 의미가 없음)
 	m_Shared.compositePSO.SetRootSignature(m_Shared.graphicsRootSig);
@@ -190,16 +205,21 @@ void GP::ParticleSystem::Render(GraphicsContext& gfx, const ParticleViewCB& view
 {
 	if (m_HalfResolution)
 	{
+		// 깊이 다운샘플링 패스
+		DownSampleSceneDepth(gfx);
+
+		// 이미터 드로우 (오프스크린) 패스
 		gfx.TransitionResource(g_SceneColorHalfBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		gfx.TransitionResource(g_SceneDepthHalfBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 
 		gfx.ClearColor(g_SceneColorHalfBuffer);
-		gfx.ClearDepth(g_SceneDepthHalfBuffer);
+		
 
 		gfx.SetViewportAndScissor(0, 0, g_SceneColorHalfBuffer.GetWidth(), g_SceneColorHalfBuffer.GetHeight());
 		gfx.SetRenderTarget(g_SceneColorHalfBuffer.GetRTV(), g_SceneDepthHalfBuffer.GetDSV());
 
 		DrawEmitters(gfx, viewCB, true);
+
 		// 합성 패스
 		CompositeToMain(gfx);
 	}
@@ -214,7 +234,19 @@ void GP::ParticleSystem::Render(GraphicsContext& gfx, const ParticleViewCB& view
 		DrawEmitters(gfx, viewCB, false);
 	}
 }
+void GP::ParticleSystem::DownSampleSceneDepth(GraphicsContext& gfx)
+{
+	gfx.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	gfx.TransitionResource(g_SceneDepthHalfBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 
+	gfx.SetViewportAndScissor(0, 0, g_SceneDepthHalfBuffer.GetWidth(), g_SceneDepthHalfBuffer.GetHeight());
+	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	gfx.SetRootSignature(m_Shared.graphicsRootSig);
+	gfx.SetPipelineState(m_Shared.downsampleDepthPSO);
+	gfx.SetDynamicDescriptor(5, 0, g_SceneDepthBuffer.GetDepthSRV());
+	gfx.SetDepthStencilTarget(g_SceneDepthHalfBuffer.GetDSV());
+	gfx.Draw(3, 0);
+}
 void GP::ParticleSystem::DrawEmitters(GraphicsContext& gfx, const ParticleViewCB& viewCB, bool halfResolution)
 {
 	// Draw 중에는 graphicsRootSig 유지

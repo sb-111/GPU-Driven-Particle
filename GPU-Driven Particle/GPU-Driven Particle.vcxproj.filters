@@ -123,5 +123,8 @@
     <FxCompile Include="CompositePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="DownSampleDepthPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
