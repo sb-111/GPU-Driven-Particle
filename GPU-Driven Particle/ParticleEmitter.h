@@ -50,7 +50,8 @@ namespace GP
 		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
 
 		// Emitter 별 Pass (Particle System이 호출)
-		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams);
+		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
+			const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount);
 		void KickoffPass(ComputeContext& cpt);
 		void EmitPass(ComputeContext& cpt);
 		void SimulatePass(ComputeContext& cpt);

@@ -11,6 +11,7 @@ namespace GP
 	public:
 		SceneObject() {}
 		void SetMesh(Mesh* mesh) { m_Mesh = mesh; }
+		Mesh* GetMesh() const { return m_Mesh; }
 		void Draw(GraphicsContext& gfx);
 		Math::UniformTransform& GetTransform() { return m_Transform; }
 		Math::Matrix4 GetWorldMatrix() const { return Math::Matrix4(Math::AffineTransform(m_Transform)); }

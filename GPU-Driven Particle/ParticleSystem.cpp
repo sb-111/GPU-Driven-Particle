@@ -4,6 +4,9 @@
 #include "BufferManager.h"   // g_SceneColorBuffer / g_SceneDepthBuffer
 #include "CommandContext.h"
 #include "CubeMesh.h"
+#include "MathConvert.h"
+#include "Mesh.h"
+#include "SceneObject.h"
 
 using namespace GameCore;
 using namespace Graphics;
@@ -35,7 +38,7 @@ void GP::ParticleSystem::InitSharedResources()
 	auto downsampleDepthPS = CompileShader(L"DownSampleDepthPS.hlsl", L"main", L"ps_6_2");
 
 	ASSERT(partVS && partPS && meshParticleVS && meshParticlePS && ribbonParticleVS && ribbonParticlePS &&
-		particleKickoffCS && particleEmitCS && particleSimulateCS && 
+		particleKickoffCS && particleEmitCS && particleSimulateCS &&
 		screenQuadVS && compositePS && downsampleDepthPS
 		, "셰이더 컴파일 실패 - VS 출력창 확인");
 
@@ -45,7 +48,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.meshIndexBuffer.Create(L"Cube Index Buffer", 36, sizeof(uint16_t), kCubeIndices);
 
 	// 루트 시그 - 컴퓨트용
-	m_Shared.computeRootSig.Reset(10, 0);
+	m_Shared.computeRootSig.Reset(11, 1);
 	m_Shared.computeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
 	m_Shared.computeRootSig[1].InitAsBufferUAV(0);		// u0
 	m_Shared.computeRootSig[2].InitAsBufferUAV(1);		// u1
@@ -56,6 +59,8 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
 	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
 	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
+	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t3 (sdf)
+	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL);
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
 	m_Shared.kickoffPSO.SetRootSignature(m_Shared.computeRootSig);
@@ -80,7 +85,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.graphicsRootSig[5].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 2, 1, D3D12_SHADER_VISIBILITY_PIXEL); // 텍스처 (t2)
 	m_Shared.graphicsRootSig[6].InitAsBufferSRV(3);		 // Counters (t3)
 	m_Shared.graphicsRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_PIXEL);
-	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT); 
+	m_Shared.graphicsRootSig.Finalize(L"ParticleDraw", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	// 파티클 누적용 : 해상도 무관
 	// new.rgb = src.rgb x 1 + dest.rgb x (1-src.a) : pre-multiplied
@@ -169,10 +174,18 @@ void GP::ParticleSystem::InitSharedResources()
 
 	// 텍스쳐 로드 (ETexture enum 순서와 일치)
 	static const char* kTexturePaths[(int)ETexture::Count] =
-		{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
-		  "SpriteAtlasTextures/boom3.dds", "SpriteAtlasTextures/exp2_0.dds" };
+	{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
+	  "SpriteAtlasTextures/boom3.dds", "SpriteAtlasTextures/exp2_0.dds" };
 	for (int i = 0; i < (int)ETexture::Count; ++i)
 		ASSERT(LoadDDSTexture(m_Shared.spriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
+}
+
+void GP::ParticleSystem::AddSDFCollider(SceneObject* pObject)
+{
+	if (pObject)
+	{
+		m_SDFColliders.push_back(pObject);
+	}
 }
 
 void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)
@@ -200,10 +213,39 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	collisionCB.collisionSphere = { c.sphereCenter[0], c.sphereCenter[1], c.sphereCenter[2], c.sphereRadius };
 	collisionCB.colliderMask = (c.planeEnabled ? COLLISION_PLANE : 0) | (c.sphereEnabled ? COLLISION_SPHERE : 0);
 
+	D3D12_CPU_DESCRIPTOR_HANDLE sdfSRVs[MAX_SDF_COUNT] = {};
+	uint32_t sdfCount = 0;
+	for (SceneObject* obj : m_SDFColliders)
+	{
+		if (sdfCount >= MAX_SDF_COUNT)
+			break;
+		MeshSDF* sdf = obj->GetMesh() ? obj->GetMesh()->GetSDF() : nullptr;
+		if (sdf == nullptr || sdf->volume.GetResource() == nullptr)
+			continue;
+
+		// 로컬 sdf에 Instance 이동 반영 (회전, 스케일 미지원)
+		Math::Vector3 translation = obj->GetTransform().GetTranslation();
+		collisionCB.sdfInstances[sdfCount].boundsMin = ToF3(sdf->boundsMin + translation);
+		collisionCB.sdfInstances[sdfCount].boundsMax = ToF3(sdf->boundsMin + sdf->boundsSize + translation);
+
+		cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		sdfSRVs[sdfCount] = sdf->volume.GetSRV();
+		sdfCount++;
+	}
+	// 남는 슬롯도 유효 핸들로 채우기 (테이블에 빈 디스크립터 안 남도록)
+	for (uint32_t i = sdfCount; sdfCount > 0 && i < MAX_SDF_COUNT; ++i)
+		sdfSRVs[i] = sdfSRVs[sdfCount - 1];
+
+	collisionCB.activeSDFCount = sdfCount;
+	if (sdfCount > 0)
+	{
+		collisionCB.colliderMask |= COLLISION_SDF;
+	}
+
 	// 모든 Emitter에 대해 Pass 실행
 	for (auto& e : m_Emitters)
 	{
-		e->BindResources(cpt, viewParams, collisionCB);
+		e->BindResources(cpt, viewParams, collisionCB, sdfSRVs, sdfCount);
 		e->KickoffPass(cpt);
 		e->EmitPass(cpt);
 		e->SimulatePass(cpt);
@@ -224,7 +266,7 @@ void GP::ParticleSystem::Render(GraphicsContext& gfx, const ParticleViewCB& view
 		gfx.TransitionResource(g_SceneDepthHalfBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
 
 		gfx.ClearColor(g_SceneColorHalfBuffer);
-		
+
 
 		gfx.SetViewportAndScissor(0, 0, g_SceneColorHalfBuffer.GetWidth(), g_SceneColorHalfBuffer.GetHeight());
 		gfx.SetRenderTarget(g_SceneColorHalfBuffer.GetRTV(), g_SceneDepthHalfBuffer.GetDSV());

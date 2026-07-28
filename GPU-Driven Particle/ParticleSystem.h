@@ -14,6 +14,8 @@ class ComputeContext;
 
 namespace GP {
 
+	class SceneObject;
+
 	static bool LoadDDSTexture(Texture& tex, const char* path)
 	{
 		// binary: 바이트 그대로 읽어라, ate: at end - 열자마자 커서 파일 끝에
@@ -46,6 +48,9 @@ namespace GP {
 		bool& GetHalfResolution() { return m_HalfResolution; }
 		CollisionSettings& GetCollisionSettings() { return m_CollisionSettings; }
 
+		// SDF Collider 등록
+		void AddSDFCollider(SceneObject* pObject);
+
 	private:
 		void InitSharedResources();
 		void DownSampleSceneDepth(GraphicsContext& gfx);
@@ -58,6 +63,9 @@ namespace GP {
 		uint32_t m_maxParticle = 0;
 		ParticleSharedResources m_Shared;
 		std::vector<std::unique_ptr<ParticleEmitter>> m_Emitters;
+
+		// SDF Collider 목록
+		std::vector<SceneObject*> m_SDFColliders;
 	};
 
 

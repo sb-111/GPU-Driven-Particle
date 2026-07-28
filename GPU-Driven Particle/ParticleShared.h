@@ -57,7 +57,9 @@
 
 #define COLLISION_PLANE 1
 #define COLLISION_SPHERE 2
+#define COLLISION_SDF 4
 
+#define MAX_SDF_COUNT 4
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -167,12 +169,23 @@
 		int pad0;
 		int pad1;
 	};
+	struct GP_CB_ALIGN SDFInstanceData
+	{
+		float3 boundsMin; // 12B
+		float pad0;		  // 4B
+		float3 boundsMax; // 12B
+		float pad1;		  // 4B
+	};
 	struct GP_CB_ALIGN ParticleCollisionCB
 	{
-		float4 collisionPlane;
-		float4 collisionSphere;
-		uint colliderMask;
-		float3 pad;
+		float4 collisionPlane;  // 16B
+		float4 collisionSphere; // 16B
+
+		uint colliderMask;		// 4B
+		uint activeSDFCount;    // 4B
+		float2 pad;				// 8B (Offset 48)
+
+		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 4 = 128B (Offset 48 ~ 175)
 	};
 #ifdef __cplusplus
 	}

@@ -101,7 +101,8 @@ public:
 
 		// 5. SDF Baker
 		m_SDFBaker.Init();
-		m_SDFBaker.Bake(m_SphereMeshSDF, m_SphereMesh, 64, 64, 64);
+		m_SDFBaker.Bake(m_SphereMesh, 64, 64, 64);
+		m_Particles.AddSDFCollider(&m_SphereObject);
 	}
 
 	void Cleanup(void) override {}
@@ -122,7 +123,6 @@ public:
 	// ==============================================================
 	void RenderScene(void) override
 	{
-		//m_SDFBaker.Bake(m_SphereMeshSDF, m_SphereMesh, 64, 64, 64);
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Frame");
 		m_Camera.Update();
 
@@ -182,7 +182,6 @@ private:
 	Mesh m_SphereMesh;			// Asset
 	SceneObject m_SphereObject;	// Instance
 	SDFBaker m_SDFBaker;
-	MeshSDF m_SphereMeshSDF;
 
 	bool m_Paused = false;
 };

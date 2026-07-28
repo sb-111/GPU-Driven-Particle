@@ -230,7 +230,8 @@ void GP::ParticleEmitter::ResetEmitter()
 	m_CanBurst = true;
 }
 
-void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams)
+void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
+	const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount)
 {
 	//m_ViewParams = viewParams;
 
@@ -256,6 +257,10 @@ void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewC
 	cpt.SetDynamicConstantBufferView(0, sizeof(m_FrameParams), &m_FrameParams);
 	cpt.SetDynamicConstantBufferView(7, sizeof(viewParams), &viewParams); // b1
 	cpt.SetDynamicConstantBufferView(9, sizeof(collisionParams), &collisionParams); // b2
+	if (sdfCount > 0)
+	{
+		cpt.SetDynamicDescriptors(10, 0, MAX_SDF_COUNT, sdfSRVs);
+	}
 }
 
 void GP::ParticleEmitter::KickoffPass(ComputeContext& cpt)
