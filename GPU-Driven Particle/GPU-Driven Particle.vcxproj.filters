@@ -39,6 +39,12 @@
     <ClCompile Include="BitonicSort.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="SceneObject.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderTypes.h">
@@ -74,14 +80,14 @@
     <ClInclude Include="CubeMesh.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\TrianglePS.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\TriangleVS.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="ParticleVS.hlsl">
       <Filter>Shaders</Filter>
     </None>
@@ -130,6 +136,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="MeshSDFBakeCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="OpaqueVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="OpaquePS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
