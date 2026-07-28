@@ -16,6 +16,7 @@
 
 #include "Mesh.h"
 #include "SceneObject.h"
+#include "SDFBaker.h"
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -97,6 +98,10 @@ public:
 		// 4. 카메라 투영 설정 (fov/near/far 고정 → 1회. 창 리사이즈 때만 갱신)
 		float aspect = (float)g_SceneColorBuffer.GetHeight() / (float)g_SceneColorBuffer.GetWidth(); // ※ 높이/너비
 		m_Camera.SetPerspective(3.14159f / 3.0f, aspect, 1.0f, 1000.0f); // 60도
+
+		// 5. SDF Baker
+		m_SDFBaker.Init();
+		m_SDFBaker.Bake(m_SphereMeshSDF, m_SphereMesh, 64, 64, 64);
 	}
 
 	void Cleanup(void) override {}
@@ -117,6 +122,7 @@ public:
 	// ==============================================================
 	void RenderScene(void) override
 	{
+		//m_SDFBaker.Bake(m_SphereMeshSDF, m_SphereMesh, 64, 64, 64);
 		GraphicsContext& gfx = GraphicsContext::Begin(L"Frame");
 		m_Camera.Update();
 
@@ -175,6 +181,8 @@ private:
 	ByteAddressBuffer m_FloorIB;
 	Mesh m_SphereMesh;			// Asset
 	SceneObject m_SphereObject;	// Instance
+	SDFBaker m_SDFBaker;
+	MeshSDF m_SphereMeshSDF;
 
 	bool m_Paused = false;
 };
