@@ -42,7 +42,10 @@ void main(uint3 id : SV_DispatchThreadID)
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
 		p.position += p.velocity * params.deltaTime;
-		ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction);
+		if(params.collisionEnabled != 0)
+		{
+			ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction);
+		}
 		// for mesh renderer
 		float angularVelocityLength = length(p.angularVelocity);
 		if(angularVelocityLength > 1e-6f) // 회전있는 파티클만 회전

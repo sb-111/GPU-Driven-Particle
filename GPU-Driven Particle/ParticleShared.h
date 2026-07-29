@@ -148,7 +148,7 @@
 
 		float restitution;
 		float friction;
-		uint collsionEnabled;
+		uint collisionEnabled;
 		uint pad;
 	};
 	// 프레임당 1번, Compute/Graphics 공용

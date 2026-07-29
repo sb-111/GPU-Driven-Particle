@@ -112,7 +112,7 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.keyMode = s.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
 	params.ribbonUVMode = s.ribbonUVMode;
 
-	params.collsionEnabled = s.collisionEnabled;
+	params.collisionEnabled = s.collisionEnabled;
 	params.restitution = s.restitution;
 	params.friction = s.friction;
 

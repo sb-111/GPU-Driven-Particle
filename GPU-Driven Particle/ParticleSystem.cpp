@@ -60,7 +60,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
 	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
 	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t3 (sdf)
-	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL);
+	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL); // SDF 샘플용
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
 	m_Shared.kickoffPSO.SetRootSignature(m_Shared.computeRootSig);
@@ -237,7 +237,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		sdfSRVs[i] = sdfSRVs[sdfCount - 1];
 
 	collisionCB.activeSDFCount = sdfCount;
-	if (sdfCount > 0)
+	if (sdfCount > 0 && c.sdfEnabled)
 	{
 		collisionCB.colliderMask |= COLLISION_SDF;
 	}

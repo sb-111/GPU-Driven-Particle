@@ -67,7 +67,7 @@ public:
 		float sphereColor[4] = { 1.0f, 0.0f,0.0f,1.0f };
 		m_SphereMesh.CreateSphere(1.5f, 16, 32, sphereColor);
 		m_SphereObject.SetMesh(&m_SphereMesh);
-		m_SphereObject.GetTransform().SetTranslation(Math::Vector3(5.0f, 0.0f, 0.0f));
+		m_SphereObject.GetTransform().SetTranslation(Math::Vector3(0.0f, -5.0f, 0.0f));
 
 		// 2. 씬(불투명) 루트시그 + PSO
 		m_OpaqueRootSig.Reset(3, 0);
@@ -112,7 +112,7 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera, &m_SphereObject);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);

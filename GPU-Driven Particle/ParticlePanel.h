@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "ParticleSetting.h"
 #include "ParticleSystem.h"
+#include "SceneObject.h"
+#include "Mesh.h"
 #include "Camera.h"
 #include "imgui/imgui.h"
 #include <cstddef>
@@ -155,7 +157,7 @@ namespace GP
 		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
 		::SetWindowPos(GameCore::g_hWnd, nullptr, 0, 0, r.right - r.left, r.bottom - r.top, SWP_NOMOVE | SWP_NOZORDER);
 	}
-	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
+	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera, SceneObject* sdfObject = nullptr)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
 		{
@@ -362,6 +364,24 @@ namespace GP
 			{
 				ImGui::DragFloat3("Sphere Center", c.sphereCenter, 0.1f);
 				ImGui::SliderFloat("Collider Radius", &c.sphereRadius, 0.1f, 5.0f);
+			}
+		}
+
+		if (sdfObject && ImGui::CollapsingHeader("Scene Object", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Checkbox("SDF Collider", &system.GetCollisionSettings().sdfEnabled);
+			Math::Vector3 t = sdfObject->GetTransform().GetTranslation();
+			float objPos[3] = { t.GetX(), t.GetY(), t.GetZ() };
+			if (ImGui::DragFloat3("Object Position", objPos, 0.05f))
+				sdfObject->GetTransform().SetTranslation(Math::Vector3(objPos[0], objPos[1], objPos[2]));
+
+			if (ImGui::Button("Sync Analytic Sphere") && sdfObject->GetMesh())
+			{
+				CollisionSettings& c = system.GetCollisionSettings();
+				c.sphereCenter[0] = objPos[0];
+				c.sphereCenter[1] = objPos[1];
+				c.sphereCenter[2] = objPos[2];
+				c.sphereRadius = sdfObject->GetMesh()->GetBoundsMax().GetX();
 			}
 		}
 

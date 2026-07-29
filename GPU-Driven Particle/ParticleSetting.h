@@ -93,5 +93,7 @@ namespace GP
 		bool sphereEnabled = false;
 		float sphereCenter[3] = { 0.0f, 1.5f, 0.0f };
 		float sphereRadius = 1.5f;
+
+		bool sdfEnabled = true;
 	};
 }
