@@ -9,9 +9,10 @@ cbuffer CollisionCB : register(b2)
 }
 Texture3D<float> SDFTextures[MAX_SDF_COUNT] : register(t0);
 SamplerState LinearClamp  : register(s0);
-float SampleSDF(float3 worldPos)
+float SampleSDF(float3 worldPos, out float gradEps)
 {
 	float d = 1e30f;
+	gradEps = 0.05f;
 
 	if (collisionParams.colliderMask & COLLISION_PLANE)
 	{
@@ -36,16 +37,20 @@ float SampleSDF(float3 worldPos)
 	{
 		for (uint i = 0; i < collisionParams.activeSDFCount; ++i)
 		{
-			// 살아있는 SDF까지만 루프
+			float3 localPos = mul(collisionParams.sdfInstances[i].worldToLocal, float4(worldPos, 1.0f)).xyz;
+			float3 uvw = (localPos - collisionParams.sdfInstances[i].localBoundsMin)
+				/ (collisionParams.sdfInstances[i].localBoundsMax - collisionParams.sdfInstances[i].localBoundsMin);
 
-			// 샘플링하여 표면까지 최단 거리 구하기
-			// worldPos -> 볼륨 내 0~1 구간으로 변환
-			float3 uvw = (worldPos - collisionParams.sdfInstances[i].boundsMin)
-				/ (collisionParams.sdfInstances[i].boundsMax - collisionParams.sdfInstances[i].boundsMin);
-			float dSdf = SDFTextures[i].SampleLevel(LinearClamp, uvw, 0);
+			// 바운드 밖 스킵
+			if (any(uvw < 0.0f) || any(uvw > 1.0f))
+				continue;
+
+			// 로컬 공간 거리 값을 월드 거리로 변경
+			float dSdf = SDFTextures[i].SampleLevel(LinearClamp, uvw, 0) * collisionParams.sdfInstances[i].uniformScale;
 			if(dSdf < d)
 			{
 				d = dSdf;
+				gradEps = collisionParams.sdfInstances[i].gradientEpsilon;
 			}
 		}
 	}
@@ -53,31 +58,30 @@ float SampleSDF(float3 worldPos)
 	
 }
 // 해당 위치에서 노말 방향 반환
-float3 SampleSDFGradient(float3 worldPos)
+float3 SampleSDFGradient(float3 worldPos, float h)
 {
-	const float h = 0.05f;
+	float unusedEps;
 	float3 gradient;
 	// 중앙차분법
-	gradient.x = SampleSDF(worldPos + float3(h, 0, 0)) - SampleSDF(worldPos - float3(h, 0, 0));
-	gradient.y = SampleSDF(worldPos + float3(0, h, 0)) - SampleSDF(worldPos - float3(0, h, 0));
-	gradient.z = SampleSDF(worldPos + float3(0, 0, h)) - SampleSDF(worldPos - float3(0, 0, h));
+	gradient.x = SampleSDF(worldPos + float3(h, 0, 0), unusedEps) - SampleSDF(worldPos - float3(h, 0, 0), unusedEps);
+	gradient.y = SampleSDF(worldPos + float3(0, h, 0), unusedEps) - SampleSDF(worldPos - float3(0, h, 0), unusedEps);
+	gradient.z = SampleSDF(worldPos + float3(0, 0, h), unusedEps) - SampleSDF(worldPos - float3(0, 0, h), unusedEps);
 
-	// 정규화
-	gradient = normalize(gradient);
-
-	return gradient;
+	float len = length(gradient);
+	return (len > 1e-5f) ? gradient / len : float3(0.0f, 1.0f, 0.0f);
 }
 void ApplySDFCollision(inout float3 worldPos, inout float3 velocity, float restitution, float friction)
 {
 	// 표면까지 거리 샘플
-	float d = SampleSDF(worldPos);
-	
+	float gradEps;
+	float d = SampleSDF(worldPos, gradEps);
+
 	// 외부에 있으면 충돌 처리 Pass
 	if (d >= 0.0f)
 		return;
 
 	// 위치 보정 (외부로 밀어내기)
-	float3 normal = SampleSDFGradient(worldPos);
+	float3 normal = SampleSDFGradient(worldPos, gradEps);
 	worldPos -= normal * d; // normal은 표면 바깥 방향, d는 음수
 	
 	// 이미 튕겨져 나가는 방향이면 반사 X

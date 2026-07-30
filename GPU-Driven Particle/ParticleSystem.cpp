@@ -223,11 +223,20 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		if (sdf == nullptr || sdf->volume.GetResource() == nullptr)
 			continue;
 
-		// 로컬 sdf에 Instance 이동 반영 (회전, 스케일 미지원)
-		Math::Vector3 translation = obj->GetTransform().GetTranslation();
-		collisionCB.sdfInstances[sdfCount].boundsMin = ToF3(sdf->boundsMin + translation);
-		collisionCB.sdfInstances[sdfCount].boundsMax = ToF3(sdf->boundsMin + sdf->boundsSize + translation);
+		Math::Matrix4 worldMat = obj->GetWorldMatrix();
+		float scale = (float)obj->GetTransform().GetScale();
 
+		collisionCB.sdfInstances[sdfCount].worldToLocal = ToF4x4(Math::Invert(worldMat)); // 역변환 재료
+		collisionCB.sdfInstances[sdfCount].localBoundsMin = ToF3(sdf->boundsMin);
+		collisionCB.sdfInstances[sdfCount].localBoundsMax = ToF3(sdf->boundsMin + sdf->boundsSize);
+		collisionCB.sdfInstances[sdfCount].uniformScale = scale;
+		float minVoxel = 1e30f;
+		minVoxel = std::min(minVoxel, (float)sdf->boundsSize.GetX() / sdf->resolution[0]);
+		minVoxel = std::min(minVoxel, (float)sdf->boundsSize.GetY() / sdf->resolution[1]);
+		minVoxel = std::min(minVoxel, (float)sdf->boundsSize.GetZ() / sdf->resolution[2]);
+		collisionCB.sdfInstances[sdfCount].gradientEpsilon = minVoxel * scale; // 월드 단위
+
+		// SRV 전환
 		cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		sdfSRVs[sdfCount] = sdf->volume.GetSRV();
 		sdfCount++;

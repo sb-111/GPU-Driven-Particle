@@ -171,10 +171,11 @@
 	};
 	struct GP_CB_ALIGN SDFInstanceData
 	{
-		float3 boundsMin; // 12B
-		float pad0;		  // 4B
-		float3 boundsMax; // 12B
-		float pad1;		  // 4B
+		float4x4 worldToLocal; // 64B
+		float3 localBoundsMin; // 12B
+		float uniformScale;	   // 4B
+		float3 localBoundsMax; // 12B
+		float gradientEpsilon; // 4B
 	};
 	struct GP_CB_ALIGN ParticleCollisionCB
 	{
@@ -183,7 +184,7 @@
 
 		uint colliderMask;		// 4B
 		uint activeSDFCount;    // 4B
-		float2 pad;				// 8B (Offset 48)
+		float2 pad0;
 
 		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 4 = 128B (Offset 48 ~ 175)
 	};
