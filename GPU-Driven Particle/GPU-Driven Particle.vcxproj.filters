@@ -19,6 +19,38 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{7c3b9890-5c85-4c23-9564-cfe5c88a35d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{2f8e41d6-9a17-4b0e-8c62-1d5a7e3b4c88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{6b1c9f34-72a8-4d55-9e10-c48f2a6d7b91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="MeshLoader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GpuStats.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\tiny_obj_loader.cpp">
+      <Filter>ThirdParty</Filter>
+    </ClCompile>
+    <ClInclude Include="MeshLoader.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="GpuStats.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\tiny_obj_loader.h">
+      <Filter>ThirdParty</Filter>
+    </ClInclude>
+    <None Include="Meshes\plane.obj">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Meshes\cube.obj">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">

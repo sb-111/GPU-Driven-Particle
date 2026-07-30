@@ -1,8 +1,12 @@
 ﻿#include "SDFBaker.h"
 #include "Mesh.h"
+#include "RenderTypes.h"
+#include "GpuStats.h"
 #include "ShaderCompiler.h"
 #include "CommandContext.h"
+#include "GraphicsCore.h"
 #include "MathConvert.h"
+#include "SystemTime.h"
 void GP::SDFBaker::Init()
 {
 	auto meshSDFBakeCS = CompileShader(L"MeshSDFBakeCS.hlsl", L"main", L"cs_6_2");
@@ -35,6 +39,11 @@ void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, 
 	sdf->boundsMin = boundsMin;
 	sdf->boundsSize = boundsSize;
 
+	const uint32_t triangleCount = mesh.GetIndexCount() / 3;
+	const uint64_t voxelCount = (uint64_t)resolutionX * resolutionY * resolutionZ;
+	const VideoMemoryInfo vramBefore = QueryVideoMemory();
+	const int64_t bakeStart = SystemTime::GetCurrentTick();
+
 	ComputeContext& cpt = ComputeContext::Begin(L"SDF Bake");
 	cpt.TransitionResource(mesh.GetVertexBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	cpt.TransitionResource(mesh.GetIndexBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -48,7 +57,9 @@ void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, 
 	bakeConstants.resolution[0] = resolutionX;
 	bakeConstants.resolution[1] = resolutionY;
 	bakeConstants.resolution[2] = resolutionZ;
-	bakeConstants.triangleCount = mesh.GetIndexCount() / 3;
+	bakeConstants.triangleCount = triangleCount;
+	bakeConstants.vertexStride = kVertexStride;
+	bakeConstants.positionOffset = kPositionOffset;
 
 	cpt.SetDynamicConstantBufferView(0, sizeof(bakeConstants), &bakeConstants);
 	cpt.SetBufferSRV(1, mesh.GetVertexBuffer());
@@ -57,6 +68,29 @@ void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, 
 	cpt.Dispatch((resolutionX + 7) / 8, (resolutionY + 7) / 8, (resolutionZ + 7) / 8);
 	cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	cpt.Finish(true);
+
+	// device removed는 ASSERT_SUCCEEDED가 원인을 안 알려주므로 여기서 한 번 찍음
+	HRESULT removedReason = Graphics::g_Device->GetDeviceRemovedReason();
+	if (FAILED(removedReason))
+		Utility::Printf("[SDF] device removed! reason = 0x%08X\n", removedReason);
+
+	const double bakeMs = SystemTime::TicksToMillisecs(SystemTime::GetCurrentTick() - bakeStart); // 시간
+	const VideoMemoryInfo vramAfter = QueryVideoMemory();										  // vram
+
+	// 이론값: 복셀 수 x 2바이트(R16_FLOAT). 실제 할당은 정렬 패딩이 붙을 수 있음
+	const uint64_t theoretical = voxelCount * 2;
+	const uint64_t footprint = QueryResourceFootprint(sdf->volume.GetResource());
+
+	Utility::Printf("[SDF] %ux%ux%u, tri %u, %.1f ms (%.1f ns/voxel/tri)\n",
+		resolutionX, resolutionY, resolutionZ, triangleCount, bakeMs,
+		(triangleCount && voxelCount) ? (bakeMs * 1e6) / (double)(voxelCount * triangleCount) : 0.0);
+	Utility::Printf("[SDF] 이론 %.2f MB / 실할당 %.2f MB",
+		theoretical / 1048576.0, footprint / 1048576.0);
+	if (vramBefore.valid && vramAfter.valid)
+		Utility::Printf(" / VRAM 델타 %.2f MB (사용 %.0f MB, 예산 %.0f MB)",
+			(double)((int64_t)vramAfter.currentUsage - (int64_t)vramBefore.currentUsage) / 1048576.0,
+			vramAfter.currentUsage / 1048576.0, vramAfter.budget / 1048576.0);
+	Utility::Printf("\n");
 
 	mesh.SetSDF(std::move(sdf));
 }

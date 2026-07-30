@@ -6,13 +6,13 @@
 struct VSInput
 {
 	float3 pos : POSITION;
-	float4 color : COLOR;
+	float3 normal : NORMAL;
 };
 
 struct VSOutput
 {
 	float4 pos : SV_POSITION;
-	float4 color : COLOR;
+	float3 normal : NORMAL;
 };
 
 VSOutput main(VSInput input)
@@ -21,6 +21,6 @@ VSOutput main(VSInput input)
 	float4 worldPos = mul(worldMat, float4(input.pos, 1.0f));
 	float4 clipPos = mul(viewProjMat, worldPos);
 	output.pos = clipPos;
-	output.color = input.color;
+	output.normal = normalize(mul((float3x3) worldMat, input.normal));
 	return output;
 }

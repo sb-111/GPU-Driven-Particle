@@ -8,11 +8,13 @@ namespace GP
 {
 	class Mesh;
 
+	// vertexStride/positionOffset 을 넘기면
+	// Vertex 포맷이 바뀌어도 MeshSDFBakeCS는 손댈 필요가 없음
 	__declspec(align(16)) struct BakeConstants
 	{
 		float3 boundsMin; uint32_t triangleCount;
-		float3 boundsSize; uint32_t pad0;
-		uint32_t resolution[3]; uint32_t pad1;
+		float3 boundsSize; uint32_t vertexStride;
+		uint32_t resolution[3]; uint32_t positionOffset;
 	};
 	class SDFBaker
 	{

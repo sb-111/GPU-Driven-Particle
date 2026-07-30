@@ -152,8 +152,11 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
   <ItemGroup>
     <ClCompile Include="BitonicSort.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="GpuStats.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="MeshLoader.cpp" />
+    <ClCompile Include="ThirdParty\tiny_obj_loader.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SceneObject.cpp" />
@@ -164,8 +167,11 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="BitonicSort.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CubeMesh.h" />
+    <ClInclude Include="GpuStats.h" />
     <ClInclude Include="MathConvert.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshLoader.h" />
+    <ClInclude Include="ThirdParty\tiny_obj_loader.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticlePanel.h" />
     <ClInclude Include="ParticleSetting.h" />
@@ -189,6 +195,8 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
     <None Include="SDFCollision.hlsli" />
+    <None Include="Meshes\plane.obj" />
+    <None Include="Meshes\cube.obj" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BitonicSort.hlsl">

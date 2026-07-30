@@ -4,6 +4,8 @@
 #include "GpuResource.h"
 #include "GpuBuffer.h"
 #include "VolumeBuffer.h"
+#include "RenderTypes.h"
+#include <vector>
 namespace GP
 {
 	// 메시 로컬 공간에서 구운 SDF (SDFBaker가 생성)
@@ -19,8 +21,11 @@ namespace GP
 	{
 	public:
 		Mesh() {}
-		void CreateSphere(float radius, uint32_t rings, uint32_t segments, const float color[4]);
-		// TODO: Create(정점배열, 인덱스배열)
+		// 정점 배열 및 인덱스 배열을 받아 메시 생성
+		void Create(const std::vector<Vertex>& verts, const std::vector<uint32_t>& indices);
+		void CreateSphere(float radius, uint32_t rings, uint32_t segments);
+
+		uint32_t GetVertexCount() const { return m_VertexCount; }
 		ByteAddressBuffer& GetVertexBuffer()  { return m_VertexBuffer; }
 		ByteAddressBuffer& GetIndexBuffer()  { return m_IndexBuffer; }
 		uint32_t GetIndexCount() const { return m_IndexCount; }
@@ -32,6 +37,7 @@ namespace GP
 	private:
 		ByteAddressBuffer m_VertexBuffer;
 		ByteAddressBuffer m_IndexBuffer;
+		uint32_t m_VertexCount = 0;
 		uint32_t m_IndexCount = 0;
 		Math::Vector3 m_BoundsMin;
 		Math::Vector3 m_BoundsMax;

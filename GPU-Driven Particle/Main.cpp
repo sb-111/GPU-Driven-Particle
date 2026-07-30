@@ -15,8 +15,10 @@
 #include "MathConvert.h"
 
 #include "Mesh.h"
+#include "MeshLoader.h"
 #include "SceneObject.h"
 #include "SDFBaker.h"
+#include "SystemTime.h"
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -27,6 +29,31 @@ __declspec(align(16)) struct SceneConstants
 	Math::Matrix4 world;
 	Math::Matrix4 viewProj;
 };
+// OBJ -> RawMesh -> (노멀 보정) -> 정점 팩 -> GPU 업로드.
+// TODO: MeshAssetLoader(캐시 포함)로 옮기기
+static bool LoadMeshAsset(Mesh& mesh, const char* path, ENormalMode mode = ENormalMode::Smooth)
+{
+	RawMesh raw;
+	std::string err;
+	int64_t start = SystemTime::GetCurrentTick();
+
+	if (!LoadOBJ(path, raw, &err))
+	{
+		Utility::Printf("[Mesh] %s 로드 실패: %s\n", path, err.c_str());
+		return false;
+	}
+	EnsureNormals(raw, mode);
+
+	std::vector<Vertex> verts;
+	PackVertices(raw, verts);
+	mesh.Create(verts, raw.indices);
+
+	Utility::Printf("[Mesh] %s: 정점 %u, 삼각형 %u, %.1f ms\n", path,
+		raw.VertexCount(), raw.TriangleCount(),
+		SystemTime::TicksToMillisecs(SystemTime::GetCurrentTick() - start));
+	return true;
+}
+
 static ParticleViewCB makeViewCB(const Camera& camera)
 {
 	ParticleViewCB cb = {};
@@ -51,38 +78,37 @@ public:
 		auto opaquePS = CompileShader(L"OpaquePS.hlsl", L"main", L"ps_6_2");
 		ASSERT(opaqueVS && opaquePS, "셰이더 컴파일 실패 - VS 출력창 확인");
 
-		// 1. 바닥 쿼드 (정점 4개 + 인덱스 6개)
-		// SIMDMemCopy가 16바이트 정렬 요구
-		alignas(16) Vertex floorVerts[4] =
-		{
-			{{ -20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 0: 뒤-왼
-			{{  20.0f, -2.0f, -20.0f }, { 0.1f, 0.1f, 0.12f, 1.0f }},   // 1: 뒤-오
-			{{  20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 2: 앞-오
-			{{ -20.0f, -2.0f,  20.0f }, { 0.12f, 0.12f, 0.15f, 1.0f }}, // 3: 앞-왼
-		};
-		alignas(16) uint16_t floorIndices[6] = { 0, 2, 1,  0, 3, 2 };
-		m_FloorVB.Create(L"Floor VB", 4, sizeof(Vertex), floorVerts);
-		m_FloorIB.Create(L"Floor IB", 6, sizeof(uint16_t), floorIndices);
+		// Plane 메시 로드
+		LoadMeshAsset(m_FloorMesh, "Meshes/plane.obj");
+		m_FloorObject.SetName("Floor");
+		m_FloorObject.SetMesh(&m_FloorMesh);
+		m_FloorObject.GetTransform().SetTranslation(Math::Vector3(0.0f, -2.0f, 0.0f));
+		m_FloorObject.GetTransform().SetScale(40.0f);
+		m_FloorObject.GetMaterial() = MaterialCB{ { 0.11f, 0.11f, 0.13f, 1.0f } };
 
-		float sphereColor[4] = { 1.0f, 0.0f,0.0f,1.0f };
-		m_SphereMesh.CreateSphere(1.5f, 16, 32, sphereColor);
+		m_SphereMesh.CreateSphere(1.5f, 16, 32);
+		m_SphereObject.SetName("Sphere");
 		m_SphereObject.SetMesh(&m_SphereMesh);
 		m_SphereObject.GetTransform().SetTranslation(Math::Vector3(0.0f, -5.0f, 0.0f));
+		m_SphereObject.GetMaterial() = MaterialCB{ { 0.85f, 0.2f, 0.15f, 1.0f } };
+
+		LoadMeshAsset(m_CubeMesh, "Meshes/cube.obj");
+		m_CubeObject.SetName("Cube");
+		m_CubeObject.SetMesh(&m_CubeMesh);
+		m_CubeObject.GetTransform().SetTranslation(Math::Vector3(2.5f, 0.0f, 0.0f));
+		m_CubeObject.GetTransform().SetScale(2.0f);
+		m_CubeObject.GetMaterial() = MaterialCB{ { 0.25f, 0.55f, 0.85f, 1.0f } };
 
 		// 2. 씬(불투명) 루트시그 + PSO
-		m_OpaqueRootSig.Reset(3, 0);
+		m_OpaqueRootSig.Reset(4, 0);
 		m_OpaqueRootSig[0].InitAsConstantBuffer(0);   // b0 카메라
 		m_OpaqueRootSig[1].InitAsBufferSRV(0);        // t0
 		m_OpaqueRootSig[2].InitAsBufferSRV(1);        // t1
+		m_OpaqueRootSig[3].InitAsConstantBuffer(1);	  // b1 머티리얼
 		m_OpaqueRootSig.Finalize(L"Opaque", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 		m_OpaquePSO.SetRootSignature(m_OpaqueRootSig);
-		D3D12_INPUT_ELEMENT_DESC inputLayout[] =
-		{
-			{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-			{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
-		};
-		m_OpaquePSO.SetInputLayout(_countof(inputLayout), inputLayout);
+		m_OpaquePSO.SetInputLayout(kVertexLayoutCount, kVertexLayout);
 		m_OpaquePSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 		m_OpaquePSO.SetVertexShader(opaqueVS->GetBufferPointer(), opaqueVS->GetBufferSize());
 		m_OpaquePSO.SetPixelShader(opaquePS->GetBufferPointer(), opaquePS->GetBufferSize());
@@ -102,7 +128,9 @@ public:
 		// 5. SDF Baker
 		m_SDFBaker.Init();
 		m_SDFBaker.Bake(m_SphereMesh, 64, 64, 64);
+		m_SDFBaker.Bake(m_CubeMesh, 64, 64, 64);
 		m_Particles.AddSDFCollider(&m_SphereObject);
+		m_Particles.AddSDFCollider(&m_CubeObject);
 	}
 
 	void Cleanup(void) override {}
@@ -144,20 +172,23 @@ public:
 
 		SceneConstants cb = {};
 		cb.viewProj = m_Camera.GetViewProj();
-		cb.world = Math::Matrix4(Math::kIdentity);
-		// =============== 바닥 ==============
+
+		// =============== 씬 오브젝트 ==============
 		gfx.SetRootSignature(m_OpaqueRootSig);   // 루트 인자보다 먼저
 		gfx.SetPipelineState(m_OpaquePSO);
-		gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
 		gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		gfx.SetVertexBuffer(0, m_FloorVB.VertexBufferView());
-		gfx.SetIndexBuffer(m_FloorIB.IndexBufferView());
-		gfx.DrawIndexed(6, 0, 0);
 
-		// Sphere
-		cb.world = m_SphereObject.GetWorldMatrix();
-		gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
-		m_SphereObject.Draw(gfx);
+		auto drawObject = [&](SceneObject& obj)
+		{
+			cb.world = obj.GetWorldMatrix();
+			gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
+			gfx.SetDynamicConstantBufferView(3, sizeof(MaterialCB), &obj.GetMaterial()); // b1
+			obj.Draw(gfx);
+		};
+
+		drawObject(m_FloorObject);
+		drawObject(m_SphereObject);
+		drawObject(m_CubeObject);
 
 		// =============== 파티클 ==============
 		m_Particles.Render(gfx, viewCB);
@@ -174,13 +205,15 @@ private:
 	static const uint32_t m_ParticleNum = 1 << 20;
 	ParticleSystem m_Particles;
 
-	// 씬 (불투명)
+	// 씬 (불투명). TODO: Scene 클래스로 통째로 이관할 부분
 	RootSignature m_OpaqueRootSig;
 	GraphicsPSO   m_OpaquePSO;
-	ByteAddressBuffer m_FloorVB;
-	ByteAddressBuffer m_FloorIB;
-	Mesh m_SphereMesh;			// Asset
-	SceneObject m_SphereObject;	// Instance
+	Mesh m_FloorMesh;			// Asset
+	Mesh m_SphereMesh;
+	Mesh m_CubeMesh;
+	SceneObject m_FloorObject;	// Instance
+	SceneObject m_SphereObject;
+	SceneObject m_CubeObject;
 	SDFBaker m_SDFBaker;
 
 	bool m_Paused = false;

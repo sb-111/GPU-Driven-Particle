@@ -3,9 +3,9 @@
 	float3 boundsMin;
 	uint triangleCount;
 	float3 boundsSize;
-	uint pad0;
+	uint vertexStride;
 	uint3 resolution;
-	uint pad1;
+	uint positionOffset;
 }
 ByteAddressBuffer Vertices : register(t0);
 ByteAddressBuffer Indices : register(t1);
@@ -85,9 +85,9 @@ void main( uint3 tid : SV_DispatchThreadID )
 	for (uint triangleIdx = 0; triangleIdx < triangleCount; ++triangleIdx)
 	{
 		uint3 idx = Indices.Load3(triangleIdx * 12); // 삼각형을 이루는 인덱스가 3개 퍼오기
-		float3 v1 = asfloat(Vertices.Load3(idx.x * 28)); // 정점 Stride = 28, pos(12B)만 퍼오기
-		float3 v2 = asfloat(Vertices.Load3(idx.y * 28)); // 정점 Stride = 28, pos(12B)만 퍼오기
-		float3 v3 = asfloat(Vertices.Load3(idx.z * 28)); // 정점 Stride = 28, pos(12B)만 퍼오기
+		float3 v1 = asfloat(Vertices.Load3(idx.x * vertexStride + positionOffset)); // pos만 퍼오기 
+		float3 v2 = asfloat(Vertices.Load3(idx.y * vertexStride + positionOffset));
+		float3 v3 = asfloat(Vertices.Load3(idx.z * vertexStride + positionOffset));
 
 		float sqDistance = SqDistancePointTriangle(pos, v1, v2, v3);
 		minSqDistance = min(minSqDistance, sqDistance); // 더 작은 값 갱신
