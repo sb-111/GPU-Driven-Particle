@@ -1,4 +1,4 @@
-#include "MeshLoader.h"
+﻿#include "MeshLoader.h"
 #include "ThirdParty/tiny_obj_loader.h"
 
 #include <unordered_map>
@@ -54,7 +54,7 @@ bool GP::LoadOBJ(const char* path, RawMesh& out, std::string* outError)
 	std::string warn, err;
 
 	// triangulate = true 라 사각형 이상도 삼각형으로 쪼개져서 나옴
-	bool ok = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path, nullptr, true, true);
+	bool ok = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path, nullptr, true, false);
 	if (!ok)
 	{
 		if (outError) *outError = err.empty() ? "LoadObj 실패" : err;
