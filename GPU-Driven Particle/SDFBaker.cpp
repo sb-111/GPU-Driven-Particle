@@ -81,7 +81,7 @@ void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, 
 	const uint64_t theoretical = voxelCount * 2;
 	const uint64_t footprint = QueryResourceFootprint(sdf->volume.GetResource());
 
-	Utility::Printf("[SDF] %ux%ux%u, tri %u, %.1f ms (%.1f ns/voxel/tri)\n",
+	Utility::Printf("[SDF] %ux%ux%u, tri %u, %.1f ms (%.4f ns/voxel/tri)\n",
 		resolutionX, resolutionY, resolutionZ, triangleCount, bakeMs,
 		(triangleCount && voxelCount) ? (bakeMs * 1e6) / (double)(voxelCount * triangleCount) : 0.0);
 	Utility::Printf("[SDF] 이론 %.2f MB / 실할당 %.2f MB",
