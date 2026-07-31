@@ -19,6 +19,9 @@
 #include "SceneObject.h"
 #include "SDFBaker.h"
 #include "SystemTime.h"
+
+#include "MeshLibrary.h"
+#include "Scene.h"
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -29,30 +32,6 @@ __declspec(align(16)) struct SceneConstants
 	Math::Matrix4 world;
 	Math::Matrix4 viewProj;
 };
-// OBJ -> RawMesh -> (노멀 보정) -> 정점 팩 -> GPU 업로드.
-// TODO: MeshAssetLoader(캐시 포함)로 옮기기
-static bool LoadMeshAsset(Mesh& mesh, const char* path, ENormalMode mode = ENormalMode::Smooth)
-{
-	RawMesh raw;
-	std::string err;
-	int64_t start = SystemTime::GetCurrentTick();
-
-	if (!LoadOBJ(path, raw, &err))
-	{
-		Utility::Printf("[Mesh] %s 로드 실패: %s\n", path, err.c_str());
-		return false;
-	}
-	EnsureNormals(raw, mode);
-
-	std::vector<Vertex> verts;
-	PackVertices(raw, verts);
-	mesh.Create(verts, raw.indices);
-
-	Utility::Printf("[Mesh] %s: 정점 %u, 삼각형 %u, %.1f ms\n", path,
-		raw.VertexCount(), raw.TriangleCount(),
-		SystemTime::TicksToMillisecs(SystemTime::GetCurrentTick() - start));
-	return true;
-}
 
 static ParticleViewCB makeViewCB(const Camera& camera)
 {
@@ -79,25 +58,35 @@ public:
 		ASSERT(opaqueVS && opaquePS, "셰이더 컴파일 실패 - VS 출력창 확인");
 
 		// Plane 메시 로드
-		LoadMeshAsset(m_FloorMesh, "Meshes/plane.obj");
-		m_FloorObject.SetName("Floor");
-		m_FloorObject.SetMesh(&m_FloorMesh);
-		m_FloorObject.GetTransform().SetTranslation(Math::Vector3(0.0f, -2.0f, 0.0f));
-		m_FloorObject.GetTransform().SetScale(40.0f);
-		m_FloorObject.GetMaterial() = MaterialCB{ { 0.11f, 0.11f, 0.13f, 1.0f } };
+		// 메시 로드 후 씬에 등록 
+		SceneObject& plane = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/plane.obj"));
+		SceneObject& cube = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/cube.obj"));
+		SceneObject& sphere = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/sphere.obj"));
+		SceneObject& bunny = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/stanford-bunny.obj"));
 
-		m_SphereMesh.CreateSphere(1.5f, 16, 32);
-		m_SphereObject.SetName("Sphere");
-		m_SphereObject.SetMesh(&m_SphereMesh);
-		m_SphereObject.GetTransform().SetTranslation(Math::Vector3(0.0f, -5.0f, 0.0f));
-		m_SphereObject.GetMaterial() = MaterialCB{ { 0.85f, 0.2f, 0.15f, 1.0f } };
+		// 씬 직렬화 추가 시 이동할 항목
+		plane.SetName("Floor");
+		plane.GetTransform().SetTranslation(Math::Vector3(0.0f, -2.0f, 0.0f));
+		plane.GetTransform().SetScale(40.0f);
+		plane.GetMaterial() = MaterialCB{ { 0.11f, 0.11f, 0.13f, 1.0f } };
+		sphere.SetName("Sphere");
+		sphere.GetTransform().SetTranslation(Math::Vector3(7.0f, 0.0f, 0.0f));
+		sphere.GetTransform().SetScale(1.5f);
+		sphere.GetMaterial() = MaterialCB{ { 0.85f, 0.2f, 0.15f, 1.0f } };
+		sphere.SetSDFCollider(true);
+		cube.SetName("Cube");
+		cube.GetTransform().SetTranslation(Math::Vector3(-7.0f, 0.0f, 0.0f));
+		cube.GetTransform().SetRotation(Math::Quaternion(Math::Vector3(Math::kZUnitVector), 0.7853981f));
+		cube.GetTransform().SetScale(2.0f);
+		cube.GetMaterial() = MaterialCB{ { 0.25f, 0.55f, 0.85f, 1.0f } };
+		cube.SetSDFCollider(true);
+		bunny.SetName("Bunny");
+		bunny.GetTransform().SetTranslation(Math::Vector3(0.0f, 0.0f, 0.0f));
+		bunny.GetTransform().SetScale(20.0f);
+		bunny.GetMaterial() = MaterialCB{ {0.3f, 0.3f, 0.3f, 1.0f} };
+		bunny.SetSDFCollider(true);
 
-		LoadMeshAsset(m_CubeMesh, "Meshes/cube.obj");
-		m_CubeObject.SetName("Cube");
-		m_CubeObject.SetMesh(&m_CubeMesh);
-		m_CubeObject.GetTransform().SetTranslation(Math::Vector3(2.5f, 0.0f, 0.0f));
-		m_CubeObject.GetTransform().SetScale(2.0f);
-		m_CubeObject.GetMaterial() = MaterialCB{ { 0.25f, 0.55f, 0.85f, 1.0f } };
+		m_PanelTarget = &sphere;
 
 		// 2. 씬(불투명) 루트시그 + PSO
 		m_OpaqueRootSig.Reset(4, 0);
@@ -125,12 +114,23 @@ public:
 		float aspect = (float)g_SceneColorBuffer.GetHeight() / (float)g_SceneColorBuffer.GetWidth(); // ※ 높이/너비
 		m_Camera.SetPerspective(3.14159f / 3.0f, aspect, 1.0f, 1000.0f); // 60도
 
+		// 메시 등록
+		
+
 		// 5. SDF Baker
 		m_SDFBaker.Init();
-		m_SDFBaker.Bake(m_SphereMesh, 64, 64, 64);
-		m_SDFBaker.Bake(m_CubeMesh, 64, 64, 64);
-		m_Particles.AddSDFCollider(&m_SphereObject);
-		m_Particles.AddSDFCollider(&m_CubeObject);
+	
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			if (!object->IsSDFCollider())
+				continue;
+
+			// 같은 메시를 쓰는 콜라이더가 여럿이어도 베이크는 한 번
+			if (object->GetMesh()->GetSDF() == nullptr)
+				m_SDFBaker.Bake(*object->GetMesh(), 64, 64, 64);
+
+			m_Particles.AddSDFCollider(object.get());
+		}
 	}
 
 	void Cleanup(void) override {}
@@ -140,7 +140,7 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused, m_Camera, &m_SphereObject);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera, m_PanelTarget);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);
@@ -186,9 +186,10 @@ public:
 			obj.Draw(gfx);
 		};
 
-		drawObject(m_FloorObject);
-		drawObject(m_SphereObject);
-		drawObject(m_CubeObject);
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			drawObject(*object);
+		}
 
 		// =============== 파티클 ==============
 		m_Particles.Render(gfx, viewCB);
@@ -208,13 +209,13 @@ private:
 	// 씬 (불투명). TODO: Scene 클래스로 통째로 이관할 부분
 	RootSignature m_OpaqueRootSig;
 	GraphicsPSO   m_OpaquePSO;
-	Mesh m_FloorMesh;			// Asset
-	Mesh m_SphereMesh;
-	Mesh m_CubeMesh;
-	SceneObject m_FloorObject;	// Instance
-	SceneObject m_SphereObject;
-	SceneObject m_CubeObject;
 	SDFBaker m_SDFBaker;
+
+	MeshLibrary m_MeshLibrary; // 모든 메시를 소유
+	Scene m_Scene;			   // 모든 SceneObject를 소유
+
+	// 임시
+	SceneObject* m_PanelTarget = nullptr;
 
 	bool m_Paused = false;
 };
