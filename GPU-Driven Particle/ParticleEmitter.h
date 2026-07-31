@@ -49,6 +49,9 @@ namespace GP
 		ParticleSettings& GetSettings() { return m_Settings; }
 		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
 
+		Math::Vector3 GetBasePosition() const { return m_BasePosition; }
+		void SetBasePosition(const Math::Vector3& p) { m_BasePosition = p; }
+
 		// Emitter 별 Pass (Particle System이 호출)
 		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
 			const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount);
@@ -96,9 +99,8 @@ namespace GP
 		uint32_t m_SortN = 64;
 		float m_Timer = 0.0f;
 
-		// 궤도 운동 상태
+		Math::Vector3 m_BasePosition = Math::Vector3(Math::kZero); // Emitter 기준 위치
 		float m_OrbitAngle = 0.0f;
-		Math::Vector3 m_OrbitCenter = Math::Vector3(Math::kZero);
 	};
 
 

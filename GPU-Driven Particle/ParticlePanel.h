@@ -192,7 +192,8 @@ namespace GP
 			selected = emitterCount;
 		}
 		// 선택된 Emitter의 Settings를 편집
-		ParticleSettings& s = system.GetEmitter(selected).GetSettings();
+		ParticleEmitter& emitter = system.GetEmitter(selected);
+		ParticleSettings& s = emitter.GetSettings();
 		bool restart = false;
 
 		if (ImGui::Button("Fire")) { s = MakeFirePreset(); restart = true; }
@@ -264,6 +265,11 @@ namespace GP
 			}
 			if (g == (int)EParamGroup::Emitter)
 			{
+				Math::Vector3 basePos = emitter.GetBasePosition();
+				float basePosF[3] = { basePos.GetX(), basePos.GetY(), basePos.GetZ() };
+				if (ImGui::DragFloat3("Position", basePosF, 0.05f))
+					emitter.SetBasePosition(Math::Vector3(basePosF[0], basePosF[1], basePosF[2]));
+
 				ImGui::Combo("Loop Mode", &s.loopMode, kLoopModeNames, (int)ELoopMode::Count);
 				ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
 				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
@@ -389,6 +395,6 @@ namespace GP
 
 		// 프리셋/재시작 버튼 눌린 경우, 선택된 Emitter만 리셋
 		if (restart)
-			system.GetEmitter(selected).ResetEmitter();
+			emitter.ResetEmitter();
 	}
 }
