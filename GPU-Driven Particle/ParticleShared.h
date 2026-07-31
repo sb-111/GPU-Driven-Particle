@@ -59,7 +59,7 @@
 #define COLLISION_SPHERE 2
 #define COLLISION_SDF 4
 
-#define MAX_SDF_COUNT 4
+#define MAX_SDF_COUNT 8
 
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
@@ -186,7 +186,7 @@
 		uint activeSDFCount;    // 4B
 		float2 pad0;
 
-		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 4 = 128B (Offset 48 ~ 175)
+		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 8 = 256B
 	};
 #ifdef __cplusplus
 	}
