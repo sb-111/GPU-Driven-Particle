@@ -421,5 +421,9 @@ imgui.ini
 # ---------------------------------------------------------------------------
 !GPU-Driven Particle/Meshes/*.obj
 
+GPU-Driven Particle/Meshes/stanford-bunny.obj
+GPU-Driven Particle/Meshes/suzanne.obj
+GPU-Driven Particle/Meshes/teapot.obj
+
 
 Cache/
