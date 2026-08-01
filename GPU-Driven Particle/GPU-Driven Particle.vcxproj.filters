@@ -25,6 +25,9 @@
     <Filter Include="Assets">
       <UniqueIdentifier>{6b1c9f34-72a8-4d55-9e10-c48f2a6d7b91}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes">
+      <UniqueIdentifier>{a7b78989-9ee7-420e-8b6c-d464aeeec14d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MeshLoader.cpp">
@@ -55,6 +58,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelLoader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -136,6 +142,15 @@
     <ClInclude Include="Scene.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="SceneObjectPanel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\json.hpp">
+      <Filter>ThirdParty</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelLoader.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ParticleVS.hlsl">
@@ -152,6 +167,9 @@
     </None>
     <None Include="SDFCollision.hlsli">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Scenes\defaultScene.json">
+      <Filter>Scenes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

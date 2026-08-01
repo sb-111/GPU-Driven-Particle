@@ -15,13 +15,13 @@
 #include "MathConvert.h"
 
 #include "Mesh.h"
-#include "MeshLoader.h"
 #include "SceneObject.h"
 #include "SDFBaker.h"
-#include "SystemTime.h"
 
 #include "MeshLibrary.h"
 #include "Scene.h"
+#include "SceneObjectPanel.h"
+#include "LevelLoader.h"
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -57,38 +57,7 @@ public:
 		auto opaquePS = CompileShader(L"OpaquePS.hlsl", L"main", L"ps_6_2");
 		ASSERT(opaqueVS && opaquePS, "셰이더 컴파일 실패 - VS 출력창 확인");
 
-		// Plane 메시 로드
-		// 메시 로드 후 씬에 등록 
-		SceneObject& plane = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/plane.obj"));
-		SceneObject& cube = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/cube.obj"));
-		SceneObject& sphere = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/sphere.obj"));
-		SceneObject& bunny = m_Scene.CreateObject(m_MeshLibrary.Get("Meshes/stanford-bunny.obj"));
-
-		// 씬 직렬화 추가 시 이동할 항목
-		plane.SetName("Floor");
-		plane.GetTransform().SetTranslation(Math::Vector3(0.0f, -2.0f, 0.0f));
-		plane.GetTransform().SetScale(40.0f);
-		plane.GetMaterial() = MaterialCB{ { 0.11f, 0.11f, 0.13f, 1.0f } };
-		sphere.SetName("Sphere");
-		sphere.GetTransform().SetTranslation(Math::Vector3(7.0f, 0.0f, 0.0f));
-		sphere.GetTransform().SetScale(1.5f);
-		sphere.GetMaterial() = MaterialCB{ { 0.85f, 0.2f, 0.15f, 1.0f } };
-		sphere.SetSDFCollider(true);
-		cube.SetName("Cube");
-		cube.GetTransform().SetTranslation(Math::Vector3(-7.0f, 0.0f, 0.0f));
-		cube.GetTransform().SetRotation(Math::Quaternion(Math::Vector3(Math::kZUnitVector), 0.7853981f));
-		cube.GetTransform().SetScale(2.0f);
-		cube.GetMaterial() = MaterialCB{ { 0.25f, 0.55f, 0.85f, 1.0f } };
-		cube.SetSDFCollider(true);
-		bunny.SetName("Bunny");
-		bunny.GetTransform().SetTranslation(Math::Vector3(0.0f, 0.0f, 0.0f));
-		bunny.GetTransform().SetScale(20.0f);
-		bunny.GetMaterial() = MaterialCB{ {0.3f, 0.3f, 0.3f, 1.0f} };
-		bunny.SetSDFCollider(true);
-
-		m_PanelTarget = &sphere;
-
-		// 2. 씬(불투명) 루트시그 + PSO
+		// 1. 씬(불투명) 루트시그 + PSO
 		m_OpaqueRootSig.Reset(4, 0);
 		m_OpaqueRootSig[0].InitAsConstantBuffer(0);   // b0 카메라
 		m_OpaqueRootSig[1].InitAsBufferSRV(0);        // t0
@@ -107,17 +76,32 @@ public:
 		m_OpaquePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), g_SceneDepthBuffer.GetFormat());
 		m_OpaquePSO.Finalize();
 
-		// 3. 파티클 시스템
+		// 2. 파티클 시스템
 		m_Particles.Init(m_ParticleNum);
 
-		// 4. 카메라 투영 설정 (fov/near/far 고정 → 1회. 창 리사이즈 때만 갱신)
-		float aspect = (float)g_SceneColorBuffer.GetHeight() / (float)g_SceneColorBuffer.GetWidth(); // ※ 높이/너비
-		m_Camera.SetPerspective(3.14159f / 3.0f, aspect, 1.0f, 1000.0f); // 60도
+		// 3. 씬 로드
+		std::string err;
+		if (!LevelLoader::Load(
+			"Scenes/defaultScene.json",
+			m_Scene,
+			m_MeshLibrary,
+			m_Camera,
+			m_Particles,
+			err))
+		{
+			ASSERT(false, err.c_str());
+		}
 
-		// 메시 등록
-		
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			if (object->IsSDFCollider())
+			{
+				m_PanelTarget = object.get();
+				break;
+			}
+		}
 
-		// 5. SDF Baker
+		// 4. SDF Baker
 		m_SDFBaker.Init();
 	
 		for (const auto& object : m_Scene.GetObjects())
@@ -140,7 +124,8 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused, m_Camera, m_PanelTarget);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
+		DrawSceneObjectPanel(m_Scene, m_PanelTarget);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);
@@ -188,6 +173,8 @@ public:
 
 		for (const auto& object : m_Scene.GetObjects())
 		{
+			if (!object->IsVisible())
+				continue;
 			drawObject(*object);
 		}
 
@@ -214,7 +201,6 @@ private:
 	MeshLibrary m_MeshLibrary; // 모든 메시를 소유
 	Scene m_Scene;			   // 모든 SceneObject를 소유
 
-	// 임시
 	SceneObject* m_PanelTarget = nullptr;
 
 	bool m_Paused = false;

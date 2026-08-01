@@ -1,0 +1,79 @@
+﻿{
+  "version": 1,
+
+  "camera": {
+    "position": [0.0, 0.0, 5.0],
+    "lookAt": [0.0, 0.0, 0.0],
+    "up": [0.0, 1.0, 0.0],
+    "fovYRadians": 1.0471976,
+    "nearZ": 1.0,
+    "farZ": 1000.0
+  },
+
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": true,
+      "planeNormal": [0.0, 1.0, 0.0],
+      "planeOffset": 0.0,
+      "sphereEnabled": false,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [0.0, 0.0, 0.0],
+        "settings": {
+          "spawnRate": 5000.0,
+          "lifeTimeMin": 2.0,
+          "lifeTimeMax": 4.0,
+          "speedMin": 3.0,
+          "speedMax": 5.0,
+          "gravity": [0.0, -9.8, 0.0]
+        }
+      }
+    ]
+  },
+
+  "objects": [
+    {
+      "name": "Floor",
+      "mesh": "Meshes/plane.obj",
+      "position": [0.0, -2.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 40.0,
+      "color": [0.11, 0.11, 0.13, 1.0],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "Sphere",
+      "mesh": "Meshes/sphere.obj",
+      "position": [7.0, 0.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 1.5,
+      "color": [0.85, 0.2, 0.15, 1.0],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Cube",
+      "mesh": "Meshes/cube.obj",
+      "position": [-7.0, 0.0, 0.0],
+      "rotation": [0.0, 0.0, 0.3826834, 0.9238795],
+      "scale": 2.0,
+      "color": [0.25, 0.55, 0.85, 1.0],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Bunny",
+      "mesh": "Meshes/stanford-bunny.obj",
+      "position": [0.0, 0.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 20.0,
+      "color": [0.3, 0.3, 0.3, 1.0],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

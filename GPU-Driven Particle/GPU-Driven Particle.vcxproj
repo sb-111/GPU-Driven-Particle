@@ -158,6 +158,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClCompile Include="MeshLibrary.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="MeshLoader.cpp" />
+    <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="ThirdParty\tiny_obj_loader.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
@@ -174,7 +175,10 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLibrary.h" />
     <ClInclude Include="Scene.h" />
+	<ClInclude Include="SceneObjectPanel.h" />
     <ClInclude Include="MeshLoader.h" />
+    <ClInclude Include="LevelLoader.h" />
+    <ClInclude Include="ThirdParty\json.hpp" />
     <ClInclude Include="ThirdParty\tiny_obj_loader.h" />
     <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="ParticlePanel.h" />
@@ -198,6 +202,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
+    <None Include="Scenes\defaultScene.json" />
     <None Include="SDFCollision.hlsli" />
     <None Include="Meshes\plane.obj" />
     <None Include="Meshes\cube.obj" />
