@@ -182,6 +182,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="LevelLoader.h" />
     <ClInclude Include="SDFDebugRenderer.h" />
+    <ClInclude Include="SDFDebugSettings.h" />
     <ClInclude Include="ThirdParty\json.hpp" />
     <ClInclude Include="ThirdParty\tiny_obj_loader.h" />
     <ClInclude Include="ParticleEmitter.h" />

@@ -2,13 +2,18 @@
 
 #include "Scene.h"
 #include "SceneObject.h"
+#include "SDFDebugSettings.h"
 #include "imgui/imgui.h"
 
+#include <algorithm>
 #include <string>
 
 namespace GP
 {
-	inline void DrawSceneObjectPanel(Scene& scene, SceneObject*& selectedObject)
+	inline void DrawSceneObjectPanel(
+		Scene& scene,
+		SceneObject*& selectedObject,
+		SDFDebugSettings& sdfDebugSettings)
 	{
 		const auto& objects = scene.GetObjects();
 
@@ -36,7 +41,10 @@ namespace GP
 			}
 		}
 		if (!selectedStillInScene)
+		{
 			selectedObject = objects.front().get();
+			sdfDebugSettings.resetSliceToCenter = true;
+		}
 
 		const char* previewName = selectedObject->GetName().empty()
 			? "Unnamed Object"
@@ -54,7 +62,10 @@ namespace GP
 
 				ImGui::PushID(static_cast<int>(index));
 				if (ImGui::Selectable(name, isSelected))
+				{
 					selectedObject = object;
+					sdfDebugSettings.resetSliceToCenter = true;
+				}
 				if (isSelected)
 					ImGui::SetItemDefaultFocus();
 				ImGui::PopID();
@@ -79,6 +90,59 @@ namespace GP
 			selectedObject->GetTransform().SetScale(scale);
 
 		ImGui::ColorEdit4("Material Color", selectedObject->GetMaterial().baseColor);
+
+		MeshSDF* sdf = selectedObject->GetMesh()
+			? selectedObject->GetMesh()->GetSDF()
+			: nullptr;
+		const bool hasValidSDF =
+			selectedObject->IsSDFCollider() &&
+			sdf &&
+			sdf->grid.resolution[0] > 0 &&
+			sdf->grid.resolution[1] > 0 &&
+			sdf->grid.resolution[2] > 0;
+		if (hasValidSDF && ImGui::CollapsingHeader("SDF Debug", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Checkbox("Show SDF Debug", &sdfDebugSettings.showDebug);
+
+			const char* axisNames[] = { "X", "Y", "Z" };
+			int axisIndex = static_cast<int>(sdfDebugSettings.axis);
+			if (ImGui::Combo("Slice Axis", &axisIndex, axisNames, IM_ARRAYSIZE(axisNames)))
+			{
+				sdfDebugSettings.axis = static_cast<ESDFSliceAxis>(axisIndex);
+				sdfDebugSettings.sliceIndex =
+					sdf->grid.resolution[axisIndex] / 2;
+			}
+
+			const uint32_t selectedAxis =
+				static_cast<uint32_t>(sdfDebugSettings.axis);
+			if (sdfDebugSettings.resetSliceToCenter)
+			{
+				sdfDebugSettings.sliceIndex =
+					sdf->grid.resolution[selectedAxis] / 2;
+				sdfDebugSettings.resetSliceToCenter = false;
+			}
+			const uint32_t maxSliceIndex =
+				sdf->grid.resolution[selectedAxis] - 1;
+			sdfDebugSettings.sliceIndex = std::min(
+				sdfDebugSettings.sliceIndex,
+				maxSliceIndex);
+
+			int sliceIndex = static_cast<int>(sdfDebugSettings.sliceIndex);
+			if (ImGui::SliderInt(
+				"Slice Index",
+				&sliceIndex,
+				0,
+				static_cast<int>(maxSliceIndex)))
+			{
+				sdfDebugSettings.sliceIndex = static_cast<uint32_t>(sliceIndex);
+			}
+
+			ImGui::Text(
+				"Grid: %u x %u x %u",
+				sdf->grid.resolution[0],
+				sdf->grid.resolution[1],
+				sdf->grid.resolution[2]);
+		}
 
 		ImGui::End();
 	}

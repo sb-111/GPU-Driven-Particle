@@ -10,7 +10,7 @@
 	uint sliceIndex;
 
 	uint3 resolution;
-	float distanceRange;
+	uint padding;
 };
 struct VSOutput
 {

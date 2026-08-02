@@ -131,7 +131,7 @@ public:
 
 		// 튜닝 패널
 		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
-		DrawSceneObjectPanel(m_Scene, m_PanelTarget);
+		DrawSceneObjectPanel(m_Scene, m_PanelTarget, m_SDFDebugSettings);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);
@@ -183,7 +183,9 @@ public:
 				continue;
 			drawObject(*object);
 		}
-		if (m_PanelTarget && m_PanelTarget->IsSDFCollider())
+		if (m_SDFDebugSettings.showDebug &&
+			m_PanelTarget &&
+			m_PanelTarget->IsSDFCollider())
 		{
 			MeshSDF* sdf = m_PanelTarget->GetMesh()
 				? m_PanelTarget->GetMesh()->GetSDF()
@@ -191,22 +193,21 @@ public:
 
 			if (sdf)
 			{
-				const float debugDistanceRange =
-					sdf->grid.voxelSize * 2.0f;
 				m_SDFDebug.RenderSlice(
 					gfx,
 					*sdf,
 					m_PanelTarget->GetWorldMatrix(),
 					m_Camera.GetViewProj(),
-					ESDFSliceAxis::Z,
-					sdf->grid.resolution[2] / 2,
-					debugDistanceRange);
+					m_SDFDebugSettings.axis,
+					m_SDFDebugSettings.sliceIndex);
 			}
 		}
 		const Math::Vector4 lineColor = { 0.0f, 1.0f, 0.0f, 1.0f };
 		for (const auto& object : m_Scene.GetObjects())
 		{
-			if (!object->IsSDFCollider())
+			if (!m_SDFDebugSettings.showDebug ||
+				object.get() != m_PanelTarget ||
+				!object->IsSDFCollider())
 				continue;
 
 			MeshSDF* sdf = object->GetMesh()
@@ -251,6 +252,7 @@ private:
 
 	DebugLineRenderer m_DebugLines;
 	SDFDebugRenderer  m_SDFDebug;
+	SDFDebugSettings  m_SDFDebugSettings;
 
 	bool m_Paused = false;
 };

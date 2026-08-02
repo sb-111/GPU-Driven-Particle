@@ -36,7 +36,7 @@ void GP::SDFDebugRenderer::Init()
 }
 void GP::SDFDebugRenderer::RenderSlice(GraphicsContext& gfx, MeshSDF& sdf,
 	const Math::Matrix4& localToWorld, const Math::Matrix4& viewProj,
-	ESDFSliceAxis axis, uint32_t sliceIndex, float distanceRange)
+	ESDFSliceAxis axis, uint32_t sliceIndex)
 {
 	if (sdf.volume.GetResource() == nullptr)
 		return;
@@ -66,7 +66,6 @@ void GP::SDFDebugRenderer::RenderSlice(GraphicsContext& gfx, MeshSDF& sdf,
 	cb.resolution[0] = grid.resolution[0];
 	cb.resolution[1] = grid.resolution[1];
 	cb.resolution[2] = grid.resolution[2];
-	cb.distanceRange = distanceRange;
 
 	gfx.TransitionResource(
 		sdf.volume,

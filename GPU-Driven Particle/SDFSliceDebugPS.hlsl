@@ -10,7 +10,7 @@
 	uint sliceIndex;
 
 	uint3 resolution;
-	float distanceRange;
+	uint padding;
 };
 Texture3D<float> SDFTexture : register(t0);
 struct PSInput
@@ -53,15 +53,17 @@ float4 main(PSInput input) : SV_TARGET
     // sdf 값
 	const float d = SDFTexture.Load(int4(texelCoord, 0));
 
-	// 거리값을 색으로 변환
-	const float strength =
-        saturate(abs(d) / max(distanceRange, 1e-6f));
+	const float voxelSize =
+		volumeBoundsSize.x / float(resolution.x);
 
-	const float3 signedColor =
-        (d < 0.0f)
-        ? float3(0.0f, 0.0f, 1.0f) // 내부: 파랑
-        : float3(1.0f, 0.0f, 0.0f); // 외부: 빨강
+	float3 color;
+	// 표면까지 거리가 한 voxel size 이하면 검정
+	if (abs(d) <= voxelSize)
+		color = float3(0.0f, 0.0f, 0.0f); // 표면
+	else if (d < 0.0f)
+		color = float3(0.0f, 0.0f, 1.0f); // 내부
+	else
+		color = float3(1.0f, 0.0f, 0.0f); // 외부
 
-    // d가 0에 가까울수록 검정
-	return float4(signedColor * strength, 1.0f);
+	return float4(color, 1.0f);
 }
