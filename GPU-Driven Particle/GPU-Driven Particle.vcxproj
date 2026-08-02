@@ -159,12 +159,14 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="MeshLoader.cpp" />
     <ClCompile Include="LevelLoader.cpp" />
+    <ClCompile Include="SDFDebugRenderer.cpp" />
     <ClCompile Include="ThirdParty\tiny_obj_loader.cpp" />
     <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SDFBaker.cpp" />
     <ClCompile Include="SDFGrid.cpp" />
+    <ClCompile Include="DebugLineRenderer.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -176,9 +178,10 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLibrary.h" />
     <ClInclude Include="Scene.h" />
-	<ClInclude Include="SceneObjectPanel.h" />
+    <ClInclude Include="SceneObjectPanel.h" />
     <ClInclude Include="MeshLoader.h" />
     <ClInclude Include="LevelLoader.h" />
+    <ClInclude Include="SDFDebugRenderer.h" />
     <ClInclude Include="ThirdParty\json.hpp" />
     <ClInclude Include="ThirdParty\tiny_obj_loader.h" />
     <ClInclude Include="ParticleEmitter.h" />
@@ -190,6 +193,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SDFBaker.h" />
     <ClInclude Include="SDFGrid.h" />
+    <ClInclude Include="DebugLineRenderer.h" />
     <ClInclude Include="ShaderCompiler.h" />
   </ItemGroup>
   <ItemGroup>
@@ -208,6 +212,14 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <None Include="SDFCollision.hlsli" />
     <None Include="Meshes\plane.obj" />
     <None Include="Meshes\cube.obj" />
+    <None Include="DebugLineVS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
+    <None Include="DebugLinePS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BitonicSort.hlsl">
@@ -327,6 +339,22 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="ScreenQuadVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="SDFSliceDebugPS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="SDFSliceDebugVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

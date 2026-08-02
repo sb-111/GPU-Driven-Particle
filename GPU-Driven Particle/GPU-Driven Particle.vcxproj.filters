@@ -63,6 +63,9 @@
     <ClCompile Include="LevelLoader.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="SDFDebugRenderer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -93,6 +96,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SDFGrid.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DebugLineRenderer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -142,6 +148,9 @@
     <ClInclude Include="SDFGrid.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="DebugLineRenderer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
     <ClInclude Include="MeshLibrary.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -156,6 +165,9 @@
     </ClInclude>
     <ClInclude Include="LevelLoader.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SDFDebugRenderer.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -172,6 +184,12 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="SDFCollision.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="DebugLineVS.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="DebugLinePS.hlsl">
       <Filter>Shaders</Filter>
     </None>
     <None Include="Scenes\defaultScene.json">
@@ -216,6 +234,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="OpaquePS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SDFSliceDebugVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SDFSliceDebugPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

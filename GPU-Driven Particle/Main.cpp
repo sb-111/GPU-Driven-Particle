@@ -22,6 +22,10 @@
 #include "Scene.h"
 #include "SceneObjectPanel.h"
 #include "LevelLoader.h"
+
+#include "DebugLineRenderer.h"
+#include "SDFDebugRenderer.h"
+
 using namespace GameCore;
 using namespace Graphics;
 using namespace GP;
@@ -115,6 +119,8 @@ public:
 
 			m_Particles.AddSDFCollider(object.get());
 		}
+		m_DebugLines.Init();
+		m_SDFDebug.Init();
 	}
 
 	void Cleanup(void) override {}
@@ -177,7 +183,47 @@ public:
 				continue;
 			drawObject(*object);
 		}
+		if (m_PanelTarget && m_PanelTarget->IsSDFCollider())
+		{
+			MeshSDF* sdf = m_PanelTarget->GetMesh()
+				? m_PanelTarget->GetMesh()->GetSDF()
+				: nullptr;
 
+			if (sdf)
+			{
+				const float debugDistanceRange =
+					sdf->grid.voxelSize * 2.0f;
+				m_SDFDebug.RenderSlice(
+					gfx,
+					*sdf,
+					m_PanelTarget->GetWorldMatrix(),
+					m_Camera.GetViewProj(),
+					ESDFSliceAxis::Z,
+					sdf->grid.resolution[2] / 2,
+					debugDistanceRange);
+			}
+		}
+		const Math::Vector4 lineColor = { 0.0f, 1.0f, 0.0f, 1.0f };
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			if (!object->IsSDFCollider())
+				continue;
+
+			MeshSDF* sdf = object->GetMesh()
+				? object->GetMesh()->GetSDF()
+				: nullptr;
+
+			if (!sdf)
+				continue;
+
+			const SDFGrid& grid = sdf->grid;
+			m_DebugLines.AddAABB(
+				grid.volumeBoundsMin,
+				grid.volumeBoundsMin + grid.volumeBoundsSize,
+				object->GetWorldMatrix(),
+				lineColor);
+		}
+		m_DebugLines.Render(gfx, m_Camera.GetViewProj());
 		// =============== 파티클 ==============
 		m_Particles.Render(gfx, viewCB);
 		gfx.Finish();
@@ -202,6 +248,9 @@ private:
 	Scene m_Scene;			   // 모든 SceneObject를 소유
 
 	SceneObject* m_PanelTarget = nullptr;
+
+	DebugLineRenderer m_DebugLines;
+	SDFDebugRenderer  m_SDFDebug;
 
 	bool m_Paused = false;
 };
