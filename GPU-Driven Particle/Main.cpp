@@ -111,7 +111,7 @@ public:
 
 			// 같은 메시를 쓰는 콜라이더가 여럿이어도 베이크는 한 번
 			if (object->GetMesh()->GetSDF() == nullptr)
-				m_SDFBaker.Bake(*object->GetMesh(), 64, 64, 64);
+				m_SDFBaker.Bake(*object->GetMesh());
 
 			m_Particles.AddSDFCollider(object.get());
 		}

@@ -5,16 +5,15 @@
 #include "GpuBuffer.h"
 #include "VolumeBuffer.h"
 #include "RenderTypes.h"
+#include "SDFGrid.h"
 #include <vector>
 namespace GP
 {
-	// 메시 로컬 공간에서 구운 SDF (SDFBaker가 생성)
+	// Mesh에 대해 구워진 SDF 결과
 	struct MeshSDF
 	{
-		VolumeBuffer volume;
-		Math::Vector3 boundsMin;
-		Math::Vector3 boundsSize;
-		uint32_t resolution[3] = { 0,0,0 };
+		VolumeBuffer volume; // GPU 리소스
+		SDFGrid grid;		 // 텍스처 해석 데이터
 	};
 
 	class Mesh

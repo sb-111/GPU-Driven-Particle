@@ -24,20 +24,18 @@ void GP::SDFBaker::Init()
 	bakePSO.SetComputeShader(meshSDFBakeCS->GetBufferPointer(), meshSDFBakeCS->GetBufferSize());
 	bakePSO.Finalize();
 }
-void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, uint32_t resolutionZ)
+void GP::SDFBaker::Bake(Mesh& mesh, uint32_t baseResolution)
 {
 	auto sdf = std::make_unique<MeshSDF>();
-	sdf->resolution[0] = resolutionX;
-	sdf->resolution[1] = resolutionY;
-	sdf->resolution[2] = resolutionZ;
-	sdf->volume.Create(L"Mesh SDF", resolutionX, resolutionY, resolutionZ, DXGI_FORMAT_R16_FLOAT);
+	sdf->grid = ResolveSDFGrid(
+		mesh.GetBoundsMin(),
+		mesh.GetBoundsMax(),
+		baseResolution);
 
-	Math::Vector3 center = (mesh.GetBoundsMin() + mesh.GetBoundsMax()) * 0.5f;
-	Math::Vector3 halfSize = ((mesh.GetBoundsMax() - mesh.GetBoundsMin()) * 0.5f) * 1.1f; // margin 조금 줌(1.1배)
-	Math::Vector3 boundsMin = center - halfSize;
-	Math::Vector3 boundsSize = halfSize * 2.0f;
-	sdf->boundsMin = boundsMin;
-	sdf->boundsSize = boundsSize;
+	const uint32_t resolutionX = sdf->grid.resolution[0];
+	const uint32_t resolutionY = sdf->grid.resolution[1];
+	const uint32_t resolutionZ = sdf->grid.resolution[2];
+	sdf->volume.Create(L"Mesh SDF", resolutionX, resolutionY, resolutionZ, DXGI_FORMAT_R16_FLOAT);
 
 	const uint32_t triangleCount = mesh.GetIndexCount() / 3;
 	const uint64_t voxelCount = (uint64_t)resolutionX * resolutionY * resolutionZ;
@@ -52,8 +50,8 @@ void GP::SDFBaker::Bake(Mesh& mesh, uint32_t resolutionX, uint32_t resolutionY, 
 	cpt.SetRootSignature(bakeRootSig);
 	cpt.SetPipelineState(bakePSO);
 	BakeConstants bakeConstants = {};
-	bakeConstants.boundsMin = ToF3(boundsMin);
-	bakeConstants.boundsSize = ToF3(boundsSize);
+	bakeConstants.boundsMin = ToF3(sdf->grid.volumeBoundsMin);
+	bakeConstants.boundsSize = ToF3(sdf->grid.volumeBoundsSize);
 	bakeConstants.resolution[0] = resolutionX;
 	bakeConstants.resolution[1] = resolutionY;
 	bakeConstants.resolution[2] = resolutionZ;

@@ -164,6 +164,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="SceneObject.cpp" />
     <ClCompile Include="SDFBaker.cpp" />
+    <ClCompile Include="SDFGrid.cpp" />
     <ClCompile Include="ShaderCompiler.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -188,6 +189,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="RenderTypes.h" />
     <ClInclude Include="SceneObject.h" />
     <ClInclude Include="SDFBaker.h" />
+    <ClInclude Include="SDFGrid.h" />
     <ClInclude Include="ShaderCompiler.h" />
   </ItemGroup>
   <ItemGroup>
