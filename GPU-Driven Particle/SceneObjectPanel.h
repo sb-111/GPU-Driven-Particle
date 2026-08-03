@@ -6,18 +6,43 @@
 #include "imgui/imgui.h"
 
 #include <algorithm>
+#include <cstring>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 namespace GP
 {
+	struct SceneAuthoringRequests
+	{
+		bool newScene = false;
+		bool loadScene = false;
+		bool createObject = false;
+		bool rebuildSDFColliders = false;
+		std::string savePath;
+		std::string meshPath;
+	};
+
+	inline bool IsSceneFileNameValid(const char* name)
+	{
+		return name[0] != '\0' &&
+			strcmp(name, ".") != 0 &&
+			strcmp(name, "..") != 0 &&
+			strpbrk(name, "<>:\"/\\|?*") == nullptr;
+	}
+
 	inline void DrawSceneObjectPanel(
 		Scene& scene,
 		SceneObject*& selectedObject,
 		SDFDebugSettings& sdfDebugSettings,
-		bool& saveRequested)
+		const std::vector<std::string>& meshPaths,
+		const std::string& currentScenePath,
+		SceneAuthoringRequests& requests)
 	{
-		saveRequested = false;
+		requests = {};
 		const auto& objects = scene.GetObjects();
+		static char sceneName[128] = "untitled";
+		static int selectedMeshIndex = 0;
 
 		if (!ImGui::Begin("Scene Object"))
 		{
@@ -25,7 +50,96 @@ namespace GP
 			return;
 		}
 
-		saveRequested = ImGui::Button("Save Scene");
+		if (ImGui::Button("New Scene"))
+			ImGui::OpenPopup("Discard current scene?");
+		ImGui::SameLine();
+		if (ImGui::Button("Save Scene"))
+		{
+			if (!currentScenePath.empty())
+			{
+				const std::string fileName = std::filesystem::path(currentScenePath).stem().string();
+				strncpy_s(sceneName, fileName.c_str(), _TRUNCATE);
+			}
+			ImGui::OpenPopup("Save Scene As");
+		}
+		ImGui::SameLine();
+		requests.loadScene = ImGui::Button("Load Scene");
+
+		if (ImGui::BeginPopupModal("Discard current scene?", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::TextUnformatted("Current scene objects will be removed.");
+			if (ImGui::Button("Create Empty Scene"))
+			{
+				requests.newScene = true;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::BeginPopupModal("Save Scene As", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::InputText("Scene Name", sceneName, IM_ARRAYSIZE(sceneName));
+			ImGui::TextDisabled("Saved to Scenes/<name>.json");
+			if (!IsSceneFileNameValid(sceneName))
+				ImGui::TextDisabled("Enter a valid Windows file name.");
+
+			if (ImGui::Button("Save") && IsSceneFileNameValid(sceneName))
+			{
+				std::string fileName = sceneName;
+				if (std::filesystem::path(fileName).extension() != ".json")
+					fileName += ".json";
+				requests.savePath = "Scenes/" + fileName;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+
+		ImGui::Separator();
+
+		if (!meshPaths.empty())
+		{
+			selectedMeshIndex = std::clamp(selectedMeshIndex, 0, static_cast<int>(meshPaths.size()) - 1);
+			const char* preview = meshPaths[selectedMeshIndex].c_str();
+			ImGui::SetNextItemWidth(280.0f);
+			if (ImGui::BeginCombo("Mesh Asset", preview))
+			{
+				for (size_t index = 0; index < meshPaths.size(); ++index)
+				{
+					const bool isSelected = static_cast<int>(index) == selectedMeshIndex;
+					if (ImGui::Selectable(meshPaths[index].c_str(), isSelected))
+						selectedMeshIndex = static_cast<int>(index);
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			if (ImGui::Button("Create Object"))
+			{
+				requests.createObject = true;
+				requests.meshPath = meshPaths[selectedMeshIndex];
+			}
+			if (selectedObject != nullptr)
+			{
+				ImGui::SameLine();
+				if (ImGui::Button("Apply Mesh"))
+				{
+					requests.meshPath = meshPaths[selectedMeshIndex];
+					requests.rebuildSDFColliders = selectedObject->IsSDFCollider();
+				}
+			}
+		}
+		else
+		{
+			ImGui::TextDisabled("No OBJ assets found under Meshes/");
+		}
+
 		ImGui::Separator();
 
 		if (objects.empty())
@@ -83,7 +197,12 @@ namespace GP
 		bool visible = selectedObject->IsVisible();
 		if (ImGui::Checkbox("Visible", &visible))
 			selectedObject->SetVisible(visible);
-		ImGui::Text("SDF Collider: %s", selectedObject->IsSDFCollider() ? "Yes" : "No");
+		bool sdfCollider = selectedObject->IsSDFCollider();
+		if (ImGui::Checkbox("SDF Collider", &sdfCollider))
+		{
+			selectedObject->SetSDFCollider(sdfCollider);
+			requests.rebuildSDFColliders = true;
+		}
 
 		Math::Vector3 position = selectedObject->GetTransform().GetTranslation();
 		float positionValues[3] = { position.GetX(), position.GetY(), position.GetZ() };

@@ -66,6 +66,9 @@
     <ClCompile Include="SDFDebugRenderer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="SceneFileDialog.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -173,6 +176,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SDFStatsPanel.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneFileDialog.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

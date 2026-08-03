@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      4.47451114654541,
+      6.983433246612549,
+      10.233760833740234
+    ],
+    "lookAt": [
+      4.417623996734619,
+      6.554962158203125,
+      9.331997871398926
+    ],
+    "up": [
+      -0.026976201683282852,
+      0.9035555124282837,
+      -0.4276210367679596
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 1.0,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": -2.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        1.5,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [
+          1.600000023841858,
+          3.299999952316284,
+          3.950000047683716
+        ],
+        "settings": {
+          "spawnRate": 1500.0,
+          "lifeTimeMin": 7.0,
+          "lifeTimeMax": 7.0,
+          "speedMin": 0.0,
+          "speedMax": 1.7330000400543213,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.20000000298023224,
+          "friction": 0.0,
+          "rendererType": 0,
+          "blendMode": 0,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            0.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Prop_Brick1",
+      "mesh": "Meshes/Kit/Prop_Wagon.obj",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 0.9110000133514404,
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "Prop_Wagon",
+      "mesh": "Meshes/Kit/Prop_Wagon.obj",
+      "position": [
+        5.800000190734863,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

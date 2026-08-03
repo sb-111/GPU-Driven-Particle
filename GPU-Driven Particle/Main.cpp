@@ -23,9 +23,12 @@
 #include "SceneObjectPanel.h"
 #include "SDFStatsPanel.h"
 #include "LevelLoader.h"
+#include "SceneFileDialog.h"
 
 #include "DebugLineRenderer.h"
 #include "SDFDebugRenderer.h"
+
+#include <filesystem>
 
 using namespace GameCore;
 using namespace Graphics;
@@ -38,7 +41,7 @@ __declspec(align(16)) struct SceneConstants
 	Math::Matrix4 viewProj;
 };
 
-static constexpr const char* kScenePath = "Scenes/villageScene.json";
+static constexpr const char* kInitialScenePath = "Scenes/villageScene.json";
 
 static ParticleViewCB makeViewCB(const Camera& camera)
 {
@@ -86,42 +89,13 @@ public:
 		// 2. 파티클 시스템
 		m_Particles.Init(m_ParticleNum);
 
-		// 3. 씬 로드
-		std::string err;
-		if (!LevelLoader::Load(
-			kScenePath,
-			m_Scene,
-			m_MeshLibrary,
-			m_Camera,
-			m_Particles,
-			err))
-		{
-			ASSERT(false, err.c_str());
-		}
-
-		for (const auto& object : m_Scene.GetObjects())
-		{
-			if (object->IsSDFCollider())
-			{
-				m_PanelTarget = object.get();
-				break;
-			}
-		}
-
-		// 4. SDF Baker
+		// 3. SDF Baker
 		m_SDFBaker.Init();
-	
-		for (const auto& object : m_Scene.GetObjects())
-		{
-			if (!object->IsSDFCollider())
-				continue;
 
-			// 같은 메시를 쓰는 콜라이더가 여럿이어도 베이크는 한 번
-			if (object->GetMesh()->GetSDF() == nullptr)
-				m_SDFBaker.Bake(*object->GetMesh());
+		// 4. 초기 씬 로드
+		if (!LoadScene(kInitialScenePath))
+			ASSERT(false, "Initial scene load failed - VS output 확인");
 
-			m_Particles.AddSDFCollider(object.get());
-		}
 		m_DebugLines.Init();
 		m_SDFDebug.Init();
 	}
@@ -135,18 +109,16 @@ public:
 		// 튜닝 패널
 		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
 
-		bool saveRequested = false;
-		DrawSceneObjectPanel(m_Scene, m_PanelTarget, m_SDFDebugSettings, saveRequested);
-		DrawSDFStatsPanel(m_MeshLibrary);
-
-		if (saveRequested)
-		{
-			std::string err;
-			if (LevelLoader::Save(kScenePath, m_Scene, m_Camera, m_Particles, err))
-				Utility::Printf("[Scene] 저장 완료: %s\n", kScenePath);
-			else
-				Utility::Printf("[Scene] 저장 실패: %s\n", err.c_str());
-		}
+		SceneAuthoringRequests sceneRequests;
+		DrawSceneObjectPanel(
+			m_Scene,
+			m_PanelTarget,
+			m_SDFDebugSettings,
+			m_MeshLibrary.GetAssetPaths(),
+			m_CurrentScenePath,
+			sceneRequests);
+		HandleSceneAuthoringRequests(sceneRequests);
+		DrawSDFStatsPanel(m_Scene);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);
@@ -248,6 +220,132 @@ public:
 	}
 
 private:
+	void RebuildSDFColliders()
+	{
+		// 씬이 바뀌면 이전 SceneObject 포인터는 전부 무효
+		m_Particles.ClearSDFColliders();
+
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			// sdf 비활성이거나 mesh가 없으면 pass 
+			if (!object->IsSDFCollider() || object->GetMesh() == nullptr)
+				continue;
+
+			// 같은 메시를 쓰는 콜라이더가 여럿이어도 베이크는 한 번
+			if (object->GetMesh()->GetSDF() == nullptr)
+				m_SDFBaker.Bake(*object->GetMesh());
+
+			// 콜라이더 등록
+			m_Particles.AddSDFCollider(object.get());
+		}
+	}
+	// Panel Target 결정
+	void SelectDefaultSceneObject()
+	{
+		m_PanelTarget = nullptr;
+		for (const auto& object : m_Scene.GetObjects())
+		{
+			if (object->IsSDFCollider())
+			{
+				m_PanelTarget = object.get();
+				break;
+			}
+		}
+		if (m_PanelTarget == nullptr && !m_Scene.GetObjects().empty())
+			m_PanelTarget = m_Scene.GetObjects().front().get();
+
+		m_SDFDebugSettings.resetSliceToCenter = true;
+	}
+
+	// 씬 생명주기는 Main이 소유
+	bool LoadScene(const std::string& path)
+	{
+		std::string error;
+		if (!LevelLoader::Load(path.c_str(), m_Scene, m_MeshLibrary, m_Camera, m_Particles, error))
+		{
+			Utility::Printf("[Scene] 로드 실패: %s\n", error.c_str());
+			return false;
+		}
+
+		m_PanelTarget = nullptr;
+		m_CurrentScenePath = path;
+		RebuildSDFColliders();
+		SelectDefaultSceneObject();
+		Utility::Printf("[Scene] 로드 완료: %s\n", path.c_str());
+		return true;
+	}
+
+	void CreateEmptyScene()
+	{
+		m_Particles.ClearSDFColliders();
+		m_Scene.Clear();
+		m_PanelTarget = nullptr;
+		m_CurrentScenePath.clear();
+		m_SDFDebugSettings.showDebug = false;
+		Utility::Printf("[Scene] 빈 씬 생성\n");
+	}
+
+	void CreateSceneObject(const std::string& meshPath)
+	{
+		Mesh* mesh = m_MeshLibrary.Get(meshPath.c_str());
+		if (mesh == nullptr)
+			return;
+
+		SceneObject& object = m_Scene.CreateObject(mesh);
+		object.SetName(std::filesystem::path(meshPath).stem().string());
+		m_PanelTarget = &object;
+		m_SDFDebugSettings.resetSliceToCenter = true;
+	}
+
+	void ApplySelectedMesh(const std::string& meshPath)
+	{
+		if (m_PanelTarget == nullptr)
+			return;
+
+		Mesh* mesh = m_MeshLibrary.Get(meshPath.c_str());
+		if (mesh == nullptr)
+			return;
+
+		m_PanelTarget->SetMesh(mesh);
+	}
+
+	void SaveScene(const std::string& path)
+	{
+		std::string error;
+		if (!LevelLoader::Save(path.c_str(), m_Scene, m_Camera, m_Particles, error))
+		{
+			Utility::Printf("[Scene] 저장 실패: %s\n", error.c_str());
+			return;
+		}
+
+		m_CurrentScenePath = path;
+		Utility::Printf("[Scene] 저장 완료: %s\n", path.c_str());
+	}
+
+	void HandleSceneAuthoringRequests(const SceneAuthoringRequests& requests)
+	{
+		if (requests.newScene)
+			CreateEmptyScene();
+
+		if (requests.loadScene)
+		{
+			std::string path;
+			if (OpenSceneFileDialog(path))
+				LoadScene(path);
+		}
+
+		if (requests.createObject)
+			CreateSceneObject(requests.meshPath);
+		else if (!requests.meshPath.empty())
+			ApplySelectedMesh(requests.meshPath);
+
+		if (requests.rebuildSDFColliders)
+			RebuildSDFColliders();
+
+		if (!requests.savePath.empty())
+			SaveScene(requests.savePath);
+	}
+
 	// 초기 카메라 위치 지정, 회전 X
 	Camera m_Camera{ Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 5.0f)) };
 	CameraController m_CamController{ m_Camera };
@@ -264,6 +362,7 @@ private:
 	Scene m_Scene;			   // 모든 SceneObject를 소유
 
 	SceneObject* m_PanelTarget = nullptr;
+	std::string m_CurrentScenePath;
 
 	DebugLineRenderer m_DebugLines;
 	SDFDebugRenderer  m_SDFDebug;

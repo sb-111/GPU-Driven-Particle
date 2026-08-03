@@ -166,6 +166,12 @@ namespace GP
 		// Emitter 선택 및 추가
 		static int selected = 0;
 		int emitterCount = (int)system.GetEmitterCount();
+		if (emitterCount == 0)
+		{
+			ImGui::TextDisabled("No emitters in the loaded scene");
+			ImGui::End();
+			return;
+		}
 		if (selected >= emitterCount) selected = emitterCount - 1;
 
 		char curName[32];

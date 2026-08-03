@@ -157,6 +157,8 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshLibrary.cpp" />
     <ClCompile Include="Scene.cpp" />
+
+    <ClCompile Include="SceneFileDialog.cpp" />
     <ClCompile Include="MeshLoader.cpp" />
     <ClCompile Include="LevelLoader.cpp" />
     <ClCompile Include="SDFDebugRenderer.cpp" />
@@ -178,6 +180,8 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLibrary.h" />
     <ClInclude Include="Scene.h" />
+
+    <ClInclude Include="SceneFileDialog.h" />
     <ClInclude Include="SceneObjectPanel.h" />
     <ClInclude Include="SDFStatsPanel.h" />
     <ClInclude Include="MeshLoader.h" />
