@@ -2,6 +2,8 @@
 #include "GameCore.h"
 #include "GraphicsCommon.h"
 #include "BufferManager.h"   // g_SceneColorBuffer / g_SceneDepthBuffer
+#include "GraphicsCore.h"
+#include "CommandListManager.h"
 #include "CommandContext.h"
 #include "CubeMesh.h"
 #include "MathConvert.h"
@@ -186,6 +188,21 @@ void GP::ParticleSystem::AddSDFCollider(SceneObject* pObject)
 	{
 		m_SDFColliders.push_back(pObject);
 	}
+}
+
+void GP::ParticleSystem::ClearSDFColliders()
+{
+	m_SDFColliders.clear();
+}
+
+void GP::ParticleSystem::ClearEmitters()
+{
+	if (m_Emitters.empty())
+		return;
+
+	// GPU 완료 후 리소스 해제 (이전 프레임 커맨드 리스트가 참조할 수 있으므로)
+	Graphics::g_CommandManager.IdleGPU();
+	m_Emitters.clear();
 }
 
 void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)

@@ -50,6 +50,8 @@ namespace GP {
 
 		// SDF Collider 등록
 		void AddSDFCollider(SceneObject* pObject);
+		void ClearSDFColliders();
+		void ClearEmitters();
 
 	private:
 		void InitSharedResources();
