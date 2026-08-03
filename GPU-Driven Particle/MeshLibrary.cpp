@@ -2,10 +2,38 @@
 #include "Mesh.h"
 #include "SystemTime.h"
 #include "Utility.h"
+
+#include <algorithm>
+#include <filesystem>
 namespace GP
 {
-	MeshLibrary::MeshLibrary() = default;
+	MeshLibrary::MeshLibrary()
+	{
+		DiscoverMeshAssets();
+	}
 	MeshLibrary::~MeshLibrary() = default;
+
+	void GP::MeshLibrary::DiscoverMeshAssets()
+	{
+		namespace fs = std::filesystem;
+		std::error_code error;
+		const fs::path root("Meshes");
+		if (!fs::exists(root, error))
+			return;
+
+		for (const fs::directory_entry& entry : fs::recursive_directory_iterator(root, error))
+		{
+			if (error)
+				break;
+
+			if (!entry.is_regular_file(error) || entry.path().extension() != ".obj")
+				continue;
+
+			m_AssetPaths.push_back(entry.path().generic_string());
+		}
+
+		std::sort(m_AssetPaths.begin(), m_AssetPaths.end());
+	}
 
 	Mesh* GP::MeshLibrary::Get(const char* path, ENormalMode mode)
 	{
