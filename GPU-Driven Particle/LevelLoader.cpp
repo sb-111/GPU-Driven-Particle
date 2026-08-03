@@ -124,6 +124,97 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("boxExtents")) ReadFloat3(source.at("boxExtents"), (prefix + ".settings.boxExtents").c_str(), settings.boxExtents);
 }
 
+// Load가 기존 씬을 지우기 전에 JSON과 메시 경로를 전량 검증
+// 여기를 통과하면 Load 본문은 던지지 않으므로, 실패해도 현재 씬과 파티클 상태가 유지
+// 메시 로드를 실제로 시도하니 MeshLibrary 캐시는 채워질 수 있음
+// Load와 같은 필드를 같은 조건으로 검사 (Load에 필드 추가 시 여기도 같이 추가할 것)
+static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
+{
+	if (root.at("version").get<int>() != 1)
+		throw std::runtime_error("Unsupported scene version");
+
+	const json& cameraJson = root.at("camera");
+	ReadVec3(cameraJson.at("position"), "camera.position");
+	ReadVec3(cameraJson.at("lookAt"), "camera.lookAt");
+	ReadVec3(cameraJson.at("up"), "camera.up");
+	const float fovYRadians = cameraJson.at("fovYRadians").get<float>();
+	const float nearZ = cameraJson.at("nearZ").get<float>();
+	const float farZ = cameraJson.at("farZ").get<float>();
+	if (fovYRadians <= 0.0f || nearZ <= 0.0f || farZ <= nearZ)
+		throw std::runtime_error("camera requires fovYRadians > 0 and 0 < nearZ < farZ");
+
+	const json& particleSystemJson = root.at("particleSystem");
+	if (!particleSystemJson.is_object())
+		throw std::runtime_error("particleSystem must be an object");
+
+	if (particleSystemJson.contains("halfResolution"))
+		particleSystemJson.at("halfResolution").get<bool>();
+
+	if (particleSystemJson.contains("collision"))
+	{
+		const json& collisionJson = particleSystemJson.at("collision");
+		if (!collisionJson.is_object())
+			throw std::runtime_error("particleSystem.collision must be an object");
+
+		GP::CollisionSettings collision;
+		if (collisionJson.contains("planeEnabled")) collisionJson.at("planeEnabled").get<bool>();
+		if (collisionJson.contains("planeNormal")) ReadFloat3(collisionJson.at("planeNormal"), "particleSystem.collision.planeNormal", collision.planeNormal);
+		if (collisionJson.contains("planeOffset")) collisionJson.at("planeOffset").get<float>();
+		if (collisionJson.contains("sphereEnabled")) collisionJson.at("sphereEnabled").get<bool>();
+		if (collisionJson.contains("sphereCenter")) ReadFloat3(collisionJson.at("sphereCenter"), "particleSystem.collision.sphereCenter", collision.sphereCenter);
+		if (collisionJson.contains("sphereRadius")) collisionJson.at("sphereRadius").get<float>();
+		if (collisionJson.contains("sdfEnabled")) collisionJson.at("sdfEnabled").get<bool>();
+	}
+
+	const json& emittersJson = particleSystemJson.at("emitters");
+	RequireArray(emittersJson, "particleSystem.emitters");
+	if (emittersJson.empty())
+		throw std::runtime_error("particleSystem.emitters must contain at least one emitter");
+	for (size_t index = 0; index < emittersJson.size(); ++index)
+	{
+		const json& emitterJson = emittersJson.at(index);
+		if (!emitterJson.is_object())
+			throw std::runtime_error("particleSystem.emitters[" + std::to_string(index) + "] must be an object");
+
+		const std::string prefix = "particleSystem.emitters[" + std::to_string(index) + "]";
+		ReadVec3(emitterJson.at("position"), (prefix + ".position").c_str());
+		if (emitterJson.contains("settings"))
+		{
+			GP::ParticleSettings settings;
+			ApplyEmitterSettings(emitterJson.at("settings"), settings, prefix);
+		}
+	}
+
+	const json& objectsJson = root.at("objects");
+	RequireArray(objectsJson, "objects");
+	for (size_t index = 0; index < objectsJson.size(); ++index)
+	{
+		const json& objectJson = objectsJson.at(index);
+		if (!objectJson.is_object())
+			throw std::runtime_error("objects[" + std::to_string(index) + "] must be an object");
+
+		const std::string prefix = "objects[" + std::to_string(index) + "]";
+		const std::string meshPath = objectJson.at("mesh").get<std::string>();
+		if (meshLibrary.Get(meshPath.c_str()) == nullptr)
+			throw std::runtime_error(prefix + ".mesh failed to load: " + meshPath);
+
+		if (objectJson.contains("name"))
+			objectJson.at("name").get<std::string>();
+		ReadVec3(objectJson.at("position"), (prefix + ".position").c_str());
+		ReadQuaternion(objectJson.at("rotation"), (prefix + ".rotation").c_str());
+		if (objectJson.value("scale", 1.0f) <= 0.0f)
+			throw std::runtime_error(prefix + ".scale must be greater than zero");
+
+		if (objectJson.contains("color"))
+		{
+			float color[4];
+			ReadFloat4(objectJson.at("color"), (prefix + ".color").c_str(), color);
+		}
+		objectJson.value("visible", true);
+		objectJson.value("sdfCollider", false);
+	}
+}
+
 using ojson = nlohmann::ordered_json;
 
 static ojson Vec3Json(const Math::Vector3& v)
@@ -166,11 +257,12 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 		json root;
 		file >> root;
 
-		if (root.at("version").get<int>() != 1)
-		{
-			outError = "Unsupported scene version";
-			return false;
-		}
+		ValidateSceneData(root, meshLibrary);
+
+		// 검증을 통과한 경우에만 기존 런타임 상태를 교체
+		particles.ClearSDFColliders();
+		scene.Clear();
+		particles.ClearEmitters();
 
 		const json& cameraJson = root.at("camera");
 		const Math::Vector3 position = ReadVec3(cameraJson.at("position"), "camera.position");
@@ -214,6 +306,8 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 
 		const json& emittersJson = particleSystemJson.at("emitters");
 		RequireArray(emittersJson, "particleSystem.emitters");
+		if (emittersJson.empty())
+			throw std::runtime_error("particleSystem.emitters must contain at least one emitter");
 		for (size_t index = 0; index < emittersJson.size(); ++index)
 		{
 			const json& emitterJson = emittersJson.at(index);
