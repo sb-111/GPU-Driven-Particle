@@ -24,9 +24,9 @@ namespace GP
 		/*
 		* 1회 Dispatch하여 Bake
 		* @param Mesh 해당 Mesh에 구워진 MeshSDF를 이동
-		* @param baseResolution padding을 포함한 가장 긴 축의 최종 해상도
+		* @param longestAxisResolution padding을 포함한 가장 긴 축의 최종 해상도
 		*/
-		void Bake(Mesh& mesh, uint32_t baseResolution = kSDFBaseResolution);
+		void Bake(Mesh& mesh, uint32_t longestAxisResolution = kSDFLongestAxisResolution);
 
 	private:
 		RootSignature bakeRootSig;

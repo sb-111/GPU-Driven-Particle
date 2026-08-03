@@ -4,7 +4,7 @@
 GP::SDFGrid GP::ResolveSDFGrid(
 	const Math::Vector3& meshBoundsMin,
 	const Math::Vector3& meshBoundsMax,
-	uint32_t baseResolution)
+	uint32_t longestAxisResolution)
 {
 	const Math::Vector3 extents = meshBoundsMax - meshBoundsMin;
 	const Math::Vector3 center = (meshBoundsMin + meshBoundsMax) * 0.5f;
@@ -17,18 +17,21 @@ GP::SDFGrid GP::ResolveSDFGrid(
 		extents.GetZ()
 	};
 	// 가장 긴 축
-	const float longestExtent = std::max(
-		extent[0],
-		std::max(extent[1], extent[2]));
+	uint32_t longestAxis = 0;
+	if (extent[1] > extent[longestAxis]) longestAxis = 1;
+	if (extent[2] > extent[longestAxis]) longestAxis = 2;
+	const float longestExtent = extent[longestAxis];
 
-	ASSERT(baseResolution > kSDFPaddingVoxels * 2,
-		"SDF base resolution must exceed total padding");
+	ASSERT(longestAxisResolution > kSDFPaddingVoxels * 2,
+		"SDF longest axis resolution must exceed total padding");
+	ASSERT(
+		longestAxisResolution >= kSDFMinResolution,
+		"SDF longest axis resolution must be >= minimum resolution");
 	ASSERT(longestExtent > 1e-6f,
 		"Cannot build an SDF for a zero-size mesh");
 
-	// baseResolution은 padding 포함 가장 긴 축의 최종 resolution
 	const uint32_t interiorResolution =
-		baseResolution - kSDFPaddingVoxels * 2;
+		longestAxisResolution - kSDFPaddingVoxels * 2;
 
 	// padding 제외한 resolution으로 voxel size 계산
 	const float voxelSize =
@@ -41,9 +44,18 @@ GP::SDFGrid GP::ResolveSDFGrid(
 
 	for (uint32_t axis = 0; axis < 3; ++axis)
 	{
-		const uint32_t interiorVoxelCount =
-			static_cast<uint32_t>(
-				std::ceil(extent[axis] / voxelSize));
+		uint32_t interiorVoxelCount;
+		if (axis == longestAxis)
+		{
+			// 해당 축이 voxel size의 기준이니 역산 x
+			interiorVoxelCount = interiorResolution;
+		}
+		else
+		{
+			interiorVoxelCount =
+				static_cast<uint32_t>(
+					std::ceil(extent[axis] / voxelSize));
+		}
 
 		// 축별 최종 voxel 수 계산
 		grid.resolution[axis] = std::max(
