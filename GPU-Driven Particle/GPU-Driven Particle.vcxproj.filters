@@ -172,6 +172,9 @@
     <ClInclude Include="SDFDebugSettings.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="SDFStatsPanel.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ParticleVS.hlsl">

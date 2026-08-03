@@ -21,6 +21,7 @@
 #include "MeshLibrary.h"
 #include "Scene.h"
 #include "SceneObjectPanel.h"
+#include "SDFStatsPanel.h"
 #include "LevelLoader.h"
 
 #include "DebugLineRenderer.h"
@@ -132,6 +133,7 @@ public:
 		// 튜닝 패널
 		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
 		DrawSceneObjectPanel(m_Scene, m_PanelTarget, m_SDFDebugSettings);
+		DrawSDFStatsPanel(m_MeshLibrary);
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);

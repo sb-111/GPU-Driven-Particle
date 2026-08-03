@@ -32,6 +32,7 @@ namespace GP
 
 		auto mesh = std::make_unique<Mesh>();
 		mesh->Create(verts, raw.indices);
+		mesh->SetSourcePath(path);
 
 		Utility::Printf("[Mesh] %s: 정점 %u, 삼각형 %u, %.1f ms\n",
 			path, raw.VertexCount(), raw.TriangleCount(),
