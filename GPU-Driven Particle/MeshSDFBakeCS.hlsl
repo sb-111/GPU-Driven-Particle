@@ -1,4 +1,23 @@
-﻿cbuffer BakeCB : register(b0)
+﻿#define RAY_COUNT 15
+static const float3 kRayDirs[RAY_COUNT] =
+{
+	float3(0.359011f, 0.933333f, 0.000000f),
+	float3(-0.442421f, 0.800000f, 0.405294f),
+	float3(0.065163f, 0.666667f, -0.742502f),
+	float3(0.514682f, 0.533333f, 0.671311f),
+	float3(-0.902505f, 0.400000f, -0.159640f),
+	float3(0.813202f, 0.266667f, -0.517292f),
+	float3(-0.257286f, 0.133333f, 0.957092f),
+	float3(-0.460907f, 0.000000f, -0.887448f),
+	float3(0.930934f, -0.133333f, 0.339976f),
+	float3(-0.890874f, -0.266667f, 0.367740f),
+	float3(0.388461f, -0.400000f, -0.830119f),
+	float3(0.253166f, -0.533333f, 0.807132f),
+	float3(-0.644890f, -0.666667f, -0.373727f),
+	float3(0.586005f, -0.800000f, -0.128832f),
+	float3(-0.206478f, -0.933333f, 0.293693f),
+};
+cbuffer BakeCB : register(b0)
 {
 	float3 boundsMin;
 	uint triangleCount;
@@ -14,7 +33,7 @@ float dot2(float3 vec)
 {
 	return dot(vec, vec);
 }
-bool RayIntersectsTriangle(float3 origin, float3 dir, float3 v1, float3 v2, float3 v3)
+bool RayIntersectsTriangle(float3 origin, float3 dir, float3 v1, float3 v2, float3 v3, out float hitT)
 {
 	float3 e1 = v2 - v1;
 	float3 e2 = v3 - v1;
@@ -34,8 +53,8 @@ bool RayIntersectsTriangle(float3 origin, float3 dir, float3 v1, float3 v2, floa
 	if (v < 0.0f || u + v > 1.0f)
 		return false;
 
-	float t = dot(e2, q) * invDet;
-	return t > 1e-6f; // 교차하면 true
+	hitT = dot(e2, q) * invDet;
+	return hitT > 1e-6f; // 교차하면 true
 }
 // unsigned distance 반환 (square)
 float SqDistancePointTriangle(float3 position, float3 v1, float3 v2, float3 v3)
@@ -74,13 +93,21 @@ void main( uint3 tid : SV_DispatchThreadID )
 	if (any(tid >= resolution))
 		return;
 
-	float3 t = (float3(tid) + 0.5f) / float3(resolution);
-	float3 pos = lerp(boundsMin, boundsMin + boundsSize, t);
+	float3 uvw = (float3(tid) + 0.5f) / float3(resolution);
+	float3 pos = lerp(boundsMin, boundsMin + boundsSize, uvw);
 
-	uint crossCount = 0;
-	
 	float minSqDistance = 1e30f;
-	float3 rayDir = float3(0.3f, 0.6f, 0.4f); // 임의 ray
+	float nearestT[RAY_COUNT]; // 이 ray가 지금까지 발견한 가장 가까운 교차 거리
+	bool nearestBackface[RAY_COUNT]; // 가장 가까운 triangle이 backface인지
+
+	// 초기화
+	[unroll]
+	for (uint r = 0; r < RAY_COUNT;++r)
+	{
+		nearestT[r] = 1e30f;
+		nearestBackface[r] = false;
+	}
+	
 	// 모든 삼각형에 대해 순회
 	for (uint triangleIdx = 0; triangleIdx < triangleCount; ++triangleIdx)
 	{
@@ -88,15 +115,44 @@ void main( uint3 tid : SV_DispatchThreadID )
 		float3 v1 = asfloat(Vertices.Load3(idx.x * vertexStride + positionOffset)); // pos만 퍼오기 
 		float3 v2 = asfloat(Vertices.Load3(idx.y * vertexStride + positionOffset));
 		float3 v3 = asfloat(Vertices.Load3(idx.z * vertexStride + positionOffset));
-
+		float3 normal = cross(v2 - v1, v3 - v1);
+		if(dot(normal, normal) < 1e-12f)
+			continue;
+		
+		// point to triangle distance (Unsigned)
 		float sqDistance = SqDistancePointTriangle(pos, v1, v2, v3);
 		minSqDistance = min(minSqDistance, sqDistance); // 더 작은 값 갱신
 
-		if(RayIntersectsTriangle(pos, rayDir,v1,v2,v3))
-			crossCount++;
+		// ================== Sign Vote ==================
+		// 여러 ray에 대해 현재 triangle 교차 검사
+		[unroll]
+		for (uint r = 0; r < RAY_COUNT; ++r)
+		{
+			float hitT = 0.0f;
+			float3 rayDir = kRayDirs[r];
+			if (RayIntersectsTriangle(pos, rayDir, v1, v2, v3, hitT))
+			{
+				// 해당 ray가 더 가까운 삼각형과 부딪혔으면
+				if(hitT < nearestT[r])
+				{
+					// 최단 교차거리 갱신 및 backface 여부
+					nearestT[r] = hitT;
+					nearestBackface[r] = dot(rayDir, normal) > 0.0f; // 내적 양수면 뒷면
+				}
+			}
+		}
 	}
 	float d = sqrt(minSqDistance);
-	if (crossCount & 1) // 홀수면 메시 내부 판정
+	// Sign Vote
+	uint backfaceCount = 0;
+	[unroll]
+	for (uint r = 0; r < RAY_COUNT; ++r)
+	{
+		if(nearestBackface[r])
+			++backfaceCount;
+	}
+	bool inside = backfaceCount * 2 > RAY_COUNT;
+	if(inside)
 		d = -d;
 	SDFTexture[tid] = d;
 }
