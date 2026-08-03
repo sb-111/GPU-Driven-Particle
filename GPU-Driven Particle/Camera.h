@@ -40,6 +40,9 @@ namespace GP
 		Math::Vector3 GetRight() const { return Math::Matrix3(m_CameraToWorld.GetRotation()).GetX(); }
 		Math::Vector3 GetUp() const { return Math::Matrix3(m_CameraToWorld.GetRotation()).GetY(); }
 
+		float GetFOV() const { return m_VerticalFOV; }
+		float GetNearClip() const { return m_NearClip; }
+		float GetFarClip() const { return m_FarClip; }
 
 	private:
 		// 카메라 월드 행렬
@@ -49,5 +52,8 @@ namespace GP
 		Math::Matrix4 m_ProjMat;
 		Math::Matrix4 m_ViewProjMat;
 
+		float m_VerticalFOV = 1.0471976f;
+		float m_NearClip = 1.0f;
+		float m_FarClip = 1000.0f;
 	};
 }

@@ -38,6 +38,8 @@ __declspec(align(16)) struct SceneConstants
 	Math::Matrix4 viewProj;
 };
 
+static constexpr const char* kScenePath = "Scenes/villageScene.json";
+
 static ParticleViewCB makeViewCB(const Camera& camera)
 {
 	ParticleViewCB cb = {};
@@ -87,7 +89,7 @@ public:
 		// 3. 씬 로드
 		std::string err;
 		if (!LevelLoader::Load(
-			"Scenes/defaultScene.json",
+			kScenePath,
 			m_Scene,
 			m_MeshLibrary,
 			m_Camera,
@@ -132,8 +134,19 @@ public:
 
 		// 튜닝 패널
 		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
-		DrawSceneObjectPanel(m_Scene, m_PanelTarget, m_SDFDebugSettings);
+
+		bool saveRequested = false;
+		DrawSceneObjectPanel(m_Scene, m_PanelTarget, m_SDFDebugSettings, saveRequested);
 		DrawSDFStatsPanel(m_MeshLibrary);
+
+		if (saveRequested)
+		{
+			std::string err;
+			if (LevelLoader::Save(kScenePath, m_Scene, m_Camera, m_Particles, err))
+				Utility::Printf("[Scene] 저장 완료: %s\n", kScenePath);
+			else
+				Utility::Printf("[Scene] 저장 실패: %s\n", err.c_str());
+		}
 
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
 		m_Particles.Update(m_Paused ? 0.0f : deltaT);

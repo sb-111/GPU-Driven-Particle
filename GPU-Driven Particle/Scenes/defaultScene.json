@@ -1,77 +1,177 @@
-﻿{
+{
   "version": 1,
-
   "camera": {
-    "position": [0.0, 0.0, 5.0],
-    "lookAt": [0.0, 0.0, 0.0],
-    "up": [0.0, 1.0, 0.0],
-    "fovYRadians": 1.0471976,
+    "position": [
+      15.410818099975586,
+      4.687471389770508,
+      0.30903369188308716
+    ],
+    "lookAt": [
+      14.449249267578125,
+      4.474905490875244,
+      0.48282092809677124
+    ],
+    "up": [
+      -0.2091769576072693,
+      0.9771467447280884,
+      0.037805184721946716
+    ],
+    "fovYRadians": 1.0471975803375244,
     "nearZ": 1.0,
     "farZ": 1000.0
   },
-
   "particleSystem": {
     "halfResolution": true,
     "collision": {
       "planeEnabled": true,
-      "planeNormal": [0.0, 1.0, 0.0],
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
       "planeOffset": 0.0,
       "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        1.5,
+        0.0
+      ],
+      "sphereRadius": 1.5,
       "sdfEnabled": true
     },
     "emitters": [
       {
-        "position": [0.0, 0.0, 0.0],
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
         "settings": {
           "spawnRate": 5000.0,
           "lifeTimeMin": 2.0,
           "lifeTimeMax": 4.0,
           "speedMin": 3.0,
           "speedMax": 5.0,
-          "gravity": [0.0, -9.8, 0.0]
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "rendererType": 0,
+          "blendMode": 0,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            0.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
         }
       }
     ]
   },
-
   "objects": [
     {
       "name": "Floor",
       "mesh": "Meshes/plane.obj",
-      "position": [0.0, -2.0, 0.0],
-      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "position": [
+        0.0,
+        -2.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
       "scale": 40.0,
-      "color": [0.11, 0.11, 0.13, 1.0],
+      "color": [
+        0.10999999940395355,
+        0.10999999940395355,
+        0.12999999523162842,
+        1.0
+      ],
       "visible": true,
       "sdfCollider": false
     },
     {
       "name": "Sphere",
       "mesh": "Meshes/sphere.obj",
-      "position": [7.0, 0.0, 0.0],
-      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "position": [
+        7.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
       "scale": 1.5,
-      "color": [0.85, 0.2, 0.15, 1.0],
+      "color": [
+        0.8500000238418579,
+        0.20000000298023224,
+        0.15000000596046448,
+        1.0
+      ],
       "visible": true,
       "sdfCollider": true
     },
     {
       "name": "Cube",
       "mesh": "Meshes/cube.obj",
-      "position": [-7.0, 0.0, 0.0],
-      "rotation": [0.0, 0.0, 0.3826834, 0.9238795],
+      "position": [
+        -7.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.3826834261417389,
+        0.9238795638084412
+      ],
       "scale": 2.0,
-      "color": [0.25, 0.55, 0.85, 1.0],
+      "color": [
+        0.25,
+        0.550000011920929,
+        0.8500000238418579,
+        1.0
+      ],
       "visible": true,
       "sdfCollider": true
     },
     {
       "name": "Bunny",
       "mesh": "Meshes/stanford-bunny.obj",
-      "position": [0.0, 0.0, 0.0],
-      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
       "scale": 20.0,
-      "color": [0.3, 0.3, 0.3, 1.0],
+      "color": [
+        0.30000001192092896,
+        0.30000001192092896,
+        0.30000001192092896,
+        1.0
+      ],
       "visible": true,
       "sdfCollider": true
     }

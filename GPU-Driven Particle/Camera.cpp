@@ -24,6 +24,10 @@ void GP::Camera::SetLookDirection(const Math::Vector3& forward, const Math::Vect
 
 void GP::Camera::SetPerspective(float fovY, float aspect, float nearZ, float farZ)
 {
+	m_VerticalFOV = fovY;
+	m_NearClip = nearZ;
+	m_FarClip = farZ;
+
 	float Y = 1 / std::tanf(fovY * 0.5f); // 세로 스케일(화면 세로 절반 크기 역수)
 	float X = Y * aspect; // 가로 스케일 *aspect = h/w (MiniEngine 관례)
 	// near -> 1, far -> 0

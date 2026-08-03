@@ -18,5 +18,13 @@ namespace GP
 			Camera& camera,
 			ParticleSystem& particles,
 			std::string& outError);
+
+		// Load가 읽는 필드만 그대로 기록
+		static bool Save(
+			const char* path,
+			const Scene& scene,
+			const Camera& camera,
+			ParticleSystem& particles,
+			std::string& outError);
 	};
 }

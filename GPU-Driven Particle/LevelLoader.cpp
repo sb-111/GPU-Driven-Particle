@@ -1,10 +1,11 @@
-#include "pch.h"
+﻿#include "pch.h"
 
 #include "LevelLoader.h"
 #include "ThirdParty/json.hpp"
 
 #include "BufferManager.h"
 #include "Camera.h"
+#include "Mesh.h"
 #include "MeshLibrary.h"
 #include "ParticleSystem.h"
 #include "Scene.h"
@@ -121,6 +122,32 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("sortEnabled")) settings.sortEnabled = source.at("sortEnabled").get<bool>();
 	if (source.contains("gravity")) ReadFloat3(source.at("gravity"), (prefix + ".settings.gravity").c_str(), settings.gravity);
 	if (source.contains("boxExtents")) ReadFloat3(source.at("boxExtents"), (prefix + ".settings.boxExtents").c_str(), settings.boxExtents);
+}
+
+using ojson = nlohmann::ordered_json;
+
+static ojson Vec3Json(const Math::Vector3& v)
+{
+	DirectX::XMFLOAT3 f;
+	DirectX::XMStoreFloat3(&f, v);
+	return ojson::array({ f.x, f.y, f.z });
+}
+
+static ojson Float3Json(const float (&v)[3])
+{
+	return ojson::array({ v[0], v[1], v[2] });
+}
+
+static ojson Float4Json(const float (&v)[4])
+{
+	return ojson::array({ v[0], v[1], v[2], v[3] });
+}
+
+static ojson QuaternionJson(const Math::Quaternion& q)
+{
+	DirectX::XMFLOAT4 f;
+	DirectX::XMStoreFloat4(&f, q);
+	return ojson::array({ f.x, f.y, f.z, f.w });
 }
 
 bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibrary, Camera& camera, ParticleSystem& particles, std::string& outError)
@@ -246,5 +273,109 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 		return false;
 	}
 
+	return true;
+}
+
+bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& camera, ParticleSystem& particles, std::string& outError)
+{
+	outError.clear();
+
+	ojson root;
+	root["version"] = 1;
+
+	ojson cameraJson;
+	cameraJson["position"] = Vec3Json(camera.GetPosition());
+	cameraJson["lookAt"] = Vec3Json(camera.GetPosition() + camera.GetForward());
+	cameraJson["up"] = Vec3Json(camera.GetUp());
+	cameraJson["fovYRadians"] = camera.GetFOV();
+	cameraJson["nearZ"] = camera.GetNearClip();
+	cameraJson["farZ"] = camera.GetFarClip();
+	root["camera"] = cameraJson;
+
+	ojson particleSystemJson;
+	particleSystemJson["halfResolution"] = particles.GetHalfResolution();
+
+	const CollisionSettings& collision = particles.GetCollisionSettings();
+	ojson collisionJson;
+	collisionJson["planeEnabled"] = collision.planeEnabled;
+	collisionJson["planeNormal"] = Float3Json(collision.planeNormal);
+	collisionJson["planeOffset"] = collision.planeOffset;
+	collisionJson["sphereEnabled"] = collision.sphereEnabled;
+	collisionJson["sphereCenter"] = Float3Json(collision.sphereCenter);
+	collisionJson["sphereRadius"] = collision.sphereRadius;
+	collisionJson["sdfEnabled"] = collision.sdfEnabled;
+	particleSystemJson["collision"] = collisionJson;
+
+	ojson emittersJson = ojson::array();
+	for (size_t index = 0; index < particles.GetEmitterCount(); ++index)
+	{
+		ParticleEmitter& emitter = particles.GetEmitter(index);
+		const ParticleSettings& settings = emitter.GetSettings();
+
+		ojson settingsJson;
+		settingsJson["spawnRate"] = settings.spawnRate;
+		settingsJson["lifeTimeMin"] = settings.lifeTimeMin;
+		settingsJson["lifeTimeMax"] = settings.lifeTimeMax;
+		settingsJson["speedMin"] = settings.speedMin;
+		settingsJson["speedMax"] = settings.speedMax;
+		settingsJson["shapeType"] = settings.shapeType;
+		settingsJson["velocityMode"] = settings.velocityMode;
+		settingsJson["sphereRadius"] = settings.sphereRadius;
+		settingsJson["sphereSurfaceOnly"] = settings.sphereSurfaceOnly;
+		settingsJson["coneAngle"] = settings.coneAngle;
+		settingsJson["collisionEnabled"] = settings.collisionEnabled;
+		settingsJson["restitution"] = settings.restitution;
+		settingsJson["friction"] = settings.friction;
+		settingsJson["rendererType"] = settings.rendererType;
+		settingsJson["blendMode"] = settings.blendMode;
+		settingsJson["textureIndex"] = settings.textureIndex;
+		settingsJson["sortEnabled"] = settings.sortEnabled;
+		settingsJson["gravity"] = Float3Json(settings.gravity);
+		settingsJson["boxExtents"] = Float3Json(settings.boxExtents);
+
+		ojson emitterJson;
+		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
+		emitterJson["settings"] = settingsJson;
+		emittersJson.push_back(emitterJson);
+	}
+	particleSystemJson["emitters"] = emittersJson;
+	root["particleSystem"] = particleSystemJson;
+
+	ojson objectsJson = ojson::array();
+	for (const auto& object : scene.GetObjects())
+	{
+		const Mesh* mesh = object->GetMesh();
+		if (mesh == nullptr || mesh->GetSourcePath().empty())
+		{
+			outError = "Object '" + object->GetName() + "' has no mesh source path, cannot save";
+			return false;
+		}
+
+		ojson objectJson;
+		objectJson["name"] = object->GetName();
+		objectJson["mesh"] = mesh->GetSourcePath();
+		objectJson["position"] = Vec3Json(object->GetTransform().GetTranslation());
+		objectJson["rotation"] = QuaternionJson(object->GetTransform().GetRotation());
+		objectJson["scale"] = (float)object->GetTransform().GetScale();
+		objectJson["color"] = Float4Json(object->GetMaterial().baseColor);
+		objectJson["visible"] = object->IsVisible();
+		objectJson["sdfCollider"] = object->IsSDFCollider();
+		objectsJson.push_back(objectJson);
+	}
+	root["objects"] = objectsJson;
+
+	std::ofstream file(path);
+	if (!file)
+	{
+		outError = std::string("Cannot open scene file for writing: ") + path;
+		return false;
+	}
+	file << root.dump(2) << '\n';
+
+	if (!file.good())
+	{
+		outError = std::string("Failed to write scene file: ") + path;
+		return false;
+	}
 	return true;
 }

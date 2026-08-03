@@ -13,8 +13,10 @@ namespace GP
 	inline void DrawSceneObjectPanel(
 		Scene& scene,
 		SceneObject*& selectedObject,
-		SDFDebugSettings& sdfDebugSettings)
+		SDFDebugSettings& sdfDebugSettings,
+		bool& saveRequested)
 	{
+		saveRequested = false;
 		const auto& objects = scene.GetObjects();
 
 		if (!ImGui::Begin("Scene Object"))
@@ -22,6 +24,9 @@ namespace GP
 			ImGui::End();
 			return;
 		}
+
+		saveRequested = ImGui::Button("Save Scene");
+		ImGui::Separator();
 
 		if (objects.empty())
 		{
