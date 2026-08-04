@@ -9,10 +9,10 @@ cbuffer CollisionCB : register(b2)
 }
 Texture3D<float> SDFTextures[MAX_SDF_COUNT] : register(t0);
 SamplerState LinearClamp  : register(s0);
-float SampleSDF(float3 worldPos, out float gradEps)
+float SampleSDF(float3 worldPos, out float worldVoxelSize)
 {
 	float d = 1e30f;
-	gradEps = 0.05f;
+	worldVoxelSize = 0.05f; // 해석적 콜라이더용 기본값 (법선 샘플 간격)
 
 	if (collisionParams.colliderMask & COLLISION_PLANE)
 	{
@@ -50,7 +50,7 @@ float SampleSDF(float3 worldPos, out float gradEps)
 			if(dSdf < d)
 			{
 				d = dSdf;
-				gradEps = collisionParams.sdfInstances[i].gradientEpsilon;
+				worldVoxelSize = collisionParams.sdfInstances[i].worldVoxelSize;
 			}
 		}
 	}
@@ -60,29 +60,31 @@ float SampleSDF(float3 worldPos, out float gradEps)
 // 해당 위치에서 노말 방향 반환
 float3 SampleSDFGradient(float3 worldPos, float h)
 {
-	float unusedEps;
+	float unusedVoxelSize;
 	float3 gradient;
 	// 중앙차분법
-	gradient.x = SampleSDF(worldPos + float3(h, 0, 0), unusedEps) - SampleSDF(worldPos - float3(h, 0, 0), unusedEps);
-	gradient.y = SampleSDF(worldPos + float3(0, h, 0), unusedEps) - SampleSDF(worldPos - float3(0, h, 0), unusedEps);
-	gradient.z = SampleSDF(worldPos + float3(0, 0, h), unusedEps) - SampleSDF(worldPos - float3(0, 0, h), unusedEps);
+	gradient.x = SampleSDF(worldPos + float3(h, 0, 0), unusedVoxelSize) - SampleSDF(worldPos - float3(h, 0, 0), unusedVoxelSize);
+	gradient.y = SampleSDF(worldPos + float3(0, h, 0), unusedVoxelSize) - SampleSDF(worldPos - float3(0, h, 0), unusedVoxelSize);
+	gradient.z = SampleSDF(worldPos + float3(0, 0, h), unusedVoxelSize) - SampleSDF(worldPos - float3(0, 0, h), unusedVoxelSize);
 
 	float len = length(gradient);
 	return (len > 1e-5f) ? gradient / len : float3(0.0f, 1.0f, 0.0f);
 }
-void ApplySDFCollision(inout float3 worldPos, inout float3 velocity, float restitution, float friction)
+void ApplySDFCollision(inout float3 worldPos, inout float3 velocity, float restitution, float friction, float radius)
 {
 	// 표면까지 거리 샘플
-	float gradEps;
-	float d = SampleSDF(worldPos, gradEps);
+	float worldVoxelSize;
+	float d = SampleSDF(worldPos, worldVoxelSize);
+
+	float collisionThreshold = radius + 0.5f * worldVoxelSize;
 
 	// 외부에 있으면 충돌 처리 Pass
-	if (d >= 0.0f)
+	if (d >= collisionThreshold)
 		return;
 
-	// 위치 보정 (외부로 밀어내기)
-	float3 normal = SampleSDFGradient(worldPos, gradEps);
-	worldPos -= normal * d; // normal은 표면 바깥 방향, d는 음수
+	// 위치 보정 (침투한만큼 외부로 밀어내기)
+	float3 normal = SampleSDFGradient(worldPos, worldVoxelSize);
+	worldPos -= normal * (d - collisionThreshold); // normal은 표면 바깥 방향, 괄호 안은 음수
 	
 	// 이미 튕겨져 나가는 방향이면 반사 X
 	float velNLength = dot(velocity, normal);

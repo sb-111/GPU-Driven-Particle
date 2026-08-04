@@ -44,7 +44,8 @@ void main(uint3 id : SV_DispatchThreadID)
 		p.position += p.velocity * params.deltaTime;
 		if(params.collisionEnabled != 0)
 		{
-			ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction);
+			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 파티클 size의 최장 축 반경
+			ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction, radius);
 		}
 		// for mesh renderer
 		float angularVelocityLength = length(p.angularVelocity);

@@ -247,7 +247,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		collisionCB.sdfInstances[sdfCount].localBoundsMin = ToF3(sdf->grid.volumeBoundsMin);
 		collisionCB.sdfInstances[sdfCount].localBoundsMax = ToF3(sdf->grid.volumeBoundsMin + sdf->grid.volumeBoundsSize);
 		collisionCB.sdfInstances[sdfCount].uniformScale = scale;
-		collisionCB.sdfInstances[sdfCount].gradientEpsilon = sdf->grid.voxelSize * scale; // 월드 단위
+		collisionCB.sdfInstances[sdfCount].worldVoxelSize = sdf->grid.voxelSize * scale;
 
 		// SRV 전환
 		cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);

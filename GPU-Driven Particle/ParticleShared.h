@@ -175,7 +175,7 @@
 		float3 localBoundsMin; // 12B
 		float uniformScale;	   // 4B
 		float3 localBoundsMax; // 12B
-		float gradientEpsilon; // 4B
+		float worldVoxelSize;  // 4B (법선 샘플 간격 + 표면 오차 보정에 사용)
 	};
 	struct GP_CB_ALIGN ParticleCollisionCB
 	{
