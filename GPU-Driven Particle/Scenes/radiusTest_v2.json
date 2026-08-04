@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      2.3181512355804443,
+      1.2354917526245117,
+      0.08416192978620529
+    ],
+    "lookAt": [
+      1.3492120504379272,
+      0.9930737018585205,
+      0.13305526971817017
+    ],
+    "up": [
+      -0.2421099841594696,
+      0.9701719284057617,
+      0.012216992676258087
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 1.0,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": -2.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        1.5,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [
+          0.0,
+          1.399999976158142,
+          0.0
+        ],
+        "settings": {
+          "spawnRate": 300.0,
+          "lifeTimeMin": 7.0,
+          "lifeTimeMax": 7.0,
+          "speedMin": 0.0,
+          "speedMax": 1.7330000400543213,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.0,
+          "friction": 0.0,
+          "rendererType": 0,
+          "blendMode": 0,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            0.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "plane",
+      "mesh": "Meshes/plane.obj",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 6.0,
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "sphere",
+      "mesh": "Meshes/sphere.obj",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}
