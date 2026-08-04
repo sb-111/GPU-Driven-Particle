@@ -1,0 +1,359 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      0.06231484189629555,
+      8.616556167602539,
+      11.935361862182617
+    ],
+    "lookAt": [
+      0.047196365892887115,
+      8.257551193237305,
+      11.002148628234863
+    ],
+    "up": [
+      -0.005815278738737106,
+      0.9333356618881226,
+      -0.35895782709121704
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 1.0,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": true,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": -2.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        1.5,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [
+          0.0,
+          6.5,
+          -1.899999976158142
+        ],
+        "settings": {
+          "spawnRate": 100000.0,
+          "lifeTimeMin": 3.0,
+          "lifeTimeMax": 3.0,
+          "speedMin": -1.0,
+          "speedMax": -1.0,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.0,
+          "friction": 0.09200000017881393,
+          "rendererType": 0,
+          "blendMode": 0,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            0.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
+        }
+      },
+      {
+        "position": [
+          17.5,
+          3.299999952316284,
+          -1.5499999523162842
+        ],
+        "settings": {
+          "spawnRate": 2832.0,
+          "lifeTimeMin": 2.0,
+          "lifeTimeMax": 4.0,
+          "speedMin": 20.958999633789063,
+          "speedMax": 21.165000915527344,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.24199999868869781,
+          "friction": 0.5,
+          "rendererType": 0,
+          "blendMode": 0,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            -20.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Floor",
+      "mesh": "Meshes/plane.obj",
+      "position": [
+        0.0,
+        -2.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 40.0,
+      "color": [
+        0.10999999940395355,
+        0.10999999940395355,
+        0.12999999523162842,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "WallLeft",
+      "mesh": "Meshes/Kit/Wall_Plaster_Straight.obj",
+      "position": [
+        -2.0,
+        -2.0,
+        -3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.8500000238418579,
+        0.800000011920929,
+        0.699999988079071,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "WallDoor",
+      "mesh": "Meshes/Kit/Wall_Plaster_Door_Round.obj",
+      "position": [
+        0.0,
+        -2.0,
+        -3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.8199999928474426,
+        0.7699999809265137,
+        0.6800000071525574,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "WallWindow",
+      "mesh": "Meshes/Kit/Wall_Plaster_Window_Wide_Flat.obj",
+      "position": [
+        2.0,
+        -2.0,
+        -3.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.8500000238418579,
+        0.800000011920929,
+        0.699999988079071,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "Roof",
+      "mesh": "Meshes/Kit/Roof_RoundTiles_4x4.obj",
+      "position": [
+        0.0,
+        1.7000000476837158,
+        -1.7000000476837158
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.6200000047683716,
+        0.28999999165534973,
+        0.2199999988079071,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Crate",
+      "mesh": "Meshes/Kit/Prop_Crate.obj",
+      "position": [
+        -4.849999904632568,
+        -2.0,
+        6.400000095367432
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.550000011920929,
+        0.4000000059604645,
+        0.25,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Brick",
+      "mesh": "Meshes/Kit/Prop_Brick1.obj",
+      "position": [
+        -2.5,
+        -0.9399999976158142,
+        0.5
+      ],
+      "rotation": [
+        0.0,
+        0.2588077187538147,
+        0.0,
+        0.965928852558136
+      ],
+      "scale": 1.0,
+      "color": [
+        0.6000000238418579,
+        0.25,
+        0.20000000298023224,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Wagon",
+      "mesh": "Meshes/Kit/Prop_Wagon.obj",
+      "position": [
+        1.7000000476837158,
+        -1.149999976158142,
+        5.050000190734863
+      ],
+      "rotation": [
+        0.0,
+        0.3007054030895233,
+        0.0,
+        0.9537171125411987
+      ],
+      "scale": 1.0,
+      "color": [
+        0.41999998688697815,
+        0.30000001192092896,
+        0.20000000298023224,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Chimney",
+      "mesh": "Meshes/Kit/Prop_Chimney.obj",
+      "position": [
+        7.599999904632568,
+        -1.149999976158142,
+        4.050000190734863
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 1.0,
+      "color": [
+        0.550000011920929,
+        0.5,
+        0.47999998927116394,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Stairs",
+      "mesh": "Meshes/Kit/Stairs_Exterior_Straight.obj",
+      "position": [
+        7.5,
+        2.049999952316284,
+        3.700000047683716
+      ],
+      "rotation": [
+        0.0,
+        0.7071068286895752,
+        0.0,
+        0.7071068286895752
+      ],
+      "scale": 1.0,
+      "color": [
+        0.5799999833106995,
+        0.5799999833106995,
+        0.6000000238418579,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}
