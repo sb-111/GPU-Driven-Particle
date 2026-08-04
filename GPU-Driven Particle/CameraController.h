@@ -71,7 +71,14 @@ namespace GP
 		}
 		static float Clamp(float v, float lo, float hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
-		void BeginLook() { GetCursorPos(&m_SavedCursor); ShowCursor(FALSE); } // 뗄 때 돌려놓을 위치 기억
+		void BeginLook()
+		{
+			const Math::Vector3 f = m_Camera.GetForward();
+			m_Pitch = asinf(Math::Clamp(float(f.GetY()), -1.0f, 1.0f));
+			m_Yaw = atan2f(float(f.GetX()), -float(f.GetZ()));
+			GetCursorPos(&m_SavedCursor);
+			ShowCursor(FALSE);
+		} // 뗄 때 돌려놓을 위치 기억
 		void EndLook()   { SetCursorPos(m_SavedCursor.x, m_SavedCursor.y); ShowCursor(TRUE); }
 
 		Camera& m_Camera;
