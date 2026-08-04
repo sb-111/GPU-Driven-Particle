@@ -55,11 +55,12 @@ namespace GP
 	{
 		const ImGuiTableFlags tableFlags =
 			ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
-		if (!ImGui::BeginTable(tableId, 5, tableFlags))
+		if (!ImGui::BeginTable(tableId, 6, tableFlags))
 			return;
 
 		ImGui::TableSetupColumn("Mesh");
 		ImGui::TableSetupColumn("Resolution");
+		ImGui::TableSetupColumn("Voxel (cm)");
 		ImGui::TableSetupColumn("Tris");
 		ImGui::TableSetupColumn("Bake (ms)");
 		ImGui::TableSetupColumn("Alloc (MB)");
@@ -81,6 +82,7 @@ namespace GP
 			ImGui::TableNextColumn(); ImGui::TextUnformatted(name);
 			ImGui::TableNextColumn(); ImGui::Text("%ux%ux%u",
 				sdf->grid.resolution[0], sdf->grid.resolution[1], sdf->grid.resolution[2]);
+			ImGui::TableNextColumn(); ImGui::Text("%.2f", sdf->grid.voxelSize * 100.0f);
 			ImGui::TableNextColumn(); ImGui::Text("%u", mesh->GetIndexCount() / 3);
 			ImGui::TableNextColumn(); ImGui::Text("%.1f", sdf->bakeMs);
 			ImGui::TableNextColumn(); ImGui::Text("%.2f", sdf->allocatedBytes / 1048576.0);
@@ -114,6 +116,7 @@ namespace GP
 			else
 				DrawSDFStatsTable("SceneSDFStatsTable", sceneMeshes);
 		}
+
 
 		ImGui::End();
 	}
