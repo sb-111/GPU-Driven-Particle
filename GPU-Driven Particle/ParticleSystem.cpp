@@ -232,6 +232,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 
 	D3D12_CPU_DESCRIPTOR_HANDLE sdfSRVs[MAX_SDF_COUNT] = {};
 	uint32_t sdfCount = 0;
+	float minWorldVoxelSize = 1e30f;
 	for (SceneObject* obj : m_SDFColliders)
 	{
 		if (sdfCount >= MAX_SDF_COUNT)
@@ -248,6 +249,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		collisionCB.sdfInstances[sdfCount].localBoundsMax = ToF3(sdf->grid.volumeBoundsMin + sdf->grid.volumeBoundsSize);
 		collisionCB.sdfInstances[sdfCount].uniformScale = scale;
 		collisionCB.sdfInstances[sdfCount].worldVoxelSize = sdf->grid.voxelSize * scale;
+		minWorldVoxelSize = std::min(minWorldVoxelSize, sdf->grid.voxelSize * scale);
 
 		// SRV 전환
 		cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -259,6 +261,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		sdfSRVs[i] = sdfSRVs[sdfCount - 1];
 
 	collisionCB.activeSDFCount = sdfCount;
+	collisionCB.minWorldVoxelSize = minWorldVoxelSize;
 	if (sdfCount > 0 && c.sdfEnabled)
 	{
 		collisionCB.colliderMask |= COLLISION_SDF;

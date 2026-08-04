@@ -41,11 +41,25 @@ void main(uint3 id : SV_DispatchThreadID)
 	{
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
-		p.position += p.velocity * params.deltaTime;
 		if(params.collisionEnabled != 0)
 		{
 			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 파티클 size의 최장 축 반경
-			ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction, radius);
+			float travel = length(p.velocity) * params.deltaTime; // 이번 프레임 이동 거리
+			float maxStep = 0.5f * collisionParams.minWorldVoxelSize;	// 한 step은 이 거리만큼 못감
+			uint stepCount = clamp((uint) ceil(travel / maxStep), 1u, 8u); // step count 결정(1~8)
+			float subDt = params.deltaTime / stepCount;
+			for (uint i = 0; i < stepCount;++i)
+			{
+				// 서브 dt
+				p.position += p.velocity * subDt; // 서브 step만큼 이동 후 충돌 검사
+				ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction, radius);
+
+			}
+
+		}
+		else
+		{
+			p.position += p.velocity * params.deltaTime;
 		}
 		// for mesh renderer
 		float angularVelocityLength = length(p.angularVelocity);
