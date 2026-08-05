@@ -184,8 +184,8 @@
 
 		uint colliderMask;		// 4B
 		uint activeSDFCount;    // 4B
-		float minWorldVoxelSize; // 4B, 활성 SDF 콜라이더 중 최소 월드 복셀
 		float pad0;
+		float pad1;
 
 		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 8 = 256B
 	};
