@@ -43,19 +43,44 @@ void main(uint3 id : SV_DispatchThreadID)
 		p.velocity += params.gravity * params.deltaTime;
 		if(params.collisionEnabled != 0)
 		{
-			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 파티클 size의 최장 축 반경
-			float travel = length(p.velocity) * params.deltaTime; // 이번 프레임 이동 거리
-			float maxStep = 0.5f * collisionParams.minWorldVoxelSize;	// 한 step은 이 거리만큼 못감
-			uint stepCount = clamp((uint) ceil(travel / maxStep), 1u, 8u); // step count 결정(1~8)
-			float subDt = params.deltaTime / stepCount;
-			for (uint i = 0; i < stepCount;++i)
+			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 최장축을 반경으로
+			float frametimeBudget = params.deltaTime; // 이번 프레임 시간 예산
+			// 매 반복 SDF에 질의한 d값 만큼 이동하고, 이동한 시간을 예산에서 차감
+			// 기존 step 방식은 스텝 수에 상한을 걸어서 속도가 상한을 넘으면 스텝 크기가 다시 증가해 통과 가능했음
+			// 이 방식은 스텝 크기가 표면까지 거리 이하로 강제되어 속도가 빨라도 통과 불가
+			// 상한에 걸리면 남은 이동 포기
+			for (uint s = 0; s < 16 && frametimeBudget > 0.0f; ++s)
 			{
-				// 서브 dt
-				p.position += p.velocity * subDt; // 서브 step만큼 이동 후 충돌 검사
-				ApplySDFCollision(p.position, p.velocity, params.restitution, params.friction, radius);
+				float worldVoxelSize;
+				float d = QuerySceneDistance(p.position, worldVoxelSize);  // 표면까지 거리 d (월드)
+				float collisionThreshold = radius + 0.5f * worldVoxelSize;
+				float safe = d - collisionThreshold; // 표면까지 안전하게 갈 수 있는 이동거리
 
+				// 침투 상태: 밀어낸 후 반사
+				if (safe < 0.0f)
+				{
+					ResolveCollision(p.position, p.velocity, d, collisionThreshold, worldVoxelSize,
+						params.restitution, params.friction);
+					safe = 0.0f; // 밀어낸 직후엔 다시 재질의 필요없이 0.0f 확정
+				}
+
+				// 속력
+				float speed = length(p.velocity);
+				if(speed < 1e-6f)
+					break; // 속력이 없는 파티클은 이동 불가
+
+				// 스텝 거리
+				// speed * frameTimeBudget = 남은 시간 동안 이 속력으로 갈 수 있는 최대 거리
+				// max(safe, 1복셀) = 표면 안넘음 보장 거리
+				float stepDist = min(speed * frametimeBudget,				// 가야 하는 거리
+										max(safe, 1.0f * worldVoxelSize));	// 가도 되는 거리
+
+				// 속도 방향으로 스텝 거리만큼 이동
+				p.position += (p.velocity / speed) * stepDist;
+				
+				// 쓴 시간 = 스텝 거리 / 속력
+				frametimeBudget -= stepDist / speed;
 			}
-
 		}
 		else
 		{
