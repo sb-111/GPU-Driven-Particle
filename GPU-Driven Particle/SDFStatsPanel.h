@@ -92,7 +92,8 @@ namespace GP
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn(); ImGui::TextUnformatted("Total");
 		ImGui::TableNextColumn(); ImGui::Text("%llu voxels", static_cast<unsigned long long>(summary.voxels));
-		ImGui::TableNextColumn();
+		ImGui::TableNextColumn(); // Voxel (cm)
+		ImGui::TableNextColumn(); // Tris
 		ImGui::TableNextColumn(); ImGui::Text("%.1f", summary.bakeMs);
 		ImGui::TableNextColumn(); ImGui::Text("%.2f", summary.allocatedBytes / 1048576.0);
 
