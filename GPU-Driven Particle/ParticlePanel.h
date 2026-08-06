@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "ParticleSetting.h"
 #include "ParticleSystem.h"
+#include "BufferManager.h"
 #include "Camera.h"
 #include "imgui/imgui.h"
 #include <cstddef>
@@ -231,6 +232,17 @@ namespace GP
 		{
 			Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
 			camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
+		}
+
+		float clipZ[2] = { camera.GetNearClip(), camera.GetFarClip() };
+		if (ImGui::DragFloat2("Near / Far", clipZ, 0.1f, 0.0f, 0.0f, "%.2f"))
+		{
+			clipZ[0] = std::max(clipZ[0], 0.01f);
+			clipZ[1] = std::max(clipZ[1], clipZ[0] + 0.01f); // 0 < near < far 유지
+			const float aspect =
+				static_cast<float>(Graphics::g_SceneColorBuffer.GetHeight()) /
+				static_cast<float>(Graphics::g_SceneColorBuffer.GetWidth());
+			camera.SetPerspective(camera.GetFOV(), aspect, clipZ[0], clipZ[1]);
 		}
 
 		ImGui::Separator();
