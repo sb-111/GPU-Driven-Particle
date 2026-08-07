@@ -51,16 +51,15 @@ void main(uint3 id : SV_DispatchThreadID)
 			// 상한에 걸리면 남은 이동 포기
 			for (uint s = 0; s < 16 && frametimeBudget > 0.0f; ++s)
 			{
-				float worldVoxelSize;
-				float d = QuerySceneDistance(p.position, worldVoxelSize);  // 표면까지 거리 d (월드)
-				float collisionThreshold = radius + 0.5f * worldVoxelSize;
-				float safe = d - collisionThreshold; // 표면까지 안전하게 갈 수 있는 이동거리
+				SDFQueryResult q = QuerySceneSDF(p.position);
+				float collisionThreshold = radius + 0.5f * q.voxelSize;
+				float safe = q.distance - collisionThreshold; // 표면까지 안전하게 갈 수 있는 이동거리
 
 				// 침투 상태: 밀어낸 후 반사
 				if (safe < 0.0f)
 				{
-					ResolveCollision(p.position, p.velocity, d, collisionThreshold, worldVoxelSize,
-						params.restitution, params.friction);
+					ResolveCollision(p.position, p.velocity, q,
+						collisionThreshold, params.restitution, params.friction);
 					safe = 0.0f; // 밀어낸 직후엔 다시 재질의 필요없이 0.0f 확정
 				}
 
@@ -73,7 +72,7 @@ void main(uint3 id : SV_DispatchThreadID)
 				// speed * frameTimeBudget = 남은 시간 동안 이 속력으로 갈 수 있는 최대 거리
 				// max(safe, 1복셀) = 표면 안넘음 보장 거리
 				float stepDist = min(speed * frametimeBudget,				// 가야 하는 거리
-										max(safe, 1.0f * worldVoxelSize));	// 가도 되는 거리
+										max(safe, 1.0f * q.voxelSize));	// 가도 되는 거리
 
 				// 속도 방향으로 스텝 거리만큼 이동
 				p.position += (p.velocity / speed) * stepDist;
