@@ -41,6 +41,27 @@ void main(uint3 id : SV_DispatchThreadID)
 	{
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
+		if(params.force.flags != 0)
+		{
+			SDFQueryResult q = QuerySceneSDF(p.position);
+			// force 범위 내에 있으면
+			if(q.distance < params.force.influenceRadius)
+			{
+				float3 N = QueryColliderNormal(q.colliderType, q.colliderIndex, p.position);
+				float w = saturate(1.0f - q.distance / params.force.influenceRadius); // 표면 1 -> 반경 밖 0
+				float3 force = 0.0f;
+				if(params.force.flags & FORCE_AVOID)
+				{
+					force += (N * params.force.avoidStrength);
+				}
+				if(params.force.flags & FORCE_TANGENT)
+				{
+					float3 upRef = abs(N.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
+					force += (normalize(cross(N, upRef)) * params.force.tangentStrength);
+				}
+				p.velocity += force * w * params.deltaTime;
+			}
+		}
 		if(params.collisionEnabled != 0)
 		{
 			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 최장축을 반경으로

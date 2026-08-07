@@ -73,7 +73,13 @@ namespace GP
 		bool collisionEnabled = false;
 		float restitution = 0.4f;
 		float friction = 0.2f;
-
+		// Particle Simulate - Force Field
+		bool forceAvoidEnabled = false;
+		bool forceTangentEnabled = false;
+		float forceAvoidStrength = 5.0f;	// 표면에서 미는 힘 
+		float forceTangentStrength = 5.0f;	// 표면 접선 방향 힘 
+		float forceRadius = 2.0f;			// 영향 반경
+		
 		// Renderer
 		int rendererType = (int)EParticleRenderer::Sprite;
 		int blendMode = (int)EBlendMode::Additive;

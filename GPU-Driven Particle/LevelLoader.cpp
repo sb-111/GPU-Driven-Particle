@@ -116,6 +116,11 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("collisionEnabled")) settings.collisionEnabled = source.at("collisionEnabled").get<bool>();
 	if (source.contains("restitution")) settings.restitution = source.at("restitution").get<float>();
 	if (source.contains("friction")) settings.friction = source.at("friction").get<float>();
+	if (source.contains("forceAvoidEnabled")) settings.forceAvoidEnabled = source.at("forceAvoidEnabled").get<bool>();
+	if (source.contains("forceTangentEnabled")) settings.forceTangentEnabled = source.at("forceTangentEnabled").get<bool>();
+	if (source.contains("forceAvoidStrength")) settings.forceAvoidStrength = source.at("forceAvoidStrength").get<float>();
+	if (source.contains("forceTangentStrength")) settings.forceTangentStrength = source.at("forceTangentStrength").get<float>();
+	if (source.contains("forceRadius")) settings.forceRadius = source.at("forceRadius").get<float>();
 	if (source.contains("rendererType")) settings.rendererType = source.at("rendererType").get<int>();
 	if (source.contains("blendMode")) settings.blendMode = source.at("blendMode").get<int>();
 	if (source.contains("textureIndex")) settings.textureIndex = source.at("textureIndex").get<int>();
@@ -420,6 +425,11 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		settingsJson["collisionEnabled"] = settings.collisionEnabled;
 		settingsJson["restitution"] = settings.restitution;
 		settingsJson["friction"] = settings.friction;
+		settingsJson["forceAvoidEnabled"] = settings.forceAvoidEnabled;
+		settingsJson["forceTangentEnabled"] = settings.forceTangentEnabled;
+		settingsJson["forceAvoidStrength"] = settings.forceAvoidStrength;
+		settingsJson["forceTangentStrength"] = settings.forceTangentStrength;
+		settingsJson["forceRadius"] = settings.forceRadius;
 		settingsJson["rendererType"] = settings.rendererType;
 		settingsJson["blendMode"] = settings.blendMode;
 		settingsJson["textureIndex"] = settings.textureIndex;

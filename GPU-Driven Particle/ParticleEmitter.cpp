@@ -116,6 +116,13 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.restitution = s.restitution;
 	params.friction = s.friction;
 
+	params.force.flags =
+		(s.forceAvoidEnabled ? FORCE_AVOID : 0) |
+		(s.forceTangentEnabled ? FORCE_TANGENT : 0);
+	params.force.avoidStrength = s.forceAvoidStrength;
+	params.force.tangentStrength = s.forceTangentStrength;
+	params.force.influenceRadius = s.forceRadius;
+
 	return params;
 }
 bool GP::ParticleEmitter::NeedsSort() const

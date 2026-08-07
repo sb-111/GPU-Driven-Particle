@@ -61,6 +61,11 @@
 
 #define MAX_SDF_COUNT 8
 
+#define FORCE_AVOID 1
+#define FORCE_TANGENT 2
+#define FORCE_CURL 4
+#define FORCE_ATTRACT 8
+
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
 #else
@@ -92,6 +97,19 @@
 		float4 orientation; // Quaternion
 		float3 angularVelocity; // 각속도
 		float pad1;
+	};
+
+	struct GP_CB_ALIGN ForceFieldParams
+	{
+		uint flags;				// FORCE_
+		float avoidStrength;	// 표면에서 미는 힘
+		float tangentStrength;	// 표면 접선 방향 힘
+		float influenceRadius;	// (avoid/tangent/curl) 영향 반경
+
+		float curlScale;		// curl 노이즈 공간 주파수
+		float curlStrength;		// curl 난류 힘
+		float attractStrength;	// 표면으로 당기는 힘 (morphing 용)
+		uint attractTargetSDF;	// morphing 대상 인덱스
 	};
 
 	struct GP_CB_ALIGN ParticleFrameCB
@@ -150,6 +168,8 @@
 		float friction;
 		uint collisionEnabled;
 		uint pad;
+
+		ForceFieldParams force;
 	};
 	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB

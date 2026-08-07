@@ -306,6 +306,14 @@ namespace GP
 					ImGui::SliderFloat("Restitution", &s.restitution, 0.0f, 1.0f);
 					ImGui::SliderFloat("Friction", &s.friction, 0.0f, 1.0f);
 				}
+				ImGui::Checkbox("Force Avoid", &s.forceAvoidEnabled);
+				if (s.forceAvoidEnabled)
+					ImGui::SliderFloat("Avoid Strength", &s.forceAvoidStrength, 0.0f, 50.0f);
+				ImGui::Checkbox("Force Tangent", &s.forceTangentEnabled);
+				if (s.forceTangentEnabled)
+					ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
+				if (s.forceAvoidEnabled || s.forceTangentEnabled)
+					ImGui::SliderFloat("Force Radius", &s.forceRadius, 0.1f, 10.0f);
 			}
 			if (g == (int)EParamGroup::Emit)
 			{
