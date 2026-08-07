@@ -121,6 +121,9 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("forceAvoidStrength")) settings.forceAvoidStrength = source.at("forceAvoidStrength").get<float>();
 	if (source.contains("forceTangentStrength")) settings.forceTangentStrength = source.at("forceTangentStrength").get<float>();
 	if (source.contains("forceRadius")) settings.forceRadius = source.at("forceRadius").get<float>();
+	if (source.contains("forceAttractEnabled")) settings.forceAttractEnabled = source.at("forceAttractEnabled").get<bool>();
+	if (source.contains("forceAttractStrength")) settings.forceAttractStrength = source.at("forceAttractStrength").get<float>();
+	if (source.contains("forceAttractTarget")) settings.forceAttractTarget = source.at("forceAttractTarget").get<int>();
 	if (source.contains("rendererType")) settings.rendererType = source.at("rendererType").get<int>();
 	if (source.contains("blendMode")) settings.blendMode = source.at("blendMode").get<int>();
 	if (source.contains("textureIndex")) settings.textureIndex = source.at("textureIndex").get<int>();
@@ -430,6 +433,9 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		settingsJson["forceAvoidStrength"] = settings.forceAvoidStrength;
 		settingsJson["forceTangentStrength"] = settings.forceTangentStrength;
 		settingsJson["forceRadius"] = settings.forceRadius;
+		settingsJson["forceAttractEnabled"] = settings.forceAttractEnabled;
+		settingsJson["forceAttractStrength"] = settings.forceAttractStrength;
+		settingsJson["forceAttractTarget"] = settings.forceAttractTarget;
 		settingsJson["rendererType"] = settings.rendererType;
 		settingsJson["blendMode"] = settings.blendMode;
 		settingsJson["textureIndex"] = settings.textureIndex;

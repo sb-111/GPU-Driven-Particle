@@ -118,10 +118,13 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 
 	params.force.flags =
 		(s.forceAvoidEnabled ? FORCE_AVOID : 0) |
-		(s.forceTangentEnabled ? FORCE_TANGENT : 0);
+		(s.forceTangentEnabled ? FORCE_TANGENT : 0) |
+		(s.forceAttractEnabled ? FORCE_ATTRACT : 0);
 	params.force.avoidStrength = s.forceAvoidStrength;
 	params.force.tangentStrength = s.forceTangentStrength;
 	params.force.influenceRadius = s.forceRadius;
+	params.force.attractStrength = s.forceAttractStrength;
+	params.force.attractTargetSDF = (uint)s.forceAttractTarget;
 
 	return params;
 }

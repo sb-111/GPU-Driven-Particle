@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      -8.558015823364258,
+      1.728520393371582,
+      -0.19609251618385315
+    ],
+    "lookAt": [
+      -7.561674118041992,
+      1.6458176374435425,
+      -0.21762952208518982
+    ],
+    "up": [
+      0.08268342912197113,
+      0.9965742826461792,
+      -0.0017872899770736694
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 0.009999999776482582,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": 0.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        1.5,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [
+          -1.4500000476837158,
+          1.0,
+          0.0
+        ],
+        "settings": {
+          "spawnRate": 3353.0,
+          "lifeTimeMin": 10.0,
+          "lifeTimeMax": 10.0,
+          "speedMin": 3.9040000438690186,
+          "speedMax": 2.36299991607666,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.0,
+          "friction": 1.0,
+          "forceAvoidEnabled": true,
+          "forceTangentEnabled": true,
+          "forceAvoidStrength": -3.0,
+          "forceTangentStrength": 16.267000198364258,
+          "forceRadius": 2.0999999046325684,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 14.383999824523926,
+          "forceAttractTarget": 0,
+          "rendererType": 1,
+          "blendMode": 1,
+          "textureIndex": 0,
+          "sortEnabled": true,
+          "gravity": [
+            0.0,
+            -9.800000190734863,
+            0.0
+          ],
+          "boxExtents": [
+            5.0,
+            5.0,
+            5.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "plane",
+      "mesh": "Meshes/plane.obj",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 12.850000381469727,
+      "color": [
+        0.12745100259780884,
+        0.0973522737622261,
+        0.07871973514556885,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "stanford-bunny",
+      "mesh": "Meshes/stanford-bunny.obj",
+      "position": [
+        -0.15000000596046448,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 9.510000228881836,
+      "color": [
+        0.5147058963775635,
+        0.38350632786750793,
+        0.38350632786750793,
+        1.0
+      ],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

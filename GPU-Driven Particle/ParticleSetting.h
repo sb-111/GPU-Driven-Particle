@@ -79,6 +79,9 @@ namespace GP
 		float forceAvoidStrength = 5.0f;	// 표면에서 미는 힘 
 		float forceTangentStrength = 5.0f;	// 표면 접선 방향 힘 
 		float forceRadius = 2.0f;			// 영향 반경
+		bool forceAttractEnabled = false;
+		float forceAttractStrength = 5.0f;
+		int forceAttractTarget = 0;			// attract 대상 SDF 인덱스
 		
 		// Renderer
 		int rendererType = (int)EParticleRenderer::Sprite;

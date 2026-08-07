@@ -314,6 +314,12 @@ namespace GP
 					ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
 				if (s.forceAvoidEnabled || s.forceTangentEnabled)
 					ImGui::SliderFloat("Force Radius", &s.forceRadius, 0.1f, 10.0f);
+				ImGui::Checkbox("Force Attract", &s.forceAttractEnabled);
+				if (s.forceAttractEnabled)
+				{
+					ImGui::SliderFloat("Attract Strength", &s.forceAttractStrength, 0.0f, 50.0f);
+					ImGui::SliderInt("Attract Target SDF", &s.forceAttractTarget, 0, MAX_SDF_COUNT - 1);
+				}
 			}
 			if (g == (int)EParamGroup::Emit)
 			{

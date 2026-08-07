@@ -52,14 +52,25 @@ void main(uint3 id : SV_DispatchThreadID)
 				float3 force = 0.0f;
 				if(params.force.flags & FORCE_AVOID)
 				{
-					force += (N * params.force.avoidStrength);
+					force += (N * w * params.force.avoidStrength);
 				}
 				if(params.force.flags & FORCE_TANGENT)
 				{
 					float3 upRef = abs(N.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
-					force += (normalize(cross(N, upRef)) * params.force.tangentStrength);
+					force += (normalize(cross(N, upRef)) * w *params.force.tangentStrength);
 				}
-				p.velocity += force * w * params.deltaTime;
+				if(params.force.flags & FORCE_ATTRACT)
+				{
+					// 지정 메시에 대해 쿼리 필요
+					// 표면으로 밀어낼 필요
+					// 표면에 도착한 속도로 진동하지 않도록 감쇠
+					float d = QueryColliderDistance(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+					float3 N = QueryColliderNormal(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+					force += -d * N * params.force.attractStrength;
+					p.velocity *= exp(-2.0f * sqrt(params.force.attractStrength) * params.deltaTime); // 감쇠
+
+				}
+				p.velocity += force * params.deltaTime;
 			}
 		}
 		if(params.collisionEnabled != 0)
