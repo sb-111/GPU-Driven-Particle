@@ -8,6 +8,10 @@ void GP::Mesh::Create(const std::vector<Vertex>& verts, const std::vector<uint32
 {
 	ASSERT(!verts.empty() && !indices.empty(), "Mesh::Create - 빈 메시");
 
+	// 원본 보관
+	m_CPUVertices = verts;
+	m_CPUIndices = indices;
+
 	m_VertexCount = (uint32_t)verts.size();
 	m_IndexCount = (uint32_t)indices.size();
 	m_VertexBuffer.Create(L"Mesh VB", m_VertexCount, sizeof(Vertex), verts.data());

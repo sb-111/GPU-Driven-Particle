@@ -35,6 +35,9 @@ namespace GP
 		Math::Vector3 GetBoundsMin() const { return m_BoundsMin; }
 		Math::Vector3 GetBoundsMax() const { return m_BoundsMax; }
 
+		const std::vector<Vertex>& GetCPUVertices() const { return m_CPUVertices; }
+		const std::vector<uint32_t>& GetCPUIndices() const { return m_CPUIndices; }
+
 		void SetSDF(std::unique_ptr<MeshSDF> sdf) { m_SDF = std::move(sdf); }
 		MeshSDF* GetSDF() const { return m_SDF.get(); } // 비소유 참조
 
@@ -48,6 +51,9 @@ namespace GP
 		Math::Vector3 m_BoundsMin;
 		Math::Vector3 m_BoundsMax;
 		std::string m_SourcePath; // 로드된 파일 경로 (스탯 표시용)
+
+		std::vector<Vertex> m_CPUVertices;
+		std::vector<uint32_t> m_CPUIndices;
 
 		// 메시가 SDF 데이터 소유
 		std::unique_ptr<MeshSDF> m_SDF;
