@@ -75,6 +75,7 @@ namespace GP
 		int m_CompletedLoops = 0;  // 현재 완료된 루프 수
 		bool m_CanBurst = true; // 버스트
 
+		float m_TotalTime = 0.0f;		 // 누적 시간(초)
 		float m_SpawnAccumulator = 0.0f; // 소수점 스폰 이월용
 		uint32_t m_CurrentSpawnCount = 0; // 이번 프레임 스폰 수
 		uint32_t m_FrameCount = 0;		  // 프레임 카운터

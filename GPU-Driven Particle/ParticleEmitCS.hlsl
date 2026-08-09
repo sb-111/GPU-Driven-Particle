@@ -1,5 +1,6 @@
 ﻿#include "ParticleShared.h"
 #include "Quaternion.hlsli"
+#include "ParticleRandom.hlsli"
 cbuffer ParticleCB : register(b0)
 {
 	ParticleFrameCB params;
@@ -8,22 +9,6 @@ RWStructuredBuffer<Particle> g_ParticleBuffer : register(u0);
 RWByteAddressBuffer AliveList1 : register(u1);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
-
-uint wang_hash(uint seed)
-{
-	seed = (seed ^ 61) ^ (seed >> 16);
-	seed *= 9;
-	seed = seed ^ (seed >> 4);
-	seed *= 0x27d4eb2d;
-	seed = seed ^ (seed >> 15);
-	return seed;
-}
-
-float rand01(inout uint seed)     // 호출할 때마다 seed가 굴러감
-{
-	seed = wang_hash(seed);
-	return seed / 4294967295.0; // uint 최대값으로 나눔 → [0,1)
-}
 
 [numthreads(64, 1, 1)]
 void main( uint3 id : SV_DispatchThreadID )

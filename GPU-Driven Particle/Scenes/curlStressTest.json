@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [7.0, 3.0, 9.0],
+    "lookAt": [0.0, 2.0, 0.0],
+    "up": [0.0, 1.0, 0.0],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 0.009999999776482582,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [0.0, 1.0, 0.0],
+      "planeOffset": -2.0,
+      "sphereEnabled": false,
+      "sphereCenter": [0.0, 1.5, 0.0],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true
+    },
+    "emitters": [
+      {
+        "position": [0.0, 0.5, 0.0],
+        "settings": {
+          "spawnRate": 8000.0,
+          "lifeTimeMin": 6.0,
+          "lifeTimeMax": 8.0,
+          "speedMin": 0.5,
+          "speedMax": 1.2,
+          "shapeType": 0,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "collisionEnabled": true,
+          "restitution": 0.0,
+          "friction": 0.2,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5.0,
+          "forceTangentStrength": 5.0,
+          "forceRadius": 2.5,
+          "forceCurlEnabled": true,
+          "forceCurlScale": 0.5,
+          "forceCurlStrength": 8.0,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5.0,
+          "forceAttractTarget": 0,
+          "rendererType": 0,
+          "blendMode": 1,
+          "textureIndex": 1,
+          "sortEnabled": true,
+          "gravity": [0.0, 0.8, 0.0],
+          "boxExtents": [1.5, 0.2, 1.5]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Floor",
+      "mesh": "Meshes/plane.obj",
+      "position": [0.0, -2.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 40.0,
+      "color": [0.11, 0.11, 0.13, 1.0],
+      "visible": true,
+      "sdfCollider": false
+    },
+    {
+      "name": "Sphere",
+      "mesh": "Meshes/sphere.obj",
+      "position": [0.0, 2.5, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 1.5,
+      "color": [0.85, 0.85, 0.9, 1.0],
+      "visible": true,
+      "sdfCollider": true
+    },
+    {
+      "name": "Bunny",
+      "mesh": "Meshes/stanford-bunny.obj",
+      "position": [4.0, -2.0, 0.0],
+      "rotation": [0.0, 0.0, 0.0, 1.0],
+      "scale": 16.0,
+      "color": [0.8, 0.75, 0.65, 1.0],
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

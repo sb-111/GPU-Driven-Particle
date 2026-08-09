@@ -78,7 +78,11 @@ namespace GP
 		bool forceTangentEnabled = false;
 		float forceAvoidStrength = 5.0f;	// 표면에서 미는 힘 
 		float forceTangentStrength = 5.0f;	// 표면 접선 방향 힘 
-		float forceRadius = 2.0f;			// 영향 반경
+		float surfaceInfluenceRadius = 2.0f;	// 표면 영향 반경
+		bool forceCurlEnabled = false;
+		float curlFrequency = 0.5f;			// 높을수록 짧은 거리에서 흐름 방향이 더 자주 바뀜
+		float curlTargetSpeed = 5.0f;		// curl 흐름의 목표 속도
+		float curlResponseRate = 2.0f;		// 목표 속도를 따라가는 속도
 		bool forceAttractEnabled = false;
 		float forceAttractStrength = 5.0f;
 		int forceAttractTarget = 0;			// attract 대상 SDF 인덱스

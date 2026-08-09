@@ -46,6 +46,7 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	Math::Vector3 dir = Math::Matrix3(m_EmitterTransform.GetRotation()).GetY();
 	params.emitterDirection = { dir.GetX(), dir.GetY(), dir.GetZ() };
 	params.deltaTime = dt;
+	params.totalTime = m_TotalTime;
 
 	params.startColor = { s.startColor[0], s.startColor[1], s.startColor[2], s.startColor[3] };
 	params.endColor   = { s.endColor[0],   s.endColor[1],   s.endColor[2],   s.endColor[3] };
@@ -119,10 +120,14 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.force.flags =
 		(s.forceAvoidEnabled ? FORCE_AVOID : 0) |
 		(s.forceTangentEnabled ? FORCE_TANGENT : 0) |
+		(s.forceCurlEnabled ? FORCE_CURL : 0) |
 		(s.forceAttractEnabled ? FORCE_ATTRACT : 0);
 	params.force.avoidStrength = s.forceAvoidStrength;
 	params.force.tangentStrength = s.forceTangentStrength;
-	params.force.influenceRadius = s.forceRadius;
+	params.force.surfaceInfluenceRadius = s.surfaceInfluenceRadius;
+	params.force.curlFrequency = s.curlFrequency;
+	params.force.curlTargetSpeed = s.curlTargetSpeed;
+	params.force.curlResponseRate = s.curlResponseRate;
 	params.force.attractStrength = s.forceAttractStrength;
 	params.force.attractTargetSDF = (uint)s.forceAttractTarget;
 
@@ -153,6 +158,7 @@ void GP::ParticleEmitter::UpdateOrbit(float dt)
 void GP::ParticleEmitter::Update(float dt)
 {
 	m_FrameCount++;
+	m_TotalTime += dt;
 	UpdateOrbit(dt);
 
 	if (!m_Active)

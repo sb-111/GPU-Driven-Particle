@@ -312,8 +312,15 @@ namespace GP
 				ImGui::Checkbox("Force Tangent", &s.forceTangentEnabled);
 				if (s.forceTangentEnabled)
 					ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
-				if (s.forceAvoidEnabled || s.forceTangentEnabled)
-					ImGui::SliderFloat("Force Radius", &s.forceRadius, 0.1f, 10.0f);
+				ImGui::Checkbox("Force Curl", &s.forceCurlEnabled);
+				if (s.forceCurlEnabled)
+				{
+					ImGui::SliderFloat("Curl Frequency", &s.curlFrequency, 0.05f, 4.0f);
+					ImGui::SliderFloat("Curl Target Speed", &s.curlTargetSpeed, 0.0f, 50.0f);
+					ImGui::SliderFloat("Curl Response Rate", &s.curlResponseRate, 0.1f, 20.0f);
+				}
+				if (s.forceAvoidEnabled || s.forceTangentEnabled || s.forceCurlEnabled)
+					ImGui::SliderFloat("Surface Influence Radius", &s.surfaceInfluenceRadius, 0.1f, 10.0f);
 				ImGui::Checkbox("Force Attract", &s.forceAttractEnabled);
 				if (s.forceAttractEnabled)
 				{

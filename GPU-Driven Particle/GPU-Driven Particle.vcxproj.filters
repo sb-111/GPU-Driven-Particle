@@ -207,6 +207,12 @@
     <None Include="Scenes\defaultScene.json">
       <Filter>Scenes</Filter>
     </None>
+    <None Include="ParticleRandom.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="CurlNoise.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ParticleEmitCS.hlsl">

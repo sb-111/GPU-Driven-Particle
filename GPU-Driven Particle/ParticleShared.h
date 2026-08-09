@@ -104,12 +104,15 @@
 		uint flags;				// FORCE_
 		float avoidStrength;	// 표면에서 미는 힘
 		float tangentStrength;	// 표면 접선 방향 힘
-		float influenceRadius;	// (avoid/tangent/curl) 영향 반경
+		float surfaceInfluenceRadius; // (avoid/tangent/curl) 표면 영향 반경
 
-		float curlScale;		// curl 노이즈 공간 주파수
-		float curlStrength;		// curl 난류 힘
+		float curlFrequency;	// 높을수록 짧은 거리에서 흐름 방향이 더 자주 바뀜
+		float curlTargetSpeed;	// curl 흐름의 목표 속도
+		float curlResponseRate;	// 목표 속도를 따라가는 속도
 		float attractStrength;	// 표면으로 당기는 힘 (morphing 용)
+
 		uint attractTargetSDF;	// morphing 대상 인덱스
+		float3 forcePadding;
 	};
 
 	struct GP_CB_ALIGN ParticleFrameCB
@@ -167,7 +170,7 @@
 		float restitution;
 		float friction;
 		uint collisionEnabled;
-		uint pad;
+		float totalTime;
 
 		ForceFieldParams force;
 	};

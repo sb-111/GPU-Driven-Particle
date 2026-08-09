@@ -1,6 +1,7 @@
 ﻿#include "ParticleShared.h"
 #include "Quaternion.hlsli"
 #include "SDFCollision.hlsli"
+#include "CurlNoise.hlsli"
 cbuffer ParticleCB : register(b0)
 {
 	ParticleFrameCB params;
@@ -41,37 +42,78 @@ void main(uint3 id : SV_DispatchThreadID)
 	{
 		// 살아있으면 위치 변경
 		p.velocity += params.gravity * params.deltaTime;
-		if(params.force.flags != 0)
+		const uint surfaceForceFlags = FORCE_AVOID | FORCE_TANGENT | FORCE_CURL;
+		const bool usesSurfaceForces = (params.force.flags & surfaceForceFlags) != 0;
+		const float surfaceInfluenceRadius = max(params.force.surfaceInfluenceRadius, 1e-4f);
+		SDFQueryResult sceneQuery;
+		bool isNearSurface = false;
+		float3 surfaceNormal = 0.0f;
+
+		// normal은 표면 영향권 내에서만 계산
+		if (usesSurfaceForces)
 		{
-			SDFQueryResult q = QuerySceneSDF(p.position);
-			// force 범위 내에 있으면
-			if(q.distance < params.force.influenceRadius)
+			sceneQuery = QuerySceneSDF(p.position);
+			isNearSurface = sceneQuery.distance < surfaceInfluenceRadius;
+
+			if (isNearSurface)
 			{
-				float3 N = QueryColliderNormal(q.colliderType, q.colliderIndex, p.position);
-				float w = saturate(1.0f - q.distance / params.force.influenceRadius); // 표면 1 -> 반경 밖 0
+				surfaceNormal = QueryColliderNormal(
+					sceneQuery.colliderType,
+					sceneQuery.colliderIndex,
+					p.position);
+
+				const float surfaceWeight = saturate(
+					1.0f - sceneQuery.distance / surfaceInfluenceRadius); // 표면 1 -> 영향 반경 경계 0
 				float3 force = 0.0f;
 				if(params.force.flags & FORCE_AVOID)
-				{
-					force += (N * w * params.force.avoidStrength);
-				}
+					force += surfaceNormal * surfaceWeight * params.force.avoidStrength;
 				if(params.force.flags & FORCE_TANGENT)
 				{
-					float3 upRef = abs(N.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
-					force += (normalize(cross(N, upRef)) * w *params.force.tangentStrength);
-				}
-				if(params.force.flags & FORCE_ATTRACT)
-				{
-					// 지정 메시에 대해 쿼리 필요
-					// 표면으로 밀어낼 필요
-					// 표면에 도착한 속도로 진동하지 않도록 감쇠
-					float d = QueryColliderDistance(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
-					float3 N = QueryColliderNormal(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
-					force += -d * N * params.force.attractStrength;
-					p.velocity *= exp(-2.0f * sqrt(params.force.attractStrength) * params.deltaTime); // 감쇠
-
+					float3 upRef = abs(surfaceNormal.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
+					force += normalize(cross(surfaceNormal, upRef)) * surfaceWeight * params.force.tangentStrength;
 				}
 				p.velocity += force * params.deltaTime;
 			}
+		}
+
+		// attract는 지정한 Target SDF만 사용
+		if ((params.force.flags & FORCE_ATTRACT) &&
+			params.force.attractTargetSDF < collisionParams.activeSDFCount)
+		{
+			float distanceToTarget = QueryColliderDistance(
+				COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+			float3 targetNormal = QueryColliderNormal(
+				COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+			p.velocity += -distanceToTarget * targetNormal * params.force.attractStrength * params.deltaTime;
+			p.velocity *= exp(-2.0f * sqrt(params.force.attractStrength) * params.deltaTime);
+		}
+
+		if (params.force.flags & FORCE_CURL)
+		{
+			// 시간에 따른 noise 좌표 이동량
+			// noise pattern의 월드 이동 방향은 이 값의 반대
+			const float3 noiseAdvection = float3(0.1f, 0.3f, 0.07f);
+			// procedural noise 함수의 어느 좌표를 읽을지
+			const float3 noisePosition =
+				p.position * params.force.curlFrequency + noiseAdvection * params.totalTime;
+
+			// v = ∇ × ψ, 경계 보정 전에는 ∇·v ≈ 0
+			float3 curlVelocity = CurlNoise(noisePosition);
+
+			// 반경 안에 들어온 경우만 보정
+			if (isNearSurface)
+			{
+				const float boundaryBlend = saturate(
+					sceneQuery.distance / surfaceInfluenceRadius); // 표면 0 -> 영향 반경 바깥 1
+				// 표면에서는 접선 성분만 남음
+				// 이후에는 발산 0 엄밀 보장 x
+				curlVelocity -= (1.0f - boundaryBlend) * surfaceNormal *
+					dot(surfaceNormal, curlVelocity);
+			}
+
+			const float3 targetVelocity = curlVelocity * params.force.curlTargetSpeed;
+			const float response = saturate(params.force.curlResponseRate * params.deltaTime);
+			p.velocity += (targetVelocity - p.velocity) * response;
 		}
 		if(params.collisionEnabled != 0)
 		{
