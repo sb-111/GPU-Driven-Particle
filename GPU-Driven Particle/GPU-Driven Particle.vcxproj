@@ -156,7 +156,9 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="MeshLibrary.cpp" />
+    <ClCompile Include="MorphTargetLibrary.cpp" />
     <ClCompile Include="MeshSurfaceSampler.cpp" />
+    <ClCompile Include="MorphTargetSet.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneFileDialog.cpp" />
     <ClCompile Include="MeshLoader.cpp" />
@@ -179,7 +181,9 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="MathConvert.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MeshLibrary.h" />
+    <ClInclude Include="MorphTargetLibrary.h" />
     <ClInclude Include="MeshSurfaceSampler.h" />
+    <ClInclude Include="MorphTargetSet.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneFileDialog.h" />
     <ClInclude Include="SceneObjectPanel.h" />

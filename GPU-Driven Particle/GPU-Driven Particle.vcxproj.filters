@@ -72,6 +72,12 @@
     <ClCompile Include="MeshSurfaceSampler.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="MorphTargetLibrary.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MorphTargetSet.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -185,6 +191,12 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="MeshSurfaceSampler.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MorphTargetLibrary.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="MorphTargetSet.h">
       <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>

@@ -99,6 +99,16 @@
 		float pad1;
 	};
 
+	struct GP_CB_ALIGN MorphTargetPoint
+	{
+		float3 position;
+		float padding;
+	};
+
+#ifdef __cplusplus
+	static_assert(sizeof(MorphTargetPoint) == 16);
+#endif
+
 	struct GP_CB_ALIGN ForceFieldParams
 	{
 		uint flags;				// FORCE_
@@ -114,7 +124,15 @@
 		uint attractTargetSDF;	// morphing 대상 인덱스
 		float3 forcePadding;
 	};
+	struct GP_CB_ALIGN MorphParams
+	{
+		uint enabled;
+		uint targetCount;
+		float strength;
+		float padding;
 
+		float4x4 targetToWorld;
+	};
 	struct GP_CB_ALIGN ParticleFrameCB
 	{
 		float3 emitterPosition;	// world pos
@@ -173,6 +191,7 @@
 		float totalTime;
 
 		ForceFieldParams force;
+		MorphParams morph;
 	};
 	// 프레임당 1번, Compute/Graphics 공용
 	struct GP_CB_ALIGN ParticleViewCB

@@ -276,8 +276,9 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 
 		// 검증을 통과한 경우에만 기존 런타임 상태를 교체
 		particles.ClearSDFColliders();
-		scene.Clear();
 		particles.ClearEmitters();
+		particles.ClearMorphTargets();
+		scene.Clear();
 
 		const json& cameraJson = root.at("camera");
 		const Math::Vector3 position = ReadVec3(cameraJson.at("position"), "camera.position");

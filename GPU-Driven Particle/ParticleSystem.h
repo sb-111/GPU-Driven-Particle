@@ -8,6 +8,7 @@
 #include <fstream>
 #include <memory>
 #include "Texture.h"
+#include "MorphTargetLibrary.h"
 
 class GraphicsContext;
 class ComputeContext;
@@ -50,8 +51,14 @@ namespace GP {
 
 		// SDF Collider 등록
 		void AddSDFCollider(SceneObject* pObject);
+		void ClearMorphTargets();
 		void ClearSDFColliders();
 		void ClearEmitters();
+
+		void SetEmitterSurfaceMorphTarget(size_t emitterIndex,
+			const std::string& name,
+			const Mesh& mesh, const Math::Matrix4& targetToWorld,
+			uint32_t sampleCount, uint32_t seed);
 
 	private:
 		void InitSharedResources();
@@ -68,7 +75,8 @@ namespace GP {
 
 		// SDF Collider 목록
 		std::vector<SceneObject*> m_SDFColliders;
+
+		// Morph target 용
+		MorphTargetLibrary m_MorphTargetLibrary;
 	};
-
-
 }

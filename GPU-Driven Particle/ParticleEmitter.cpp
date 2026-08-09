@@ -131,6 +131,13 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.force.attractStrength = s.forceAttractStrength;
 	params.force.attractTargetSDF = (uint)s.forceAttractTarget;
 
+	const bool hasMorphTarget = s.morphEnabled && m_CurrentMorphTarget != nullptr && m_CurrentMorphTarget->IsValid();
+
+	params.morph.enabled = hasMorphTarget ? 1u : 0u;
+	params.morph.targetCount = hasMorphTarget ? m_CurrentMorphTarget->GetTargetCount() : 0u;
+	params.morph.strength = s.morphStrength;
+	params.morph.targetToWorld = ToF4x4(m_MorphTargetToWorld);
+
 	return params;
 }
 bool GP::ParticleEmitter::NeedsSort() const
@@ -277,6 +284,10 @@ void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewC
 	{
 		cpt.SetDynamicDescriptors(10, 0, MAX_SDF_COUNT, sdfSRVs);
 	}
+	StructuredBuffer& morphTargetBuffer = m_CurrentMorphTarget != nullptr ?
+		m_CurrentMorphTarget->GetTargetBuffer() : m_Shared->defaultMorphTargetBuffer;
+	cpt.TransitionResource(morphTargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	cpt.SetBufferSRV(11, morphTargetBuffer); // t8
 }
 
 void GP::ParticleEmitter::KickoffPass(ComputeContext& cpt)

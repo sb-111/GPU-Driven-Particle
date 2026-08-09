@@ -8,6 +8,7 @@
 #include "CubeMesh.h"
 #include "MathConvert.h"
 #include "Mesh.h"
+#include "ParticleShared.h"
 #include "SceneObject.h"
 
 using namespace GameCore;
@@ -49,8 +50,16 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.meshVertexBuffer.Create(L"Cube Vertex Buffer", 24, sizeof(MeshVertex), kCubeVertices);
 	m_Shared.meshIndexBuffer.Create(L"Cube Index Buffer", 36, sizeof(uint16_t), kCubeIndices);
 
+	// morph 사용안하는 emitter에도 바인딩 필요
+	const MorphTargetPoint defaultMorphTarget = {};
+	m_Shared.defaultMorphTargetBuffer.Create(
+		L"Default Morph Target",
+		1,
+		sizeof(MorphTargetPoint),
+		&defaultMorphTarget);
+
 	// 루트 시그 - 컴퓨트용
-	m_Shared.computeRootSig.Reset(11, 1);
+	m_Shared.computeRootSig.Reset(12, 1);
 	m_Shared.computeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
 	m_Shared.computeRootSig[1].InitAsBufferUAV(0);		// u0
 	m_Shared.computeRootSig[2].InitAsBufferUAV(1);		// u1
@@ -61,7 +70,8 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[7].InitAsConstantBuffer(1); // b1 (ParticleViewCB)
 	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
 	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
-	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t3 (sdf)
+	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t7 (sdf)
+	m_Shared.computeRootSig[11].InitAsBufferSRV(8); // t8
 	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL); // SDF 샘플용
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
@@ -190,6 +200,12 @@ void GP::ParticleSystem::AddSDFCollider(SceneObject* pObject)
 	}
 }
 
+void GP::ParticleSystem::ClearMorphTargets()
+{
+	ASSERT(m_Emitters.empty(), "ParticleSystem: clear emitters before clearing morph targets");
+	m_MorphTargetLibrary.Clear();
+}
+
 void GP::ParticleSystem::ClearSDFColliders()
 {
 	m_SDFColliders.clear();
@@ -203,6 +219,14 @@ void GP::ParticleSystem::ClearEmitters()
 	// GPU 완료 후 리소스 해제 (이전 프레임 커맨드 리스트가 참조할 수 있으므로)
 	Graphics::g_CommandManager.IdleGPU();
 	m_Emitters.clear();
+}
+
+void GP::ParticleSystem::SetEmitterSurfaceMorphTarget(size_t emitterIndex, const std::string& name, const Mesh& mesh, const Math::Matrix4& targetToWorld, uint32_t sampleCount, uint32_t seed)
+{
+	ASSERT(emitterIndex < m_Emitters.size(), "ParticleSystem: invalid emitter index");
+	MorphTargetSet& morphTarget = m_MorphTargetLibrary.GetOrCreateSurfaceTarget(name, mesh, sampleCount, seed);
+
+	GetEmitter(emitterIndex).SetMorphTarget(&morphTarget, targetToWorld);
 }
 
 void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)

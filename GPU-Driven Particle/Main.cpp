@@ -278,6 +278,8 @@ private:
 	void CreateEmptyScene()
 	{
 		m_Particles.ClearSDFColliders();
+		m_Particles.ClearEmitters();
+		m_Particles.ClearMorphTargets();
 		m_Scene.Clear();
 		m_PanelTarget = nullptr;
 		m_CurrentScenePath.clear();
