@@ -76,8 +76,9 @@ namespace GP
 		// Particle Simulate - Force Field
 		bool forceAvoidEnabled = false;
 		bool forceTangentEnabled = false;
-		float forceAvoidStrength = 5.0f;	// 표면에서 미는 힘 
-		float forceTangentStrength = 5.0f;	// 표면 접선 방향 힘 
+		float forceAvoidStrength = 5.0f;	// 표면에서 미는 힘
+		float forceTangentStrength = 5.0f;	// 표면 접선 방향 힘
+		float forceTangentAxis[3] = { 0.0f, 1.0f, 0.0f };	// 회전축
 		float surfaceInfluenceRadius = 2.0f;	// 표면 영향 반경
 		bool forceCurlEnabled = false;
 		float curlFrequency = 0.5f;			// 높을수록 짧은 거리에서 흐름 방향이 더 자주 바뀜

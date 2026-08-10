@@ -70,8 +70,7 @@ void main(uint3 id : SV_DispatchThreadID)
 					force += surfaceNormal * surfaceWeight * params.force.avoidStrength;
 				if(params.force.flags & FORCE_TANGENT)
 				{
-					float3 upRef = abs(surfaceNormal.y) > 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
-					force += normalize(cross(surfaceNormal, upRef)) * surfaceWeight * params.force.tangentStrength;
+					force += cross(surfaceNormal, params.force.tangentAxis) * surfaceWeight * params.force.tangentStrength;
 				}
 				p.velocity += force * params.deltaTime;
 			}
@@ -81,12 +80,34 @@ void main(uint3 id : SV_DispatchThreadID)
 		if ((params.force.flags & FORCE_ATTRACT) &&
 			params.force.attractTargetSDF < collisionParams.activeSDFCount)
 		{
-			float distanceToTarget = QueryColliderDistance(
-				COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
-			float3 targetNormal = QueryColliderNormal(
-				COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
-			p.velocity += -distanceToTarget * targetNormal * params.force.attractStrength * params.deltaTime;
-			p.velocity *= exp(-2.0f * sqrt(params.force.attractStrength) * params.deltaTime);
+			int i = params.force.attractTargetSDF;
+			float3 localPos = mul(collisionParams.sdfInstances[i].worldToLocal, float4(p.position, 1.0f)).xyz;
+			float3 uvw = (localPos - collisionParams.sdfInstances[i].localBoundsMin) / (collisionParams.sdfInstances[i].localBoundsMax - collisionParams.sdfInstances[i].localBoundsMin);
+			bool inside = all(uvw >= 0.0f) && all(uvw <= 1.0f);
+			if(inside)
+			{
+				float distanceToTarget = QueryColliderDistance(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+				float3 targetNormal = QueryColliderNormal(COLLIDER_TYPE_SDF, params.force.attractTargetSDF, p.position);
+				p.velocity += -distanceToTarget * targetNormal * params.force.attractStrength * params.deltaTime;
+				float dampingRate = 2.0f * sqrt(params.force.attractStrength); // 감쇠율
+				float normalSpeed = dot(p.velocity, targetNormal); // 법선 투영 길이
+				p.velocity -= targetNormal * normalSpeed * (1.0f - exp(-dampingRate * params.deltaTime));
+			}
+			else
+			{
+				float3 localCenter = 0.5f * (collisionParams.sdfInstances[i].localBoundsMin + collisionParams.sdfInstances[i].localBoundsMax);
+				float3 pullDirLocal = normalize(localCenter - localPos);
+				float3 pullDir = normalize(mul(pullDirLocal, (float3x3) collisionParams.sdfInstances[i].worldToLocal));
+
+				float pullDistance = 0.5f * length(collisionParams.sdfInstances[i].localBoundsMax - collisionParams.sdfInstances[i].localBoundsMin) * collisionParams.sdfInstances[i].uniformScale;
+
+				p.velocity += pullDir * pullDistance * params.force.attractStrength * params.deltaTime;
+
+				float dampingRate = 2.0f * sqrt(params.force.attractStrength);
+				float pullSpeed = dot(p.velocity, pullDir);
+				p.velocity -= pullDir * pullSpeed * (1.0f - exp(-dampingRate * params.deltaTime));
+			}
+			
 		}
 
 		if (params.force.flags & FORCE_CURL)

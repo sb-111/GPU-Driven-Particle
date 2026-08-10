@@ -124,6 +124,22 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 		(s.forceAttractEnabled ? FORCE_ATTRACT : 0);
 	params.force.avoidStrength = s.forceAvoidStrength;
 	params.force.tangentStrength = s.forceTangentStrength;
+	const float tangentAxisLengthSq =
+		s.forceTangentAxis[0] * s.forceTangentAxis[0] +
+		s.forceTangentAxis[1] * s.forceTangentAxis[1] +
+		s.forceTangentAxis[2] * s.forceTangentAxis[2];
+	if (tangentAxisLengthSq > 1e-8f)
+	{
+		const float invTangentAxisLength = 1.0f / sqrtf(tangentAxisLengthSq);
+		params.force.tangentAxis = {
+			s.forceTangentAxis[0] * invTangentAxisLength,
+			s.forceTangentAxis[1] * invTangentAxisLength,
+			s.forceTangentAxis[2] * invTangentAxisLength };
+	}
+	else
+	{
+		params.force.tangentAxis = { 0.0f, 1.0f, 0.0f };
+	}
 	params.force.surfaceInfluenceRadius = s.surfaceInfluenceRadius;
 	params.force.curlFrequency = s.curlFrequency;
 	params.force.curlTargetSpeed = s.curlTargetSpeed;

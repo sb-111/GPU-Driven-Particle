@@ -122,7 +122,7 @@
 		float attractStrength;	// 표면으로 당기는 힘 (morphing 용)
 
 		uint attractTargetSDF;	// morphing 대상 인덱스
-		float3 forcePadding;
+		float3 tangentAxis;		// 회전축 (단위 벡터)
 	};
 	struct GP_CB_ALIGN MorphParams
 	{

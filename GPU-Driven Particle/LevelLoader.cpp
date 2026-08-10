@@ -145,6 +145,7 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("forceTangentEnabled")) settings.forceTangentEnabled = source.at("forceTangentEnabled").get<bool>();
 	if (source.contains("forceAvoidStrength")) settings.forceAvoidStrength = source.at("forceAvoidStrength").get<float>();
 	if (source.contains("forceTangentStrength")) settings.forceTangentStrength = source.at("forceTangentStrength").get<float>();
+	if (source.contains("forceTangentAxis")) ReadFloat3(source.at("forceTangentAxis"), (prefix + ".settings.forceTangentAxis").c_str(), settings.forceTangentAxis);
 	if (source.contains("surfaceInfluenceRadius")) settings.surfaceInfluenceRadius = source.at("surfaceInfluenceRadius").get<float>();
 	else if (source.contains("forceRadius")) settings.surfaceInfluenceRadius = source.at("forceRadius").get<float>();
 	if (source.contains("forceCurlEnabled")) settings.forceCurlEnabled = source.at("forceCurlEnabled").get<bool>();
@@ -510,6 +511,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		settingsJson["forceTangentEnabled"] = settings.forceTangentEnabled;
 		settingsJson["forceAvoidStrength"] = settings.forceAvoidStrength;
 		settingsJson["forceTangentStrength"] = settings.forceTangentStrength;
+		settingsJson["forceTangentAxis"] = Float3Json(settings.forceTangentAxis);
 		settingsJson["surfaceInfluenceRadius"] = settings.surfaceInfluenceRadius;
 		settingsJson["forceCurlEnabled"] = settings.forceCurlEnabled;
 		settingsJson["curlFrequency"] = settings.curlFrequency;

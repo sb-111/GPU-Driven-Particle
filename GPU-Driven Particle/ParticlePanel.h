@@ -320,7 +320,10 @@ namespace GP
 					ImGui::SliderFloat("Avoid Strength", &s.forceAvoidStrength, 0.0f, 50.0f);
 				ImGui::Checkbox("Force Tangent", &s.forceTangentEnabled);
 				if (s.forceTangentEnabled)
+				{
 					ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
+					ImGui::DragFloat3("Tangent Axis", s.forceTangentAxis, 0.01f, -1.0f, 1.0f);
+				}
 				ImGui::Checkbox("Force Curl", &s.forceCurlEnabled);
 				if (s.forceCurlEnabled)
 				{
