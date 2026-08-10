@@ -291,6 +291,10 @@ namespace GP
 				if (ImGui::DragFloat3("Position", basePosF, 0.05f))
 					emitter.SetBasePosition(Math::Vector3(basePosF[0], basePosF[1], basePosF[2]));
 
+				float baseRotF[3] = { emitter.GetBaseRotationEuler()[0], emitter.GetBaseRotationEuler()[1], emitter.GetBaseRotationEuler()[2] };
+				if (ImGui::DragFloat3("Rotation", baseRotF, 1.0f, -360.0f, 360.0f))
+					emitter.SetBaseRotationEuler(baseRotF);
+
 				ImGui::Combo("Loop Mode", &s.loopMode, kLoopModeNames, (int)ELoopMode::Count);
 				ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
 				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)

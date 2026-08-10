@@ -55,6 +55,18 @@ namespace GP
 		Math::Vector3 GetBasePosition() const { return m_BasePosition; }
 		void SetBasePosition(const Math::Vector3& p) { m_BasePosition = p; }
 
+		const float (&GetBaseRotationEuler() const)[3] { return m_BaseRotationEuler; }
+		void SetBaseRotationEuler(const float (&eulerDeg)[3])
+		{
+			m_BaseRotationEuler[0] = eulerDeg[0];
+			m_BaseRotationEuler[1] = eulerDeg[1];
+			m_BaseRotationEuler[2] = eulerDeg[2];
+			m_EmitterTransform.SetRotation(Math::Quaternion(
+				DirectX::XMConvertToRadians(eulerDeg[0]),
+				DirectX::XMConvertToRadians(eulerDeg[1]),
+				DirectX::XMConvertToRadians(eulerDeg[2])));
+		}
+
 		// Emitter 별 Pass (Particle System이 호출)
 		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
 			const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount);
@@ -107,6 +119,7 @@ namespace GP
 		float m_Timer = 0.0f;
 
 		Math::Vector3 m_BasePosition = Math::Vector3(Math::kZero); // Emitter 기준 위치
+		float m_BaseRotationEuler[3] = { 0.0f, 0.0f, 0.0f }; // Emitter 기준 회전 (deg)
 		float m_OrbitAngle = 0.0f;
 	};
 

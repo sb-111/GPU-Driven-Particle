@@ -227,6 +227,11 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 
 		const std::string prefix = "particleSystem.emitters[" + std::to_string(index) + "]";
 		ReadVec3(emitterJson.at("position"), (prefix + ".position").c_str());
+		if (emitterJson.contains("rotation"))
+		{
+			float rotation[3];
+			ReadFloat3(emitterJson.at("rotation"), (prefix + ".rotation").c_str(), rotation);
+		}
 		if (emitterJson.contains("settings"))
 		{
 			GP::ParticleSettings settings;
@@ -372,6 +377,12 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 
 			GP::ParticleEmitter& emitter = particles.GetEmitter(index);
 			emitter.SetBasePosition(emitterPosition);
+			if (emitterJson.contains("rotation"))
+			{
+				float rotation[3];
+				ReadFloat3(emitterJson.at("rotation"), (prefix + ".rotation").c_str(), rotation);
+				emitter.SetBaseRotationEuler(rotation);
+			}
 			if (emitterJson.contains("settings"))
 				ApplyEmitterSettings(emitterJson.at("settings"), emitter.GetSettings(), prefix);
 		}
@@ -525,6 +536,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 
 		ojson emitterJson;
 		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
+		emitterJson["rotation"] = Float3Json(emitter.GetBaseRotationEuler());
 		emitterJson["settings"] = settingsJson;
 		emittersJson.push_back(emitterJson);
 	}
