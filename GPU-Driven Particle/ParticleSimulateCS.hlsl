@@ -70,7 +70,14 @@ void main(uint3 id : SV_DispatchThreadID)
 					force += surfaceNormal * surfaceWeight * params.force.avoidStrength;
 				if(params.force.flags & FORCE_TANGENT)
 				{
-					force += cross(surfaceNormal, params.force.tangentAxis) * surfaceWeight * params.force.tangentStrength;
+					// tangentStrength: 목표 속력(m/s)
+					const float K_STEER = 4.0f;
+					// 목표 속도: 표면 법선과 지정 축이 평행 -> 0
+					float3 tangentVelocityTarget = cross(surfaceNormal, params.force.tangentAxis) * params.force.tangentStrength;
+					float3 steer = tangentVelocityTarget - p.velocity;
+					// 법선 성분 제거 (법선 성분은 attract랑 충돌이 담당)
+					steer -= surfaceNormal * dot(surfaceNormal, steer);
+					p.velocity += steer * (1.0f - exp(-K_STEER * surfaceWeight * params.deltaTime));
 				}
 				p.velocity += force * params.deltaTime;
 			}
@@ -97,7 +104,7 @@ void main(uint3 id : SV_DispatchThreadID)
 			{
 				float3 localCenter = 0.5f * (collisionParams.sdfInstances[i].localBoundsMin + collisionParams.sdfInstances[i].localBoundsMax);
 				float3 pullDirLocal = normalize(localCenter - localPos);
-				float3 pullDir = normalize(mul(pullDirLocal, (float3x3) collisionParams.sdfInstances[i].worldToLocal));
+				float3 pullDir = normalize(mul(transpose((float3x3) collisionParams.sdfInstances[i].worldToLocal), pullDirLocal));
 
 				float pullDistance = 0.5f * length(collisionParams.sdfInstances[i].localBoundsMax - collisionParams.sdfInstances[i].localBoundsMin) * collisionParams.sdfInstances[i].uniformScale;
 
