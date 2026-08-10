@@ -170,6 +170,11 @@ namespace GP
 		if (emitterCount == 0)
 		{
 			ImGui::TextDisabled("No emitters in the loaded scene");
+			if (ImGui::Button("Add Emitter"))
+			{
+				system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)));
+				selected = 0;
+			}
 			ImGui::End();
 			return;
 		}
