@@ -98,6 +98,9 @@ public:
 
 		m_DebugLines.Init();
 		m_SDFDebug.Init();
+
+		Mesh* bunnyMesh = m_MeshLibrary.Get("Meshes/stanford-bunny.obj");
+		m_Particles.SetEmitterSurfaceMorphTarget(0, "bunny", *bunnyMesh, 32768, 324);
 	}
 
 	void Cleanup(void) override {}

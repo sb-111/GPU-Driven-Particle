@@ -66,7 +66,7 @@ namespace GP
 		void Draw(GraphicsContext& gfx, bool halfResolution);
 		void EndFrame();
 
-		void SetMorphTarget(MorphTargetSet* morphTarget, const Math::Matrix4& targetToWorld) { m_CurrentMorphTarget = morphTarget; m_MorphTargetToWorld = targetToWorld; }
+		void SetMorphTarget(MorphTargetSet* morphTarget) { m_CurrentMorphTarget = morphTarget; }
 	private:
 		// ParticleSettings -> ParticleFrameCB
 		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const;
@@ -101,7 +101,6 @@ namespace GP
 		ParticleSharedResources* m_Shared = nullptr;
 
 		MorphTargetSet* m_CurrentMorphTarget = nullptr;
-		Math::Matrix4 m_MorphTargetToWorld = Math::Matrix4(Math::kIdentity);
 
 		// 이번 프레임에 살아있는 파티클의 예측량(2의 거듭제곱 상한)
 		uint32_t m_SortN = 64;

@@ -136,7 +136,14 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.morph.enabled = hasMorphTarget ? 1u : 0u;
 	params.morph.targetCount = hasMorphTarget ? m_CurrentMorphTarget->GetTargetCount() : 0u;
 	params.morph.strength = s.morphStrength;
-	params.morph.targetToWorld = ToF4x4(m_MorphTargetToWorld);
+	const Math::Quaternion morphRotation(
+		DirectX::XMConvertToRadians(s.morphTargetRotation[0]),
+		DirectX::XMConvertToRadians(s.morphTargetRotation[1]),
+		DirectX::XMConvertToRadians(s.morphTargetRotation[2]));
+	const Math::Vector3 morphScale(s.morphTargetScale[0], s.morphTargetScale[1], s.morphTargetScale[2]);
+	const Math::Vector3 morphPosition(s.morphTargetPosition[0], s.morphTargetPosition[1], s.morphTargetPosition[2]);
+	const Math::AffineTransform morphTargetToWorld(Math::Matrix3(morphRotation) * Math::Matrix3::MakeScale(morphScale), morphPosition);
+	params.morph.targetToWorld = ToF4x4(Math::Matrix4(morphTargetToWorld));
 
 	return params;
 }

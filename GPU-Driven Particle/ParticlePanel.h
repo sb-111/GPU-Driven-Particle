@@ -327,6 +327,14 @@ namespace GP
 					ImGui::SliderFloat("Attract Strength", &s.forceAttractStrength, 0.0f, 50.0f);
 					ImGui::SliderInt("Attract Target SDF", &s.forceAttractTarget, 0, MAX_SDF_COUNT - 1);
 				}
+				ImGui::Checkbox("Morph", &s.morphEnabled);
+				if (s.morphEnabled)
+				{
+					ImGui::SliderFloat("Morph Strength", &s.morphStrength, 0.0f, 50.0f);
+					ImGui::DragFloat3("Target Pos", s.morphTargetPosition, 0.1f);
+					ImGui::DragFloat3("Target Rotation", s.morphTargetRotation, 1.0f, -360.0f, 360.0f);
+					ImGui::DragFloat3("Target Scale", s.morphTargetScale, 0.05f, 0.01f, 20.0f);
+				}
 			}
 			if (g == (int)EParamGroup::Emit)
 			{

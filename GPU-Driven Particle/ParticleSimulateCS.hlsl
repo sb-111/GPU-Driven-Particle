@@ -116,6 +116,17 @@ void main(uint3 id : SV_DispatchThreadID)
 			const float response = saturate(params.force.curlResponseRate * params.deltaTime);
 			p.velocity += (targetVelocity - p.velocity) * response;
 		}
+		if(params.morph.enabled != 0 && params.morph.targetCount > 0)
+		{
+			uint targetIndex = index % params.morph.targetCount;
+			float3 localTarget = MorphTargets[targetIndex].position;
+			float3 worldTarget = mul(params.morph.targetToWorld, float4(localTarget, 1.0f)).xyz;
+			float3 delta = worldTarget - p.position;
+			float k = max(params.morph.strength, 0.0f);
+			float damping = 2.0f * sqrt(k);
+			float3 acceleration = delta * k - p.velocity * damping;
+			p.velocity += acceleration * params.deltaTime;
+		}
 		if(params.collisionEnabled != 0)
 		{
 			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 최장축을 반경으로

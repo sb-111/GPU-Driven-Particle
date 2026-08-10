@@ -87,9 +87,12 @@ namespace GP
 		float forceAttractStrength = 5.0f;
 		int forceAttractTarget = 0;			// attract 대상 SDF 인덱스
 		// Particle Simulate - Morph
-		bool morphEnabled = false;
+		bool morphEnabled = true;
 		float morphStrength = 20.0f;
-		
+		float morphTargetPosition[3] = { 0, 0, 0 };
+		float morphTargetRotation[3] = { 0, 0, 0 };
+		float morphTargetScale[3] = { 1, 1, 1 };
+
 		// Renderer
 		int rendererType = (int)EParticleRenderer::Sprite;
 		int blendMode = (int)EBlendMode::Additive;

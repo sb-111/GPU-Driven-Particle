@@ -57,7 +57,7 @@ namespace GP {
 
 		void SetEmitterSurfaceMorphTarget(size_t emitterIndex,
 			const std::string& name,
-			const Mesh& mesh, const Math::Matrix4& targetToWorld,
+			const Mesh& mesh,
 			uint32_t sampleCount, uint32_t seed);
 
 	private:
