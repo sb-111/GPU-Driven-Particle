@@ -27,7 +27,7 @@
 
 #include "DebugLineRenderer.h"
 #include "SDFDebugRenderer.h"
-
+#include "SkyboxRenderer.h"
 #include <filesystem>
 
 using namespace GameCore;
@@ -98,6 +98,7 @@ public:
 
 		m_DebugLines.Init();
 		m_SDFDebug.Init();
+		m_SkyboxRenderer.Init("Textures/Skybox/skybox_blue.dds");
 
 		Mesh* bunnyMesh = m_MeshLibrary.Get("Meshes/stanford-bunny.obj");
 		m_Particles.SetEmitterSurfaceMorphTarget(0, "bunny", *bunnyMesh, 32768, 324);
@@ -173,6 +174,7 @@ public:
 				continue;
 			drawObject(*object);
 		}
+		m_SkyboxRenderer.Render(gfx, m_Camera);
 		if (m_SDFDebugSettings.showDebug &&
 			m_PanelTarget &&
 			m_PanelTarget->IsSDFCollider())
@@ -372,6 +374,7 @@ private:
 	DebugLineRenderer m_DebugLines;
 	SDFDebugRenderer  m_SDFDebug;
 	SDFDebugSettings  m_SDFDebugSettings;
+	SkyboxRenderer m_SkyboxRenderer;
 
 	bool m_Paused = false;
 };

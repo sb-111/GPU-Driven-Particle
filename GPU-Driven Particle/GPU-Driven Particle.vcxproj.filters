@@ -78,6 +78,9 @@
     <ClCompile Include="MorphTargetSet.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="SkyboxRenderer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -199,6 +202,12 @@
     <ClInclude Include="MorphTargetSet.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="TextureLoader.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyboxRenderer.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ParticleVS.hlsl">
@@ -276,6 +285,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SDFSliceDebugPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SkyboxPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

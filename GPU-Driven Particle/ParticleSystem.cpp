@@ -10,6 +10,7 @@
 #include "Mesh.h"
 #include "ParticleShared.h"
 #include "SceneObject.h"
+#include "TextureLoader.h"
 
 using namespace GameCore;
 using namespace Graphics;
