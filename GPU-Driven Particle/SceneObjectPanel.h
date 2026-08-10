@@ -209,6 +209,10 @@ namespace GP
 		if (ImGui::DragFloat3("Position", positionValues, 0.05f))
 			selectedObject->GetTransform().SetTranslation(Math::Vector3(positionValues[0], positionValues[1], positionValues[2]));
 
+		float rotationValues[3] = { selectedObject->GetRotationEuler()[0], selectedObject->GetRotationEuler()[1], selectedObject->GetRotationEuler()[2] };
+		if (ImGui::DragFloat3("Rotation", rotationValues, 1.0f, -360.0f, 360.0f))
+			selectedObject->SetRotationEuler(rotationValues);
+
 		float scale = selectedObject->GetTransform().GetScale();
 		if (ImGui::DragFloat("Uniform Scale", &scale, 0.01f, 0.001f, 100.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 			selectedObject->GetTransform().SetScale(scale);

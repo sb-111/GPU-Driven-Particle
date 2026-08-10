@@ -404,7 +404,7 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 			GP::SceneObject& object = scene.CreateObject(mesh);
 			object.SetName(objectJson.value("name", meshPath));
 			object.GetTransform().SetTranslation(ReadVec3(objectJson.at("position"), (prefix + ".position").c_str()));
-			object.GetTransform().SetRotation(ReadQuaternion(objectJson.at("rotation"), (prefix + ".rotation").c_str()));
+			object.SetRotation(ReadQuaternion(objectJson.at("rotation"), (prefix + ".rotation").c_str()));
 
 			const float scale = objectJson.value("scale", 1.0f);
 			if (scale <= 0.0f)
