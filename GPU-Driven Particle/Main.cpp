@@ -108,7 +108,7 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused, m_Camera);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera, m_MeshLibrary);
 
 		SceneAuthoringRequests sceneRequests;
 		DrawSceneObjectPanel(

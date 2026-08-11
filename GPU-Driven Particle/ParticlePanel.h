@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "ParticleSetting.h"
 #include "ParticleSystem.h"
+#include "MeshLibrary.h"
+#include "Mesh.h"
 #include "BufferManager.h"
 #include "Camera.h"
 #include "imgui/imgui.h"
@@ -156,7 +158,7 @@ namespace GP
 		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
 		::SetWindowPos(GameCore::g_hWnd, nullptr, 0, 0, r.right - r.left, r.bottom - r.top, SWP_NOMOVE | SWP_NOZORDER);
 	}
-	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera)
+	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera, MeshLibrary& meshLibrary)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
 		{
@@ -411,6 +413,55 @@ namespace GP
 					ImGui::SliderInt("SubImages Y", &s.subImagesY, 1, 16);
 				}
 			}
+		}
+
+		if (ImGui::CollapsingHeader("Morph Target", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Text("Current: %s", emitter.GetMorphTargetPath().empty() ? "none" : emitter.GetMorphTargetPath().c_str());
+
+			static char morphPathBuf[260] = "Meshes/stanford-bunny.obj";
+			static int morphSampleCount = 32768;
+			static int morphSeed = 324;
+			static char morphError[128] = "";
+			if (ImGui::BeginCombo("Mesh##Morph", morphPathBuf))
+			{
+				for (const std::string& assetPath : meshLibrary.GetAssetPaths())
+				{
+					if (ImGui::Selectable(assetPath.c_str(), assetPath == morphPathBuf))
+						strcpy_s(morphPathBuf, assetPath.c_str());
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::InputInt("Sample Count", &morphSampleCount);
+			ImGui::InputInt("Seed", &morphSeed);
+			if (ImGui::Button("Set Target"))
+			{
+				morphError[0] = '\0';
+				Mesh* mesh = (morphSampleCount > 0) ? meshLibrary.Get(morphPathBuf) : nullptr;
+				if (mesh == nullptr || mesh->GetCPUVertices().empty() || mesh->GetCPUIndices().empty())
+				{
+					sprintf_s(morphError, "load failed: %s", morphPathBuf);
+				}
+				else
+				{
+					emitter.SetMorphTarget(system.ResolveSurfaceMorphTarget(
+						morphPathBuf, *mesh, (uint32_t)morphSampleCount, (uint32_t)morphSeed));
+					emitter.SetMorphTargetPath(morphPathBuf);
+					emitter.SetMorphTargetSampleCount((uint32_t)morphSampleCount);
+					emitter.SetMorphTargetSeed((uint32_t)morphSeed);
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Clear Target"))
+			{
+				morphError[0] = '\0';
+				emitter.SetMorphTarget(nullptr);
+				emitter.SetMorphTargetPath("");
+				emitter.SetMorphTargetSampleCount(0);
+				emitter.SetMorphTargetSeed(0);
+			}
+			if (morphError[0] != '\0')
+				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", morphError);
 		}
 
 		if (ImGui::CollapsingHeader("Sequence", ImGuiTreeNodeFlags_DefaultOpen))

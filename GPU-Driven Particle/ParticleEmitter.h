@@ -80,6 +80,12 @@ namespace GP
 		void EndFrame();
 
 		void SetMorphTarget(MorphTargetSet* morphTarget) { m_CurrentMorphTarget = morphTarget; }
+		void SetMorphTargetPath(const std::string& path) { m_MorphTargetPath = path; }
+		void SetMorphTargetSampleCount(uint32_t count) { m_MorphTargetSampleCount = count; }
+		void SetMorphTargetSeed(uint32_t seed) { m_MorphTargetSeed = seed; }
+		const std::string& GetMorphTargetPath() const { return m_MorphTargetPath; }
+		uint32_t GetMorphTargetSampleCount() const { return m_MorphTargetSampleCount; }
+		uint32_t GetMorphTargetSeed() const { return m_MorphTargetSeed; }
 
 		// ============= 파티클 시퀀스 관련 =============
 		EmitterSequence& GetSequence() { return m_Sequence; }
@@ -119,6 +125,10 @@ namespace GP
 		ParticleSharedResources* m_Shared = nullptr;
 
 		MorphTargetSet* m_CurrentMorphTarget = nullptr;
+		std::string m_MorphTargetPath;
+		uint32_t m_MorphTargetSampleCount = 0;
+		uint32_t m_MorphTargetSeed = 0;
+
 		EmitterSequence m_Sequence;
 
 		// 이번 프레임에 살아있는 파티클의 예측량(2의 거듭제곱 상한)

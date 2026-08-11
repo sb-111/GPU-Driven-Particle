@@ -300,6 +300,25 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 			GP::ParticleSettings settings;
 			ApplyEmitterSettings(emitterJson.at("settings"), settings, prefix);
 		}
+		if (emitterJson.contains("morph"))
+		{
+			const json& morphJson = emitterJson.at("morph");
+			if (!morphJson.is_object())
+				throw std::runtime_error(prefix + ".morph must be an object");
+
+			const std::string meshPath = morphJson.at("mesh").get<std::string>();
+			const uint32_t sampleCount = morphJson.at("sampleCount").get<uint32_t>();
+			morphJson.at("seed").get<uint32_t>();
+
+			if (sampleCount == 0)
+				throw std::runtime_error(prefix + ".morph.sampleCount must be greater than zero");
+
+			GP::Mesh* mesh = meshLibrary.Get(meshPath.c_str());
+			if (mesh == nullptr)
+				throw std::runtime_error(prefix + ".morph.mesh failed to load: " + meshPath);
+			if (mesh->GetCPUVertices().empty() || mesh->GetCPUIndices().empty())
+				throw std::runtime_error(prefix + ".morph.mesh has no cpu geometry: " + meshPath);
+		}
 		if (emitterJson.contains("sequence"))
 			ReadSequenceStages(emitterJson.at("sequence"), meshLibrary, prefix, nullptr);
 	}
@@ -523,6 +542,21 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 			}
 			if (emitterJson.contains("settings"))
 				ApplyEmitterSettings(emitterJson.at("settings"), emitter.GetSettings(), prefix);
+			GP::MorphTargetSet* emitterMorphTarget = nullptr;
+			if (emitterJson.contains("morph"))
+			{
+				const json& morphJson = emitterJson.at("morph");
+				const std::string meshPath = morphJson.at("mesh").get<std::string>();
+				const uint32_t sampleCount = morphJson.at("sampleCount").get<uint32_t>();
+				const uint32_t seed = morphJson.at("seed").get<uint32_t>();
+
+				GP::Mesh* mesh = meshLibrary.Get(meshPath.c_str());
+				emitterMorphTarget = particles.ResolveSurfaceMorphTarget(meshPath, *mesh, sampleCount, seed);
+				emitter.SetMorphTarget(emitterMorphTarget);
+				emitter.SetMorphTargetPath(meshPath);
+				emitter.SetMorphTargetSampleCount(sampleCount);
+				emitter.SetMorphTargetSeed(seed);
+			}
 			if (emitterJson.contains("sequence"))
 			{
 				ReadSequenceStages(emitterJson.at("sequence"), meshLibrary, prefix, &emitter.GetSequence());
@@ -540,7 +574,7 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 						ApplyEmitterSettings(stageJson.at("settings"), sequence.stages[stageIndex].settings,
 							prefix + ".sequence.stages[" + std::to_string(stageIndex) + "]");
 				}
-				MorphTargetSet* inheritedTarget = nullptr;
+				MorphTargetSet* inheritedTarget = emitterMorphTarget; // 스테이지 0 기준 = 이미터 자기 타깃
 				for (size_t stageIndex = 0; stageIndex < sequence.stages.size(); ++stageIndex)
 				{
 					SequenceStage& currentStage = sequence.stages[stageIndex];
@@ -639,6 +673,14 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		ojson emitterJson;
 		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
 		emitterJson["rotation"] = Float3Json(emitter.GetBaseRotationEuler());
+		if (!emitter.GetMorphTargetPath().empty())
+		{
+			ojson morphJson;
+			morphJson["mesh"] = emitter.GetMorphTargetPath();
+			morphJson["sampleCount"] = emitter.GetMorphTargetSampleCount();
+			morphJson["seed"] = emitter.GetMorphTargetSeed();
+			emitterJson["morph"] = morphJson;
+		}
 
 		if (sequence.stages.empty())
 		{
