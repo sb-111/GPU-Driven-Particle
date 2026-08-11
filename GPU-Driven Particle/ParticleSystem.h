@@ -43,10 +43,9 @@ namespace GP {
 		void ClearSDFColliders();
 		void ClearEmitters();
 
-		void SetEmitterSurfaceMorphTarget(size_t emitterIndex,
-			const std::string& name,
-			const Mesh& mesh,
+		MorphTargetSet* ResolveSurfaceMorphTarget(const std::string& name, const Mesh& mesh,
 			uint32_t sampleCount, uint32_t seed);
+
 
 	private:
 		void InitSharedResources();

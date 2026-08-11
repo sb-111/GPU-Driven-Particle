@@ -205,6 +205,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     <ClInclude Include="SDFBaker.h" />
     <ClInclude Include="SDFGrid.h" />
     <ClInclude Include="DebugLineRenderer.h" />
+    <ClInclude Include="ParticleSequence.h" />
     <ClInclude Include="ShaderCompiler.h" />
     <ClInclude Include="SkyboxRenderer.h" />
     <ClInclude Include="TextureLoader.h" />

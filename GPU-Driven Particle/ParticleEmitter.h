@@ -9,6 +9,7 @@
 #include "Texture.h"
 #include "BitonicSort.h"
 #include "MorphTargetSet.h"
+#include "ParticleSequence.h"
 class ComputeContext;
 class GraphicsContext;
 
@@ -79,6 +80,11 @@ namespace GP
 		void EndFrame();
 
 		void SetMorphTarget(MorphTargetSet* morphTarget) { m_CurrentMorphTarget = morphTarget; }
+
+		// ============= 파티클 시퀀스 관련 =============
+		EmitterSequence& GetSequence() { return m_Sequence; }
+		void TickSequence(float dt); 	// 시퀀스 Tick
+		void ApplyStage();				// 현재 SequenceStage 이미터에 적용
 	private:
 		// ParticleSettings -> ParticleFrameCB
 		ParticleFrameCB MakeParams(const ParticleSettings& s, float dt) const;
@@ -113,6 +119,7 @@ namespace GP
 		ParticleSharedResources* m_Shared = nullptr;
 
 		MorphTargetSet* m_CurrentMorphTarget = nullptr;
+		EmitterSequence m_Sequence;
 
 		// 이번 프레임에 살아있는 파티클의 예측량(2의 거듭제곱 상한)
 		uint32_t m_SortN = 64;

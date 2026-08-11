@@ -413,6 +413,105 @@ namespace GP
 			}
 		}
 
+		if (ImGui::CollapsingHeader("Sequence", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			EmitterSequence& seq = emitter.GetSequence();
+			if (seq.stages.empty())
+			{
+				ImGui::TextDisabled("No sequence");
+				if (ImGui::Button("Add Stage From Current"))
+				{
+					SequenceStage stage;
+					stage.duration = 5.0f;
+					stage.settings = s;
+					seq.stages.push_back(stage);
+					seq.currentStage = 0;
+					seq.stageTimer = 0.0f;
+					seq.playing = true;
+					emitter.ApplyStage();
+				}
+			}
+			else
+			{
+				if (ImGui::Button(seq.playing ? "Pause##Seq" : "Play##Seq"))
+					seq.playing = !seq.playing;
+				ImGui::SameLine();
+				if (ImGui::Button("Restart##Seq"))
+				{
+					seq.currentStage = 0;
+					seq.stageTimer = 0.0f;
+					seq.playing = true;
+					emitter.ApplyStage();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Next##Seq"))
+				{
+					if (seq.currentStage + 1 < seq.stages.size())
+						seq.currentStage++;
+					else if (seq.loop)
+						seq.currentStage = 0;
+					seq.stageTimer = 0.0f;
+					emitter.ApplyStage();
+				}
+				ImGui::SameLine();
+				ImGui::Checkbox("Loop##Seq", &seq.loop);
+
+				for (size_t i = 0; i < seq.stages.size(); ++i)
+				{
+					char label[64];
+					sprintf_s(label, "Stage %d (%.1fs)%s", (int)i, seq.stages[i].duration,
+						seq.stages[i].replacesMorphTarget ? " [morph]" : "");
+					if (ImGui::Selectable(label, i == seq.currentStage))
+					{
+						seq.currentStage = i;
+						seq.stageTimer = 0.0f;
+						emitter.ApplyStage();
+					}
+				}
+
+				SequenceStage& cur = seq.stages[seq.currentStage];
+				if (cur.duration > 0.0f)
+					ImGui::ProgressBar(seq.stageTimer / cur.duration, ImVec2(-1.0f, 0.0f));
+				else
+					ImGui::TextDisabled("Duration 0 = hold");
+				ImGui::DragFloat("Duration##Seq", &cur.duration, 0.1f, 0.0f, 3600.0f, "%.1f");
+
+				// 패널의 라이브 settings를 현재 스테이지 사본에 저장
+				if (ImGui::Button("Capture To Stage"))
+					cur.settings = s;
+				ImGui::SameLine();
+				if (ImGui::Button("Add Stage From Current"))
+				{
+					SequenceStage stage;
+					stage.duration = 5.0f;
+					stage.settings = s;
+					stage.morphTarget = seq.stages.back().morphTarget; // 타깃은 마지막 스테이지에서 가져오기
+					seq.stages.push_back(stage);
+					seq.currentStage = seq.stages.size() - 1;
+					seq.stageTimer = 0.0f;
+					emitter.ApplyStage();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Delete Stage"))
+				{
+					seq.stages.erase(seq.stages.begin() + seq.currentStage);
+					if (seq.currentStage >= seq.stages.size() && seq.currentStage > 0)
+						seq.currentStage--;
+					seq.stageTimer = 0.0f;
+					if (!seq.stages.empty())
+						emitter.ApplyStage();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Clear Sequence"))
+				{
+					seq.stages.clear();
+					seq.currentStage = 0;
+					seq.stageTimer = 0.0f;
+					seq.playing = true;
+				}
+			}
+		}
+
 		if (ImGui::CollapsingHeader("Scene Collision", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			CollisionSettings& c = system.GetCollisionSettings();

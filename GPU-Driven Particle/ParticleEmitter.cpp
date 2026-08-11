@@ -413,3 +413,45 @@ void GP::ParticleEmitter::EndFrame()
 {
 	std::swap(m_CurrentAlive, m_NewAlive);
 }
+
+void GP::ParticleEmitter::TickSequence(float dt)
+{
+	EmitterSequence& sequence = m_Sequence;
+	// Stage 없거나 실행 중 아니면 Tick X
+	if (sequence.stages.empty() || !sequence.playing)
+		return;
+	sequence.stageTimer += dt; // 현재 스테이지 시간 누적
+	// 지정 시간 지나면
+	while (sequence.playing &&
+		sequence.stages[sequence.currentStage].duration > 0.0f &&
+		sequence.stageTimer >= sequence.stages[sequence.currentStage].duration)
+	{
+		sequence.stageTimer -= sequence.stages[sequence.currentStage].duration;
+		if (sequence.currentStage < sequence.stages.size() - 1)
+		{
+			// 스테이지 남았으면 다음 스테이지로
+			sequence.currentStage++;
+		}
+		else if (sequence.loop)
+		{
+			// 스테이지 없고 루프 걸려 있으면 처음으로
+			sequence.currentStage = 0;
+		}
+		else
+		{
+			// 스테이지 없고 루프 없으면 중지
+			sequence.playing = false;
+		}
+		ApplyStage();
+	}
+
+}
+void GP::ParticleEmitter::ApplyStage()
+{
+	if (m_Sequence.stages.empty())
+		return;
+	const SequenceStage& stage = m_Sequence.stages[m_Sequence.currentStage];
+	m_Settings = stage.settings;
+	SetMorphTarget(stage.morphTarget);
+	ResetEmitter();
+}

@@ -222,12 +222,11 @@ void GP::ParticleSystem::ClearEmitters()
 	m_Emitters.clear();
 }
 
-void GP::ParticleSystem::SetEmitterSurfaceMorphTarget(size_t emitterIndex, const std::string& name, const Mesh& mesh, uint32_t sampleCount, uint32_t seed)
+GP::MorphTargetSet* GP::ParticleSystem::ResolveSurfaceMorphTarget(const std::string& name, const Mesh& mesh, uint32_t sampleCount, uint32_t seed)
 {
-	ASSERT(emitterIndex < m_Emitters.size(), "ParticleSystem: invalid emitter index");
 	MorphTargetSet& morphTarget = m_MorphTargetLibrary.GetOrCreateSurfaceTarget(name, mesh, sampleCount, seed);
 
-	GetEmitter(emitterIndex).SetMorphTarget(&morphTarget);
+	return &morphTarget;
 }
 
 void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)
@@ -240,7 +239,10 @@ void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)
 void GP::ParticleSystem::Update(float dt)
 {
 	for (auto& e : m_Emitters)
+	{
+		e->TickSequence(dt);
 		e->Update(dt);
+	}
 }
 
 void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& viewParams)
