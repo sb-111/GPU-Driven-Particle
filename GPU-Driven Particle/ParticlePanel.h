@@ -351,7 +351,7 @@ namespace GP
 			if (g == (int)EParamGroup::Emit)
 			{
 				ImGui::Checkbox("Random Spawn Brightness", &s.randomSpawnBrightness);
-				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Sphere);
+				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Cone); // Cone(위치 방출)은 TODO
 				switch ((EShapeType)s.shapeType)
 				{
 				case EShapeType::Point:

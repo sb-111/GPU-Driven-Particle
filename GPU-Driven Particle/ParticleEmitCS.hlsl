@@ -43,16 +43,24 @@ void main( uint3 id : SV_DispatchThreadID )
 	Particle p = (Particle)0;
 	switch (params.shapeType)
 	{
-		case POINT_TYPE:
 		case BOX_TYPE:
+		{
 			p.position = params.emitterPosition + offset * params.shapeData;
 			break;
+		}
 		case SPHERE_TYPE:
+		{
+			float3 dir = normalize(float3(rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f));
+			float radius = (params.shapeData.y < 0.5f) ? // 0이면 부피 채우기, 1이면 표면만
+				params.shapeData.x * pow(rand01(seed), 1.0f / 3.0f) : params.shapeData.x; 
+			p.position = params.emitterPosition + radius * dir;
+			break;
+		}
+		case POINT_TYPE:
 		default:
 		p.position = params.emitterPosition + offset * params.posSpread;
 			break;
 	}
-	// TODO
 	switch (params.velocityMode)
 	{
 		case VELOCITY_MODE:
@@ -60,6 +68,13 @@ void main( uint3 id : SV_DispatchThreadID )
 		lerp(params.speedMin, params.speedMax, rand01(seed));
 			break;
 		case VELOCITY_FROM_POINT_MODE:
+		{
+				float3 radial = p.position - params.emitterPosition; // 중심에서 어느 쪽인지
+				float3 dir = (dot(radial, radial) > 1e-8f) ? // 중심에서 가까우면 속도 랜덤 주입 (ex. Point 방출)
+					normalize(radial) : normalize(float3(rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f));
+				p.velocity = dir * lerp(params.speedMin, params.speedMax, rand01(seed));
+				break;
+		}
 		case VELOCITY_IN_CONE_MODE:
 		default:
 			p.velocity = normalize(params.emitterDirection + spread * params.dirSpread) *
