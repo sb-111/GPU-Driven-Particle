@@ -404,6 +404,26 @@ namespace GP
 				// 리본 전용 설정
 				if (s.rendererType == (int)EParticleRenderer::Ribbon)
 					ImGui::Combo("UV Mode", &s.ribbonUVMode, kRibbonUVModeNames, (int)ERibbonUVMode::Count);
+				// 메시 전용 설정
+				if (s.rendererType == (int)EParticleRenderer::Mesh)
+				{
+					const std::string& currentMeshPath = emitter.GetParticleMeshPath();
+					if (ImGui::BeginCombo("Particle Mesh", currentMeshPath.empty() ? "Cube (default)" : currentMeshPath.c_str()))
+					{
+						if (ImGui::Selectable("Cube (default)", currentMeshPath.empty()))
+							emitter.SetParticleMesh(nullptr, "");
+						for (const std::string& assetPath : meshLibrary.GetAssetPaths())
+						{
+							if (ImGui::Selectable(assetPath.c_str(), assetPath == currentMeshPath))
+							{
+								Mesh* particleMesh = meshLibrary.Get(assetPath.c_str());
+								if (particleMesh != nullptr)
+									emitter.SetParticleMesh(particleMesh, assetPath);
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
 				// 스프라이트 전용 설정
 				if (s.rendererType == (int)EParticleRenderer::Sprite)
 				{

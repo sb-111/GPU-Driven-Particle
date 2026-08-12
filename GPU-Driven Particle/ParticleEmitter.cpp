@@ -2,6 +2,8 @@
 #include "CommandContext.h"
 #include "MathConvert.h"
 #include "GraphicsCommon.h"
+#include "CubeMesh.h"
+#include "Mesh.h"
 void GP::ParticleEmitter::Init(uint32_t maxParticles, ParticleSharedResources* shared, uint32_t index)
 {
 	m_maxParticle = maxParticles;
@@ -370,6 +372,10 @@ void GP::ParticleEmitter::UpdateDrawArgs(ComputeContext& cpt)
 	cpt.CopyBufferRegion(m_IndirectArgsBuffer, ARGS_DRAW_INSTANCE_COUNT, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
 	// ARGS_DRAW_INDEXED_INSTANCE_COUNT 구간 (for Mesh)
 	cpt.CopyBufferRegion(m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INSTANCE_COUNT, m_Counters, COUNTER_AFTER_SIMULATE, sizeof(uint32_t));
+	// 인덱스 카운트 - 메시 지정 X -> 큐브 인덱스 카운트로 설정
+	const uint32_t indexCount = m_ParticleMesh != nullptr ?
+		m_ParticleMesh->GetIndexCount() : (uint32_t)_countof(kCubeIndices);
+	cpt.FillBuffer(m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INDEX_COUNT, indexCount, sizeof(uint32_t));
 	cpt.TransitionResource(m_IndirectArgsBuffer, D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT);
 
 	// Draw가 읽을 리소스 SRV 전환
@@ -399,8 +405,16 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx, bool halfResolution)
 	// 메시 드로우콜
 	if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)
 	{
-		gfx.SetVertexBuffer(0, m_Shared->meshVertexBuffer.VertexBufferView());
-		gfx.SetIndexBuffer(m_Shared->meshIndexBuffer.IndexBufferView());
+		if (m_ParticleMesh != nullptr)
+		{
+			gfx.SetVertexBuffer(0, m_ParticleMesh->GetVertexBuffer().VertexBufferView());
+			gfx.SetIndexBuffer(m_ParticleMesh->GetIndexBuffer().IndexBufferView());
+		}
+		else
+		{
+			gfx.SetVertexBuffer(0, m_Shared->meshVertexBuffer.VertexBufferView());
+			gfx.SetIndexBuffer(m_Shared->meshIndexBuffer.IndexBufferView());
+		}
 		gfx.ExecuteIndirect(Graphics::DrawIndexedIndirectCommandSignature, m_IndirectArgsBuffer, ARGS_DRAW_INDEXED_INDEX_COUNT);
 	}
 	else // 스프라이트, 리본 드로우콜

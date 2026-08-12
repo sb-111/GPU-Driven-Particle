@@ -15,6 +15,8 @@ class GraphicsContext;
 
 namespace GP
 {
+	class Mesh;
+
 	// Emitter들이 공유하는 자원
 	struct ParticleSharedResources
 	{
@@ -87,6 +89,14 @@ namespace GP
 		uint32_t GetMorphTargetSampleCount() const { return m_MorphTargetSampleCount; }
 		uint32_t GetMorphTargetSeed() const { return m_MorphTargetSeed; }
 
+		void SetParticleMesh(Mesh* mesh, const std::string& path)
+		{
+			m_ParticleMesh = mesh;
+			m_ParticleMeshPath = mesh != nullptr ? path : std::string();
+		}
+		Mesh* GetParticleMesh() const { return m_ParticleMesh; }
+		const std::string& GetParticleMeshPath() const { return m_ParticleMeshPath; }
+
 		// ============= 파티클 시퀀스 관련 =============
 		EmitterSequence& GetSequence() { return m_Sequence; }
 		void TickSequence(float dt); 	// 시퀀스 Tick
@@ -125,6 +135,8 @@ namespace GP
 		ParticleSharedResources* m_Shared = nullptr;
 
 		MorphTargetSet* m_CurrentMorphTarget = nullptr;
+		Mesh* m_ParticleMesh = nullptr;       // 없으면 큐브 사용
+		std::string m_ParticleMeshPath;       // 직렬화용
 		std::string m_MorphTargetPath;
 		uint32_t m_MorphTargetSampleCount = 0;
 		uint32_t m_MorphTargetSeed = 0;

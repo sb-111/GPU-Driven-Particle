@@ -319,6 +319,12 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 			if (mesh->GetCPUVertices().empty() || mesh->GetCPUIndices().empty())
 				throw std::runtime_error(prefix + ".morph.mesh has no cpu geometry: " + meshPath);
 		}
+		if (emitterJson.contains("particleMesh"))
+		{
+			const std::string meshPath = emitterJson.at("particleMesh").get<std::string>();
+			if (meshLibrary.Get(meshPath.c_str()) == nullptr)
+				throw std::runtime_error(prefix + ".particleMesh failed to load: " + meshPath);
+		}
 		if (emitterJson.contains("sequence"))
 			ReadSequenceStages(emitterJson.at("sequence"), meshLibrary, prefix, nullptr);
 	}
@@ -542,6 +548,11 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 			}
 			if (emitterJson.contains("settings"))
 				ApplyEmitterSettings(emitterJson.at("settings"), emitter.GetSettings(), prefix);
+			if (emitterJson.contains("particleMesh"))
+			{
+				const std::string meshPath = emitterJson.at("particleMesh").get<std::string>();
+				emitter.SetParticleMesh(meshLibrary.Get(meshPath.c_str()), meshPath);
+			}
 			GP::MorphTargetSet* emitterMorphTarget = nullptr;
 			if (emitterJson.contains("morph"))
 			{
@@ -673,6 +684,8 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		ojson emitterJson;
 		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
 		emitterJson["rotation"] = Float3Json(emitter.GetBaseRotationEuler());
+		if (!emitter.GetParticleMeshPath().empty())
+			emitterJson["particleMesh"] = emitter.GetParticleMeshPath();
 		if (!emitter.GetMorphTargetPath().empty())
 		{
 			ojson morphJson;

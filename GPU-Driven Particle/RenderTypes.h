@@ -9,18 +9,20 @@ namespace GP
 	{
 		float position[3];
 		float normal[3];
+		float uv[2];
 	};
 
 	constexpr uint32_t kVertexStride = (uint32_t)sizeof(Vertex);
 	constexpr uint32_t kPositionOffset = (uint32_t)offsetof(Vertex, position);
 
-	static_assert(sizeof(Vertex) == 24, "정점 포맷을 바꿨다면 kVertexLayout과 셰이더도 같이 갱신할 것");
+	static_assert(sizeof(Vertex) == 32, "정점 포맷을 바꿨다면 kVertexLayout과 셰이더도 같이 갱신할 것");
 
 	// PSO 생성부는 이 배열만 참조 (Input Layout 하드코딩 금지)
 	inline const D3D12_INPUT_ELEMENT_DESC kVertexLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, (UINT)offsetof(Vertex, position), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, (UINT)offsetof(Vertex, normal),   D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, (UINT)offsetof(Vertex, uv),       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 	};
 	constexpr uint32_t kVertexLayoutCount = (uint32_t)(sizeof(kVertexLayout) / sizeof(kVertexLayout[0]));
 

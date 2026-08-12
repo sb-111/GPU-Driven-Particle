@@ -237,7 +237,17 @@ void GP::PackVertices(const RawMesh& mesh, std::vector<Vertex>& outVerts)
 		{
 			dst.normal[0] = 0.0f; dst.normal[1] = 1.0f; dst.normal[2] = 0.0f;
 		}
-		// uvs / colors는 현재 정점 포맷에 없어서 버림
+		if (mesh.uvs.size() >= (v + 1) * 2)
+		{
+			dst.uv[0] = mesh.uvs[v * 2 + 0];
+			dst.uv[1] = mesh.uvs[v * 2 + 1];
+		}
+		else
+		{
+			dst.uv[0] = 0.0f;
+			dst.uv[1] = 0.0f;
+		}
+		// colors는 현재 정점 포맷에 없어서 버림
 		// 속성 추가 시 Vertex 선언과 여기 세 줄만 늘리면 됨
 	}
 }
