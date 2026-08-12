@@ -59,7 +59,7 @@
 #define COLLISION_SPHERE 2
 #define COLLISION_SDF 4
 
-#define MAX_SDF_COUNT 8
+#define MAX_SDF_COUNT 32
 
 #define FORCE_AVOID 1
 #define FORCE_TANGENT 2
@@ -219,6 +219,12 @@
 		float3 localBoundsMax; // 12B
 		float worldVoxelSize;  // 4B (법선 샘플 간격 + 표면 오차 보정에 사용)
 	};
+	struct GP_CB_ALIGN BVHNode
+	{
+		float3 boundsMin; uint left;
+		float3 boundsMax; uint right;
+	};
+#define MAX_BVH_NODES (MAX_SDF_COUNT * 2 - 1)
 	struct GP_CB_ALIGN ParticleCollisionCB
 	{
 		float4 collisionPlane;  // 16B
@@ -226,10 +232,10 @@
 
 		uint colliderMask;		// 4B
 		uint activeSDFCount;    // 4B
-		float pad0;
+		uint useBVH;
 		float pad1;
 
-		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 32 * 8 = 256B
+		SDFInstanceData sdfInstances[MAX_SDF_COUNT]; // 96B * MAX_SDF_COUNT
 	};
 #ifdef __cplusplus
 	}

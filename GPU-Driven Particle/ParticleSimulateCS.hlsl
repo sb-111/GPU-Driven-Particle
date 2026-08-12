@@ -17,7 +17,7 @@ RWByteAddressBuffer AliveList2 : register(u2);
 RWByteAddressBuffer DeadList : register(u3);
 RWByteAddressBuffer Counters : register(u4);
 RWStructuredBuffer<float> SortKeys : register(u6);
-StructuredBuffer<MorphTargetPoint> MorphTargets : register(t8);
+StructuredBuffer<MorphTargetPoint> MorphTargets : register(t64);
 
 [numthreads(64,1,1)]
 void main(uint3 id : SV_DispatchThreadID)

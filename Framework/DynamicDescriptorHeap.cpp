@@ -176,7 +176,8 @@ void DynamicDescriptorHeap::DescriptorHandleCache::CopyAndBindStaleTables(
 
     m_StaleRootParamsBitMap = 0;
 
-    static const uint32_t kMaxDescriptorsPerCopy = 16;
+    // 연속 핸들 런 하나의 최대 길이 = AssignedHandlesBitMap(32비트)의 32
+    static const uint32_t kMaxDescriptorsPerCopy = 32;
     UINT NumDestDescriptorRanges = 0;
     D3D12_CPU_DESCRIPTOR_HANDLE pDestDescriptorRangeStarts[kMaxDescriptorsPerCopy];
     UINT pDestDescriptorRangeSizes[kMaxDescriptorsPerCopy];
@@ -309,7 +310,9 @@ void DynamicDescriptorHeap::DescriptorHandleCache::StageDescriptorHandles( UINT 
     D3D12_CPU_DESCRIPTOR_HANDLE* CopyDest = TableCache.TableStart + Offset;
     for (UINT i = 0; i < NumHandles; ++i)
         CopyDest[i] = Handles[i];
-    TableCache.AssignedHandlesBitMap |= ((1 << NumHandles) - 1) << Offset;
+    // NumHandles == 32에서 (1 << 32) 시프트 오버플로로 마스크가 0이 되는 것 방지
+    const uint32_t handleMask = NumHandles >= 32 ? ~0u : ((1u << NumHandles) - 1u);
+    TableCache.AssignedHandlesBitMap |= handleMask << Offset;
     m_StaleRootParamsBitMap |= (1 << RootIndex);
 }
 

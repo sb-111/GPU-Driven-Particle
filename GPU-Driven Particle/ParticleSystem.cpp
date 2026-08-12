@@ -72,7 +72,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[8].InitAsBufferUAV(6); // u6
 	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
 	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t7 (sdf)
-	m_Shared.computeRootSig[11].InitAsBufferSRV(8); // t8
+	m_Shared.computeRootSig[11].InitAsBufferSRV(64); // t64
 	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL); // SDF 샘플용
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
@@ -257,6 +257,8 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	collisionCB.collisionSphere = { c.sphereCenter[0], c.sphereCenter[1], c.sphereCenter[2], c.sphereRadius };
 	collisionCB.colliderMask = (c.planeEnabled ? COLLISION_PLANE : 0) | (c.sphereEnabled ? COLLISION_SPHERE : 0);
 
+	Math::Vector3 colliderAABBMin[MAX_SDF_COUNT];
+	Math::Vector3 colliderAABBMax[MAX_SDF_COUNT];
 	D3D12_CPU_DESCRIPTOR_HANDLE sdfSRVs[MAX_SDF_COUNT] = {};
 	uint32_t sdfCount = 0;
 	for (SceneObject* obj : m_SDFColliders)
@@ -276,6 +278,16 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		collisionCB.sdfInstances[sdfCount].uniformScale = scale;
 		collisionCB.sdfInstances[sdfCount].worldVoxelSize = sdf->grid.voxelSize * scale;
 
+		Math::Vector3 localCenter = (sdf->grid.volumeBoundsMin + sdf->grid.volumeBoundsMin + sdf->grid.volumeBoundsSize) / 2.0f;
+		Math::Vector3 localExtent = (sdf->grid.volumeBoundsSize * 0.5f);
+		Math::Vector3 worldCenter = Math::Vector3(worldMat * localCenter);
+		Math::Matrix3 basis = worldMat.Get3x3();
+		Math::Vector3 worldExtent = Math::Abs(basis.GetX()) * localExtent.GetX()
+									+ Math::Abs(basis.GetY()) * localExtent.GetY()
+									+ Math::Abs(basis.GetZ()) * localExtent.GetZ();
+		colliderAABBMin[sdfCount] = worldCenter - worldExtent;
+		colliderAABBMax[sdfCount] = worldCenter + worldExtent;
+
 		// SRV 전환
 		cpt.TransitionResource(sdf->volume, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 		sdfSRVs[sdfCount] = sdf->volume.GetSRV();
@@ -290,6 +302,8 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	{
 		collisionCB.colliderMask |= COLLISION_SDF;
 	}
+
+
 
 	// 모든 Emitter에 대해 Pass 실행
 	for (auto& e : m_Emitters)
