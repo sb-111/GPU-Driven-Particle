@@ -141,7 +141,8 @@ void main(uint3 id : SV_DispatchThreadID)
 			}
 
 			const float3 targetVelocity = curlVelocity * params.force.curlTargetSpeed;
-			const float response = saturate(params.force.curlResponseRate * params.deltaTime);
+			//const float response = saturate(params.force.curlResponseRate * params.deltaTime);
+			const float response = 1.0f - exp(-params.force.curlResponseRate * params.deltaTime);
 			p.velocity += (targetVelocity - p.velocity) * response;
 		}
 		if(params.morph.enabled != 0 && params.morph.targetCount > 0)
