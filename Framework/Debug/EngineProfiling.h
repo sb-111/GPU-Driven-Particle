@@ -31,14 +31,7 @@ namespace EngineProfiling
     bool IsPaused();
 }
 
-#ifdef RELEASE
-class ScopedTimer
-{
-public:
-    ScopedTimer(const std::wstring&) {}
-    ScopedTimer(const std::wstring&, CommandContext&) {}
-};
-#else
+// 릴리즈에서도 GPU 프로파일링/PIX 마커 유지 (측정용 빌드)
 class ScopedTimer
 {
 public:
@@ -58,4 +51,3 @@ public:
 private:
     CommandContext* m_Context;
 };
-#endif

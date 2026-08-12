@@ -600,27 +600,18 @@ void CommandContext::InitializeBuffer( GpuBuffer& Dest, const UploadBuffer& Src,
     InitContext.Finish(true);
 }
 
+// 릴리즈에서도 PIX 마커 유지 (측정용 빌드)
 void CommandContext::PIXBeginEvent(const wchar_t* label)
 {
-#ifdef RELEASE
-	(label);
-#else
 	::PIXBeginEvent(m_CommandList, 0, label);
-#endif
 }
 
 void CommandContext::PIXEndEvent(void)
 {
-#ifndef RELEASE
 	::PIXEndEvent(m_CommandList);
-#endif
 }
 
 void CommandContext::PIXSetMarker(const wchar_t* label)
 {
-#ifdef RELEASE
-	(label);
-#else
 	::PIXSetMarker(m_CommandList, 0, label);
-#endif
 }
