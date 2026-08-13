@@ -50,7 +50,14 @@ void main( uint3 id : SV_DispatchThreadID )
 		}
 		case SPHERE_TYPE:
 		{
-			float3 dir = normalize(float3(rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f, rand01(seed) * 2.0f - 1.0f));
+			float y = rand01(seed) * 2.0f - 1.0f;      // 구면좌표계 y 좌표 
+			float phi = rand01(seed) * 2.0f * PI;      // 구면좌표계 phi
+
+			float r = sqrt(1.0f - y * y); // 단위 원 반지름
+			float x = r * cos(phi);
+			float z = r * sin(phi);
+
+			float3 dir = float3(x, y, z);
 			float radius = (params.shapeData.y < 0.5f) ? // 0이면 부피 채우기, 1이면 표면만
 				params.shapeData.x * pow(rand01(seed), 1.0f / 3.0f) : params.shapeData.x; 
 			p.position = params.emitterPosition + radius * dir;
