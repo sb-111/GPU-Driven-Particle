@@ -126,22 +126,27 @@ void main(uint3 id : SV_DispatchThreadID)
 			const float3 noisePosition =
 				p.position * params.force.curlFrequency + noiseAdvection * params.totalTime;
 
-			// v = ∇ × ψ, 경계 보정 전에는 ∇·v ≈ 0
-			float3 curlVelocity = CurlNoise(noisePosition);
-
-			// 반경 안에 들어온 경우만 보정
-			if (isNearSurface)
+			float3 curlVelocity;
+			if (params.force.flags & FORCE_CURL_PSI)
 			{
-				const float boundaryBlend = saturate(
-					sceneQuery.distance / surfaceInfluenceRadius); // 표면 0 -> 영향 반경 바깥 1
-				// 표면에서는 접선 성분만 남음
-				// 이후에는 발산 0 엄밀 보장 x
-				curlVelocity -= (1.0f - boundaryBlend) * surfaceNormal *
-					dot(surfaceNormal, curlVelocity);
+				// 논문 방식: 경계 보정을 ψ에서 처리
+				curlVelocity = CurlNoisePsiBoundary(noisePosition, p.position,
+		                              params.force.curlFrequency, surfaceInfluenceRadius);
+			}
+			else
+			{
+				// v = ∇ × ψ, 경계 보정 전에는 ∇·v ≈ 0
+				curlVelocity = CurlNoise(noisePosition);
+				if (isNearSurface)
+				{
+					// 현재 방식: curl 후 경계 보정을 v에서 처리
+					// 표면 근처에서 접선 성분만 남음 -> 발산 0 엄밀 보장 X
+					const float boundaryBlend = saturate(sceneQuery.distance / surfaceInfluenceRadius);
+					curlVelocity -= (1.0f - boundaryBlend) * surfaceNormal * dot(surfaceNormal, curlVelocity);
+				}
 			}
 
 			const float3 targetVelocity = curlVelocity * params.force.curlTargetSpeed;
-			//const float response = saturate(params.force.curlResponseRate * params.deltaTime);
 			const float response = 1.0f - exp(-params.force.curlResponseRate * params.deltaTime);
 			p.velocity += (targetVelocity - p.velocity) * response;
 		}

@@ -66,6 +66,8 @@
 #define FORCE_CURL 4
 #define FORCE_ATTRACT 8
 
+#define FORCE_CURL_PSI 16 // 논문의 boundary 처리 모드
+
 #ifdef __cplusplus
 #define GP_CB_ALIGN alignas(16)
 #else

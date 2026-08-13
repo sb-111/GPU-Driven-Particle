@@ -154,6 +154,7 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("curlTargetSpeed")) settings.curlTargetSpeed = source.at("curlTargetSpeed").get<float>();
 	else if (source.contains("forceCurlStrength")) settings.curlTargetSpeed = source.at("forceCurlStrength").get<float>();
 	if (source.contains("curlResponseRate")) settings.curlResponseRate = source.at("curlResponseRate").get<float>();
+	if (source.contains("curlPsiBoundary")) settings.curlPsiBoundary = source.at("curlPsiBoundary").get<bool>();
 	if (source.contains("forceAttractEnabled")) settings.forceAttractEnabled = source.at("forceAttractEnabled").get<bool>();
 	if (source.contains("forceAttractStrength")) settings.forceAttractStrength = source.at("forceAttractStrength").get<float>();
 	if (source.contains("forceAttractTarget")) settings.forceAttractTarget = source.at("forceAttractTarget").get<int>();
@@ -437,6 +438,7 @@ static ojson EmitterSettingsToJson(const GP::ParticleSettings& settings)
 	settingsJson["curlFrequency"] = settings.curlFrequency;
 	settingsJson["curlTargetSpeed"] = settings.curlTargetSpeed;
 	settingsJson["curlResponseRate"] = settings.curlResponseRate;
+	settingsJson["curlPsiBoundary"] = settings.curlPsiBoundary;
 	settingsJson["forceAttractEnabled"] = settings.forceAttractEnabled;
 	settingsJson["forceAttractStrength"] = settings.forceAttractStrength;
 	settingsJson["forceAttractTarget"] = settings.forceAttractTarget;

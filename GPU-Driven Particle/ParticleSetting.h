@@ -84,6 +84,7 @@ namespace GP
 		float curlFrequency = 0.5f;			// 높을수록 짧은 거리에서 흐름 방향이 더 자주 바뀜
 		float curlTargetSpeed = 5.0f;		// curl 흐름의 목표 속도
 		float curlResponseRate = 2.0f;		// 목표 속도를 따라가는 속도
+		bool curlPsiBoundary = false;			// 경계 처리: false = v 보정, true = ψ 보정(논문 방식)
 		bool forceAttractEnabled = false;
 		float forceAttractStrength = 5.0f;
 		int forceAttractTarget = 0;			// attract 대상 SDF 인덱스
