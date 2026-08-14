@@ -163,7 +163,10 @@ void main(uint3 id : SV_DispatchThreadID)
 		}
 		if(params.collisionEnabled != 0)
 		{
-			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)); // 최장축을 반경으로
+			// size scale 없으면 렌더랑 충돌이 어긋날 수 있음
+			float normalizedAge = 1.0f - p.lifeTime / p.initialLife;
+			float sizeScale = params.useSizeOverLife ? 1.0f - normalizedAge * normalizedAge : 1.0f;
+			float radius = 0.5f * max(p.size.x, max(p.size.y, p.size.z)) * sizeScale; // 최장축을 반경으로 (size over life 옵션 반영)
 			float frametimeBudget = params.deltaTime; // 이번 프레임 시간 예산
 			// 매 반복 SDF에 질의한 d값 만큼 이동하고, 이동한 시간을 예산에서 차감
 			// 기존 step 방식은 스텝 수에 상한을 걸어서 속도가 상한을 넘으면 스텝 크기가 다시 증가해 통과 가능했음
