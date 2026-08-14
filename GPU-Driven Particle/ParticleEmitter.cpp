@@ -280,7 +280,8 @@ void GP::ParticleEmitter::ResetEmitter()
 }
 
 void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
-	const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount)
+	const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount,
+	const BVHNode* bvhNodes, uint32_t bvhNodeCount)
 {
 	//m_ViewParams = viewParams;
 
@@ -313,7 +314,10 @@ void GP::ParticleEmitter::BindResources(ComputeContext& cpt, const ParticleViewC
 	StructuredBuffer& morphTargetBuffer = m_CurrentMorphTarget != nullptr ?
 		m_CurrentMorphTarget->GetTargetBuffer() : m_Shared->defaultMorphTargetBuffer;
 	cpt.TransitionResource(morphTargetBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	cpt.SetBufferSRV(11, morphTargetBuffer); // t8
+	cpt.SetBufferSRV(11, morphTargetBuffer); // t64
+
+	if (bvhNodeCount > 0)
+		cpt.SetDynamicSRV(12, sizeof(BVHNode) * bvhNodeCount, bvhNodes);
 }
 
 void GP::ParticleEmitter::KickoffPass(ComputeContext& cpt)

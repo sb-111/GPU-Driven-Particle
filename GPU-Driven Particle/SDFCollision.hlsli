@@ -21,7 +21,18 @@ cbuffer CollisionCB : register(b2)
 	ParticleCollisionCB collisionParams;
 }
 Texture3D<float> SDFTextures[MAX_SDF_COUNT] : register(t0);
+StructuredBuffer<BVHNode> BVHNodes : register(t65);
 SamplerState LinearClamp  : register(s0);
+
+
+float dAABB(float3 p, float3 bmin, float3 bmax)
+{
+	// p : 파티클 월드 위치
+	// bmin: 검사하려는 노드 박스의 min
+	// bmax: 검사하려는 노드 박스의 max
+	// 반환: 파티클에서 박스까지 거리, 박스 안이면 0
+	return length(max(max(bmin - p, p - bmax), 0.0f));
+}
 
 // 인스턴스 하나에 대한 '월드 거리' 반환 헬퍼 (인스턴스 i까지 실제 거리를 넘지 않는 값 반환)
 float QuerySDFInstanceDistance(uint i, float3 worldPos, float skipIfBeyond)
@@ -72,15 +83,72 @@ SDFQueryResult QuerySceneSDF(float3 worldPos)
 	}
 	if (collisionParams.colliderMask & COLLISION_SDF)
 	{
-		for (uint i = 0; i < collisionParams.activeSDFCount; ++i)
+		if(collisionParams.useBVH != 0)
 		{
-			float dInst = QuerySDFInstanceDistance(i, worldPos, result.distance);
-			if(dInst < result.distance)
+			// BVH 순회
+			uint stack[8]; // 값: 노드 번호
+			int top = 0;
+			stack[top++] = 0;
+			while(top > 0)
 			{
-				result.distance = dInst;
-				result.voxelSize = collisionParams.sdfInstances[i].worldVoxelSize;
-				result.colliderType = COLLIDER_TYPE_SDF;
-				result.colliderIndex = i;
+				BVHNode node = BVHNodes[stack[--top]];
+				// 파티클 월드 위치~노드 바운드 거리가 기존 최소 보다 크면 밑의 노드 검사 생략
+				if(dAABB(worldPos, node.boundsMin, node.boundsMax) >= result.distance)
+					continue;
+				// 리프라면
+				if(node.right == 0xFFFFFFFF)
+				{
+					uint i = node.left; // 콜라이더 번호
+					float dInst = QuerySDFInstanceDistance(i, worldPos, result.distance);
+					if(dInst < result.distance)
+					{
+						result.distance = dInst;
+						result.voxelSize = collisionParams.sdfInstances[i].worldVoxelSize;
+						result.colliderType = COLLIDER_TYPE_SDF;
+						result.colliderIndex = i;
+					}
+				}
+				else
+				{
+					uint nearChild = node.left;
+					uint farChild = node.right;
+
+					float dNear = dAABB(worldPos, BVHNodes[nearChild].boundsMin, BVHNodes[nearChild].boundsMax);
+					float dFar = dAABB(worldPos, BVHNodes[farChild].boundsMin, BVHNodes[farChild].boundsMax);
+
+					if (dNear > dFar)
+					{
+						uint tmpIndex = nearChild;
+						nearChild = farChild;
+						farChild = tmpIndex;
+						float tmpDist = dNear;
+						dNear = dFar;
+						dFar = tmpDist;
+					}
+
+					// 먼 쪽을 먼저 push → 나중에 pop
+					if (dFar < result.distance)
+						stack[top++] = farChild;
+					// 가까운 쪽을 나중에 push → 먼저 pop
+					if (dNear < result.distance)
+						stack[top++] = nearChild;
+				}
+
+			}
+		}
+		else
+		{
+			// 브루트포스
+			for (uint i = 0; i < collisionParams.activeSDFCount; ++i)
+			{
+				float dInst = QuerySDFInstanceDistance(i, worldPos, result.distance);
+				if(dInst < result.distance)
+				{
+					result.distance = dInst;
+					result.voxelSize = collisionParams.sdfInstances[i].worldVoxelSize;
+					result.colliderType = COLLIDER_TYPE_SDF;
+					result.colliderIndex = i;
+				}
 			}
 		}
 	}

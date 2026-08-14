@@ -594,6 +594,7 @@ namespace GP
 				ImGui::SliderFloat("Plane Offset", &c.planeOffset, -5.0f, 5.0f);
 			}
 			ImGui::Checkbox("Sphere", &c.sphereEnabled);
+			ImGui::Checkbox("Use BVH", &c.useBVH);
 			if (c.sphereEnabled)
 			{
 				ImGui::DragFloat3("Sphere Center", c.sphereCenter, 0.1f);

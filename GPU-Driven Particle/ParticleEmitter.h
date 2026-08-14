@@ -72,7 +72,8 @@ namespace GP
 
 		// Emitter 별 Pass (Particle System이 호출)
 		void BindResources(ComputeContext& cpt, const ParticleViewCB& viewParams, const ParticleCollisionCB& collisionParams,
-			const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount);
+			const D3D12_CPU_DESCRIPTOR_HANDLE* sdfSRVs, uint32_t sdfCount,
+			const BVHNode* bvhNodes, uint32_t bvhNodeCount);
 		void KickoffPass(ComputeContext& cpt);
 		void EmitPass(ComputeContext& cpt);
 		void SimulatePass(ComputeContext& cpt);

@@ -277,6 +277,7 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 		if (collisionJson.contains("sphereCenter")) ReadFloat3(collisionJson.at("sphereCenter"), "particleSystem.collision.sphereCenter", collision.sphereCenter);
 		if (collisionJson.contains("sphereRadius")) collisionJson.at("sphereRadius").get<float>();
 		if (collisionJson.contains("sdfEnabled")) collisionJson.at("sdfEnabled").get<bool>();
+		if (collisionJson.contains("useBVH")) collisionJson.at("useBVH").get<bool>();
 	}
 
 	const json& emittersJson = particleSystemJson.at("emitters");
@@ -522,6 +523,7 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 			if (collisionJson.contains("sphereCenter")) ReadFloat3(collisionJson.at("sphereCenter"), "particleSystem.collision.sphereCenter", collision.sphereCenter);
 			if (collisionJson.contains("sphereRadius")) collision.sphereRadius = collisionJson.at("sphereRadius").get<float>();
 			if (collisionJson.contains("sdfEnabled")) collision.sdfEnabled = collisionJson.at("sdfEnabled").get<bool>();
+			if (collisionJson.contains("useBVH")) collision.useBVH = collisionJson.at("useBVH").get<bool>();
 		}
 
 		const json& emittersJson = particleSystemJson.at("emitters");
@@ -675,6 +677,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 	collisionJson["sphereCenter"] = Float3Json(collision.sphereCenter);
 	collisionJson["sphereRadius"] = collision.sphereRadius;
 	collisionJson["sdfEnabled"] = collision.sdfEnabled;
+	collisionJson["useBVH"] = collision.useBVH;
 	particleSystemJson["collision"] = collisionJson;
 
 	ojson emittersJson = ojson::array();

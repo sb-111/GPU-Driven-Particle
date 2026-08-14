@@ -11,11 +11,19 @@
 #include "ParticleShared.h"
 #include "SceneObject.h"
 #include "TextureLoader.h"
-
+#include <algorithm>
 using namespace GameCore;
 using namespace Graphics;
 using namespace DirectX;
-
+namespace
+{
+	float GetComponent(Math::Vector3 v, int axis)
+	{
+		if (axis == 0) return v.GetX();
+		if (axis == 1) return v.GetY();
+		return v.GetZ();
+	}
+}
 void GP::ParticleSystem::Init(uint32_t maxParticlesPerEmitter)
 {
 	m_maxParticle = maxParticlesPerEmitter;
@@ -60,7 +68,7 @@ void GP::ParticleSystem::InitSharedResources()
 		&defaultMorphTarget);
 
 	// 루트 시그 - 컴퓨트용
-	m_Shared.computeRootSig.Reset(12, 1);
+	m_Shared.computeRootSig.Reset(13, 1);
 	m_Shared.computeRootSig[0].InitAsConstantBuffer(0); // b0 (ParticleFrameCB)
 	m_Shared.computeRootSig[1].InitAsBufferUAV(0);		// u0
 	m_Shared.computeRootSig[2].InitAsBufferUAV(1);		// u1
@@ -73,6 +81,7 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.computeRootSig[9].InitAsConstantBuffer(2); // b2 (ParticleCollisionCB)
 	m_Shared.computeRootSig[10].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_SDF_COUNT); // t0~t7 (sdf)
 	m_Shared.computeRootSig[11].InitAsBufferSRV(64); // t64
+	m_Shared.computeRootSig[12].InitAsBufferSRV(65); // t65 (BVHNode 배열)
 	m_Shared.computeRootSig.InitStaticSampler(0, SamplerLinearClampDesc, D3D12_SHADER_VISIBILITY_ALL); // SDF 샘플용
 	m_Shared.computeRootSig.Finalize(L"ParticleCompute");
 
@@ -293,6 +302,11 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 		sdfSRVs[sdfCount] = sdf->volume.GetSRV();
 		sdfCount++;
 	}
+	// sdf에 대한 BVH 빌드
+	uint32_t nodeCount = BuildBVH(colliderAABBMin, colliderAABBMax, sdfCount);
+	// sdf 콜라이더 없으면 bvh 사용 x
+	collisionCB.useBVH = (c.useBVH && nodeCount > 0) ? 1u : 0u;
+
 	// 남는 슬롯도 유효 핸들로 채우기 (테이블에 빈 디스크립터 안 남도록)
 	for (uint32_t i = sdfCount; sdfCount > 0 && i < MAX_SDF_COUNT; ++i)
 		sdfSRVs[i] = sdfSRVs[sdfCount - 1];
@@ -308,7 +322,7 @@ void GP::ParticleSystem::UpdateGPU(ComputeContext& cpt, const ParticleViewCB& vi
 	// 모든 Emitter에 대해 Pass 실행
 	for (auto& e : m_Emitters)
 	{
-		e->BindResources(cpt, viewParams, collisionCB, sdfSRVs, sdfCount);
+		e->BindResources(cpt, viewParams, collisionCB, sdfSRVs, sdfCount, m_BVHNodes, nodeCount);
 		e->KickoffPass(cpt);
 		e->EmitPass(cpt);
 		e->SimulatePass(cpt);
@@ -407,4 +421,73 @@ void GP::ParticleSystem::EndFrame()
 {
 	for (auto& e : m_Emitters)
 		e->EndFrame();
+}
+uint32_t GP::ParticleSystem::BuildBVH(const Math::Vector3* aabbMin, const Math::Vector3* aabbMax, uint32_t colliderCount)
+{
+	m_BVHNodeCount = 0;
+	if (colliderCount == 0)
+		return 0;
+
+	uint32_t indices[MAX_SDF_COUNT]; // 콜라이더의 번호를 저장
+	for (uint32_t i = 0; i < colliderCount; ++i)
+	{
+		indices[i] = i;
+	}
+
+	BuildBVHNode(aabbMin, aabbMax, indices, colliderCount);
+	return m_BVHNodeCount;
+}
+
+uint32_t GP::ParticleSystem::BuildBVHNode(const Math::Vector3* aabbMin, const Math::Vector3* aabbMax, uint32_t* indices, uint32_t count)
+{
+	uint32_t myIndex = m_BVHNodeCount++;
+
+	// 현재 구간에서 union aabb 계산
+	Math::Vector3 unionMin = aabbMin[indices[0]];
+	Math::Vector3 unionMax = aabbMax[indices[0]];
+	for (uint32_t i = 1; i < count; ++i)
+	{
+		unionMin = Math::Min(unionMin, aabbMin[indices[i]]);
+		unionMax = Math::Max(unionMax, aabbMax[indices[i]]);
+	}
+	m_BVHNodes[myIndex].boundsMin = ToF3(unionMin);
+	m_BVHNodes[myIndex].boundsMax = ToF3(unionMax);
+
+	// 리프 처리
+	if (count == 1)
+	{
+		m_BVHNodes[myIndex].left = indices[0]; // 콜라이더 인덱스
+		m_BVHNodes[myIndex].right = 0xFFFFFFFF; // 리프 표식
+		return myIndex;
+	}
+
+	// 분할 축 선택 + 가르기
+	Math::Vector3 centroidMin = aabbMin[indices[0]] + aabbMax[indices[0]];
+	Math::Vector3 centroidMax = centroidMin;
+	for (uint32_t i = 1; i < count; ++i)
+	{
+		Math::Vector3 center = aabbMin[indices[i]] + aabbMax[indices[i]];
+		centroidMin = Math::Min(centroidMin, center);
+		centroidMax = Math::Max(centroidMax, center);
+	}
+	Math::Vector3 extent = centroidMax - centroidMin;
+	int axis = 0; // 어느 축 기준으로 나눌지
+	float maxExtent = extent.GetX();
+	if (extent.GetY() > maxExtent) { axis = 1; maxExtent = extent.GetY(); }
+	if (extent.GetZ() > maxExtent) { axis = 2; }
+	// indices + count / 2 칸에 들어갈 원소 확정
+	// 왼쪽: 중앙 값 이하, 오른쪽: 중앙 값 이상
+	std::nth_element(indices, indices + count / 2, indices + count,
+		[&](uint32_t a, uint32_t b)
+		{
+			return GetComponent(aabbMin[a] + aabbMax[a], axis) < GetComponent(aabbMin[b] + aabbMax[b], axis);
+		});
+
+	// 재귀
+	uint32_t mid = count / 2;
+	uint32_t leftChild = BuildBVHNode(aabbMin, aabbMax, indices, mid);
+	uint32_t rightChild = BuildBVHNode(aabbMin, aabbMax, indices + mid, count - mid);
+	m_BVHNodes[myIndex].left = leftChild;
+	m_BVHNodes[myIndex].right = rightChild;
+	return myIndex;
 }

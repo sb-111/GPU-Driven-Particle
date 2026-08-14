@@ -223,8 +223,8 @@
 	};
 	struct GP_CB_ALIGN BVHNode
 	{
-		float3 boundsMin; uint left;
-		float3 boundsMax; uint right;
+		float3 boundsMin; uint left;  // 내부 노드: 왼쪽 자식, 리프: 콜라이더 인덱스
+		float3 boundsMax; uint right; // 내부 노드: 오른쪽 자식, 리프: 사용 X
 	};
 #define MAX_BVH_NODES (MAX_SDF_COUNT * 2 - 1)
 	struct GP_CB_ALIGN ParticleCollisionCB

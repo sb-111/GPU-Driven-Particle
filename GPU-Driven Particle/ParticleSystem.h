@@ -46,8 +46,25 @@ namespace GP {
 		MorphTargetSet* ResolveSurfaceMorphTarget(const std::string& name, const Mesh& mesh,
 			uint32_t sampleCount, uint32_t seed);
 
-
 	private:
+		/**
+		* @brief BVH 트리 빌드 (m_BVHNodes)
+		* @param aabbMin 월드 Min
+		* @param aabbMax 월드 Max
+		* @param colliderCount 유효 콜라이더 수(=sdfCount)
+		* @return 만들어진 노드 수(m_BVHNodeCount)
+		*/
+		uint32_t BuildBVH(const Math::Vector3* aabbMin, const Math::Vector3* aabbMax, uint32_t colliderCount);
+		/**
+		* @brief BVH Node 빌드
+		* @param aabbMin 월드 Min
+		* @param aabbMax 월드 Max
+		* @param indices 이번 호출 구간의 시작 포인터 (정렬되는 배열)
+		* @param count 담당 구간의 길이 (count == 1은 리프)
+		* @return 이 서브트리 루트의 노드 인덱스
+		*/
+		uint32_t BuildBVHNode(const Math::Vector3* aabbMin, const Math::Vector3* aabbMax, uint32_t* indices, uint32_t count);
+
 		void InitSharedResources();
 		void DownSampleSceneDepth(GraphicsContext& gfx);
 		void DrawEmitters(GraphicsContext& gfx, const ParticleViewCB& viewCB, bool halfResolution);
@@ -65,5 +82,9 @@ namespace GP {
 
 		// Morph target 용
 		MorphTargetLibrary m_MorphTargetLibrary;
+
+		// bvh 관련
+		BVHNode m_BVHNodes[MAX_BVH_NODES];
+		uint32_t m_BVHNodeCount = 0;
 	};
 }

@@ -116,5 +116,6 @@ namespace GP
 		float sphereRadius = 1.5f;
 
 		bool sdfEnabled = true;
+		bool useBVH = false;	// SDF 순회를 BVH 프루닝, 콜라이더 많을 때만 이득 (100만 기준 8개 +6.5%, 32개 -15%)
 	};
 }
