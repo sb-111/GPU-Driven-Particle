@@ -69,6 +69,8 @@ namespace GP
 		float gravity[3]    = { 0.0f, -9.8f, 0.0f };
 		float endColor[4]   = { 1.0f, 0.0f, 0.0f, 0.0f };	// color over life 용
 		bool sizeOverLife = true; // 수명 따라 사이즈 감쇠 줄지
+		bool colorOverLife = true; // 수명 따라 색(RGB) 보간 줄지
+		bool alphaOverLife = true; // 수명 따라 알파(페이드) 줄지
 		// Particle Simulate - Collision
 		bool collisionEnabled = false;
 		float restitution = 0.4f;

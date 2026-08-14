@@ -111,6 +111,8 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 	params.subImagesY = s.subImagesY;
 	params.useRandomSpawnBrightness = s.randomSpawnBrightness ? 1 : 0;
 	params.useSizeOverLife = s.sizeOverLife ? 1 : 0;
+	params.useColorOverLife = s.colorOverLife ? 1 : 0;
+	params.useAlphaOverLife = s.alphaOverLife ? 1 : 0;
 
 	params.keyMode = s.rendererType != (int)EParticleRenderer::Ribbon ? 0 : 1;
 	params.ribbonUVMode = s.ribbonUVMode;

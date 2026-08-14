@@ -63,7 +63,9 @@ VSOutput main(uint vid: SV_VertexID, uint iid: SV_InstanceID)
 	float3 worldPos = particlePos + halfWidth * localPos.y * widthVector;
 	float4 color = (localPos.x < 0.0f) ? prevParticle.color : currentParticle.color;
 	output.pos = mul(viewParams.viewProj, float4(worldPos, 1.0f));
-	output.color = lerp(color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
+	float3 rgb = frameParams.useColorOverLife ? lerp(color.rgb, frameParams.endColor.rgb, normalizedAge) : color.rgb;
+	float a = frameParams.useAlphaOverLife ? lerp(color.a, frameParams.endColor.a, normalizedAge) : color.a;
+	output.color = float4(rgb, a);
 	output.uv = QuadVert[vid] * 0.5f + 0.5f;
 	output.uv.y = 1 - output.uv.y;
 

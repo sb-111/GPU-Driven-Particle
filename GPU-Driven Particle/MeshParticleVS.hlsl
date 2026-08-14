@@ -55,6 +55,8 @@ VSOutput main(VSInput input)
 	output.normal = normalDir;
 	output.uv = input.uv;
 
-	output.color = lerp(p.color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
+	float3 rgb = frameParams.useColorOverLife ? lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge) : p.color.rgb;
+	float a = frameParams.useAlphaOverLife ? lerp(p.color.a, frameParams.endColor.a, normalizedAge) : p.color.a;
+	output.color = float4(rgb, a);
 	return output;
 }

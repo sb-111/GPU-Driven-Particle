@@ -138,6 +138,8 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("coneAngle")) settings.coneAngle = source.at("coneAngle").get<float>();
 	if (source.contains("endColor")) ReadFloat4(source.at("endColor"), (prefix + ".settings.endColor").c_str(), settings.endColor);
 	if (source.contains("sizeOverLife")) settings.sizeOverLife = source.at("sizeOverLife").get<bool>();
+	if (source.contains("colorOverLife")) settings.colorOverLife = source.at("colorOverLife").get<bool>();
+	if (source.contains("alphaOverLife")) settings.alphaOverLife = source.at("alphaOverLife").get<bool>();
 	if (source.contains("collisionEnabled")) settings.collisionEnabled = source.at("collisionEnabled").get<bool>();
 	if (source.contains("restitution")) settings.restitution = source.at("restitution").get<float>();
 	if (source.contains("friction")) settings.friction = source.at("friction").get<float>();
@@ -426,6 +428,8 @@ static ojson EmitterSettingsToJson(const GP::ParticleSettings& settings)
 	settingsJson["coneAngle"] = settings.coneAngle;
 	settingsJson["endColor"] = Float4Json(settings.endColor);
 	settingsJson["sizeOverLife"] = settings.sizeOverLife;
+	settingsJson["colorOverLife"] = settings.colorOverLife;
+	settingsJson["alphaOverLife"] = settings.alphaOverLife;
 	settingsJson["collisionEnabled"] = settings.collisionEnabled;
 	settingsJson["restitution"] = settings.restitution;
 	settingsJson["friction"] = settings.friction;

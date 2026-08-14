@@ -184,8 +184,13 @@
 
 		int useRandomSpawnBrightness; // 스폰 시 밝기 랜덤으로 줄지
 		int useSizeOverLife; // 수명 따라 사이즈 감쇠 줄지
-		uint keyMode; // 정렬키를 뭘로 사용할지(뷰 깊이 0 or 파티클 나이 1(리본)) 
+		uint keyMode; // 정렬키를 뭘로 사용할지(뷰 깊이 0 or 파티클 나이 1(리본))
 		uint ribbonUVMode; // 리본 옵션: 0(전체), 1(쿼드마다)
+
+		int useColorOverLife; // 수명 따라 endColor의 RGB로 보간 줄지
+		int useAlphaOverLife; // 수명 따라 endColor의 A로 보간 줄지 (페이드)
+		int pad0;
+		int pad1;
 
 		float restitution;
 		float friction;

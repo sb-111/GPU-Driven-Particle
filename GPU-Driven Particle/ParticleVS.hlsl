@@ -101,7 +101,12 @@ VSOutput main(uint vid : SV_VertexID, uint iid: SV_InstanceID)
 	
 	VSOutput output = (VSOutput)0;
 	output.pos = mul(viewParams.viewProj, float4(worldPos, 1.0f));
-	output.color = lerp(p.color, frameParams.endColor, normalizedAge); // RGBA 보간 (color over life)
+
+	// over-life 옵션: 체크 해제 시 패널에 할당한 startColor rgb / a를 그대로 사용 (시간에 따른 변화 X)
+	//                 체크 시 패널에 할당한 endColor의 rgb / a로 보간 (시간에 따른 변화 O)
+	float3 rgb = frameParams.useColorOverLife ? lerp(p.color.rgb, frameParams.endColor.rgb, normalizedAge) : p.color.rgb;
+	float a = frameParams.useAlphaOverLife ? lerp(p.color.a, frameParams.endColor.a, normalizedAge) : p.color.a;
+	output.color = float4(rgb, a);
 	
 	float2 uv = (corner * 0.5f + 0.5f);
 	uv.y = 1 - uv.y;

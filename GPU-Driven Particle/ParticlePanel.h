@@ -311,6 +311,8 @@ namespace GP
 			if (g == (int)EParamGroup::Simulate)
 			{
 				ImGui::Checkbox("Size Over Life", &s.sizeOverLife);
+				ImGui::Checkbox("Color Over Life", &s.colorOverLife);
+				ImGui::Checkbox("Alpha Over Life", &s.alphaOverLife);
 				ImGui::Checkbox("Collision", &s.collisionEnabled);
 				if (s.collisionEnabled)
 				{
