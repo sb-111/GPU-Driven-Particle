@@ -50,8 +50,8 @@ namespace GP
 		bool randomInitOrientation = true;			  // 초기 자세 랜덤으로 줄지 (끄면 identity)
 
 		int sizeMode = (int)EUniformMode::Uniform; // 스프라이트는 x,y만 사용
-		float sizeMin[3] = { 0.05f, 0.05f, 0.0f };
-		float sizeMax[3] = { 1.0f, 1.0f , 0.0f};
+		float sizeMin[3] = { 0.05f, 0.05f, 0.05f };
+		float sizeMax[3] = { 1.0f, 1.0f , 1.0f};
 
 		float dirSpread     = 0.3f;
 		float posSpread     = 0.1f;

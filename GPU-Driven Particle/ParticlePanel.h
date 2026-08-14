@@ -379,11 +379,22 @@ namespace GP
 					ImGui::SliderFloat("Size Max", &s.sizeMax[0], 0.001f, 0.5f);
 					break;
 				case EUniformMode::NonUniform:
-					ImGui::SliderFloat2("Size XY", s.sizeMin, 0.001f, 0.5f);
+					if (s.rendererType == (int)EParticleRenderer::Mesh)
+						ImGui::SliderFloat3("Size XYZ", s.sizeMin, 0.001f, 0.5f);
+					else
+						ImGui::SliderFloat2("Size XY", s.sizeMin, 0.001f, 0.5f);
 					break;
 				case EUniformMode::RandomNonUniform:
-					ImGui::SliderFloat2("Size Min XY", s.sizeMin, 0.001f, 0.5f);
-					ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
+					if (s.rendererType == (int)EParticleRenderer::Mesh)
+					{
+						ImGui::SliderFloat3("Size Min XYZ", s.sizeMin, 0.001f, 0.5f);
+						ImGui::SliderFloat3("Size Max XYZ", s.sizeMax, 0.001f, 0.5f);
+					}
+					else
+					{
+						ImGui::SliderFloat2("Size Min XY", s.sizeMin, 0.001f, 0.5f);
+						ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
+					}
 					break;
 				}
 				// 메시 회전 (Rotation Rate 방식)
