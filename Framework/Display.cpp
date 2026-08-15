@@ -60,7 +60,9 @@ namespace
     uint64_t s_FrameIndex = 0;
     int64_t s_FrameStartTick = 0;
 
-    BoolVar s_EnableVSync("Timing/VSync", true);
+    // VSync 켜면 프레임 시간 실측 x, 1/60 고정으로 넘김
+    // 주사율 따라 시뮬레이션 속도 달라져서 꺼둠
+    BoolVar s_EnableVSync("Timing/VSync", false);
     BoolVar s_LimitTo30Hz("Timing/Limit To 30Hz", false);
     BoolVar s_DropRandomFrames("Timing/Drop Random Frames", false);
 }
