@@ -509,6 +509,12 @@ namespace GP
 					SequenceStage stage;
 					stage.duration = 5.0f;
 					stage.settings = s;
+					// ApplyStage가 스테이지 타깃으로 덮으므로 이미터 것을 넘겨줘야 함
+					stage.morphTarget = emitter.GetMorphTarget();
+					stage.replacesMorphTarget = !emitter.GetMorphTargetPath().empty();
+					stage.morphMeshPath = emitter.GetMorphTargetPath();
+					stage.morphSampleCount = emitter.GetMorphTargetSampleCount();
+					stage.morphSeed = emitter.GetMorphTargetSeed();
 					seq.stages.push_back(stage);
 					seq.currentStage = 0;
 					seq.stageTimer = 0.0f;
@@ -554,16 +560,19 @@ namespace GP
 					}
 				}
 
-				SequenceStage& cur = seq.stages[seq.currentStage];
-				if (cur.duration > 0.0f)
-					ImGui::ProgressBar(seq.stageTimer / cur.duration, ImVec2(-1.0f, 0.0f));
-				else
-					ImGui::TextDisabled("Duration 0 = hold");
-				ImGui::DragFloat("Duration##Seq", &cur.duration, 0.1f, 0.0f, 3600.0f, "%.1f");
+				// 아래 버튼들이 stages를 재할당하므로 참조는 여기서 끝내야 함
+				{
+					SequenceStage& cur = seq.stages[seq.currentStage];
+					if (cur.duration > 0.0f)
+						ImGui::ProgressBar(seq.stageTimer / cur.duration, ImVec2(-1.0f, 0.0f));
+					else
+						ImGui::TextDisabled("Duration 0 = hold");
+					ImGui::DragFloat("Duration##Seq", &cur.duration, 0.1f, 0.0f, 3600.0f, "%.1f");
 
-				// 패널의 라이브 settings를 현재 스테이지 사본에 저장
-				if (ImGui::Button("Capture To Stage"))
-					cur.settings = s;
+					// 패널의 라이브 settings를 현재 스테이지 사본에 저장
+					if (ImGui::Button("Capture To Stage"))
+						cur.settings = s;
+				}
 				ImGui::SameLine();
 				if (ImGui::Button("Add Stage From Current"))
 				{
@@ -579,6 +588,18 @@ namespace GP
 				ImGui::SameLine();
 				if (ImGui::Button("Delete Stage"))
 				{
+					// 저장은 morph 적힌 스테이지만 기록하므로 그냥 지우면 재로드 때 모핑 사라짐
+					const SequenceStage& removed = seq.stages[seq.currentStage];
+					const size_t next = seq.currentStage + 1;
+					if (removed.replacesMorphTarget && next < seq.stages.size()
+						&& !seq.stages[next].replacesMorphTarget)
+					{
+						seq.stages[next].replacesMorphTarget = true;
+						seq.stages[next].morphMeshPath = removed.morphMeshPath;
+						seq.stages[next].morphSampleCount = removed.morphSampleCount;
+						seq.stages[next].morphSeed = removed.morphSeed;
+					}
+
 					seq.stages.erase(seq.stages.begin() + seq.currentStage);
 					if (seq.currentStage >= seq.stages.size() && seq.currentStage > 0)
 						seq.currentStage--;

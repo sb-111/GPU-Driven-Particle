@@ -83,6 +83,7 @@ namespace GP
 		void EndFrame();
 
 		void SetMorphTarget(MorphTargetSet* morphTarget) { m_CurrentMorphTarget = morphTarget; }
+		MorphTargetSet* GetMorphTarget() const { return m_CurrentMorphTarget; } // 비소유 참조
 		void SetMorphTargetPath(const std::string& path) { m_MorphTargetPath = path; }
 		void SetMorphTargetSampleCount(uint32_t count) { m_MorphTargetSampleCount = count; }
 		void SetMorphTargetSeed(uint32_t seed) { m_MorphTargetSeed = seed; }
