@@ -1,6 +1,10 @@
-﻿cbuffer MaterialCB : register(b1)
+﻿#include "SceneLighting.hlsli"
+
+cbuffer MaterialCB : register(b1)
 {
 	float4 baseColor;
+	float3 emissive;
+	float pad0;
 }
 struct PSInput
 {
@@ -10,8 +14,7 @@ struct PSInput
 
 float4 main(PSInput input) : SV_TARGET
 {
-	float3 n = normalize(input.normal);
-	float3 lightDir = normalize(float3(0.4f, 0.8f, 0.45f));
-	float3 lit = baseColor.rgb * (0.25f + 0.75f * saturate(dot(n, lightDir)));
+	float3 lit = baseColor.rgb * LambertTerm(input.normal);
+	lit += emissive;
 	return float4(lit, baseColor.a);
 }

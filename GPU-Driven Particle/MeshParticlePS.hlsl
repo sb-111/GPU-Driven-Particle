@@ -1,4 +1,6 @@
 ﻿#include "ParticleShared.h"
+#include "SceneLighting.hlsli"
+
 struct PSInput
 {
 	float4 position : SV_Position;
@@ -13,10 +15,7 @@ cbuffer DrawCB : register(b2)
 
 float4 main(PSInput input) : SV_TARGET
 {
-	float3 N = normalize(input.normal);
-	float3 L = normalize(float3(0.4f, 1.0f, 0.2f));
-	float nDotL = dot(N, L);
-	float bright = saturate(nDotL) * 0.8f + 0.25f;
+	float bright = LambertTerm(input.normal);
 	float4 finalColor = float4(bright * input.color.rgb, input.color.a); // a = 수명 페이드
 	finalColor.rgb *= finalColor.a; // pre-multiplied
 	if (drawParams.blendMode == BLEND_ADDITIVE_MODE)

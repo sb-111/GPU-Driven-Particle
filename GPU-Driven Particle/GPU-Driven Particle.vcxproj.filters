@@ -228,6 +228,9 @@
     <None Include="SDFCollision.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="SceneLighting.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
     <None Include="DebugLineVS.hlsl">
       <Filter>Shaders</Filter>
     </None>

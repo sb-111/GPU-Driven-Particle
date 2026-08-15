@@ -224,6 +224,7 @@ xcopy /y /d "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(OutDi
     </None>
     <None Include="Scenes\defaultScene.json" />
     <None Include="SDFCollision.hlsli" />
+    <None Include="SceneLighting.hlsli" />
     <None Include="ParticleRandom.hlsli" />
     <None Include="CurlNoise.hlsli">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
