@@ -161,8 +161,7 @@ public:
 		{
 			cb.world = obj.GetWorldMatrix();
 			gfx.SetDynamicConstantBufferView(0, sizeof(cb), &cb);
-			gfx.SetDynamicConstantBufferView(3, sizeof(MaterialCB), &obj.GetMaterial()); // b1
-			obj.Draw(gfx);
+			obj.Draw(gfx, 3); // MaterialCB(b1)는 섹션마다 바인딩
 		};
 
 		for (const auto& object : m_Scene.GetObjects())

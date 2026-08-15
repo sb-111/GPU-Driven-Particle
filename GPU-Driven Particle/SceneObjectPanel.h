@@ -217,7 +217,36 @@ namespace GP
 		if (ImGui::DragFloat("Uniform Scale", &scale, 0.01f, 0.001f, 100.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 			selectedObject->GetTransform().SetScale(scale);
 
+		// mtl이 없으면 고를 게 없어서 콤보를 숨김
+		Mesh* selectedMesh = selectedObject->GetMesh();
+		if (selectedMesh && selectedMesh->HasMaterials())
+		{
+			static const char* kColorSourceNames[] = { "Mesh Material (mtl)", "Override" };
+			int colorSource = (int)selectedObject->GetColorSource();
+			if (ImGui::Combo("Color Source", &colorSource, kColorSourceNames, (int)EColorSource::Count))
+				selectedObject->SetColorSource((EColorSource)colorSource);
+		}
+
 		ImGui::ColorEdit4("Material Color", selectedObject->GetMaterial().baseColor);
+
+		// 에셋 값이라 편집은 안 되고 확인용
+		if (selectedMesh && selectedMesh->HasMaterials() && ImGui::TreeNode("Mesh Sections"))
+		{
+			const std::vector<MeshMaterial>& meshMaterials = selectedMesh->GetMaterials();
+			for (const SubMesh& section : selectedMesh->GetSections())
+			{
+				const MaterialCB* params = selectedMesh->FindMaterial(section.materialSlot);
+				const char* name = params ? meshMaterials[section.materialSlot].name.c_str() : "(no material)";
+				const MaterialCB& shown = params ? *params : selectedObject->GetMaterial();
+
+				ImGui::ColorButton(name,
+					ImVec4(shown.baseColor[0], shown.baseColor[1], shown.baseColor[2], shown.baseColor[3]),
+					ImGuiColorEditFlags_NoTooltip, ImVec2(16.0f, 16.0f));
+				ImGui::SameLine();
+				ImGui::Text("%s  (%u tris)", name, section.indexCount / 3);
+			}
+			ImGui::TreePop();
+		}
 
 		MeshSDF* sdf = selectedObject->GetMesh()
 			? selectedObject->GetMesh()->GetSDF()

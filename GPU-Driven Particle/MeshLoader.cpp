@@ -2,6 +2,8 @@
 #include "ThirdParty/tiny_obj_loader.h"
 
 #include <unordered_map>
+#include <map>
+#include <filesystem>
 #include <cmath>
 
 namespace
@@ -26,6 +28,9 @@ namespace
 		}
 	};
 
+	// shape 이름에 이게 있으면 최고 해상도 LOD
+	constexpr const char* kLODTag = "LOD1";
+
 	void AppendVertex(GP::RawMesh& dst, const GP::RawMesh& src, uint32_t srcVertex)
 	{
 		dst.positions.push_back(src.positions[srcVertex * 3 + 0]);
@@ -46,15 +51,24 @@ namespace
 	}
 }
 
-bool GP::LoadOBJ(const char* path, RawMesh& out, std::string* outError)
+bool GP::LoadOBJ(const char* path, RawMesh& out, std::string* outError, const LoadOptions& options)
 {
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 	std::string warn, err;
 
+	// mtl은 obj와 같은 폴더에 있음. tinyobj는 basedir 끝에 구분자가 있어야 찾음
+	std::string baseDir;
+	if (options.loadMaterials)
+	{
+		const std::filesystem::path parent = std::filesystem::path(path).parent_path();
+		baseDir = parent.empty() ? "./" : (parent.generic_string() + "/");
+	}
+
 	// triangulate = true 라 사각형 이상도 삼각형으로 쪼개져서 나옴
-	bool ok = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path, nullptr, true, false);
+	bool ok = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path,
+		baseDir.empty() ? nullptr : baseDir.c_str(), true, false);
 	if (!ok)
 	{
 		if (outError) *outError = err.empty() ? "LoadObj 실패" : err;
@@ -72,48 +86,114 @@ bool GP::LoadOBJ(const char* path, RawMesh& out, std::string* outError)
 
 	out = RawMesh();
 
+	out.materials.reserve(materials.size());
+	for (const tinyobj::material_t& src : materials)
+	{
+		RawMaterial dst;
+		dst.name = src.name;
+		dst.baseColor[0] = src.diffuse[0];
+		dst.baseColor[1] = src.diffuse[1];
+		dst.baseColor[2] = src.diffuse[2];
+		dst.baseColor[3] = src.dissolve;
+		dst.emissive[0] = src.emission[0];
+		dst.emissive[1] = src.emission[1];
+		dst.emissive[2] = src.emission[2];
+		out.materials.push_back(std::move(dst));
+	}
+
+	// LOD1이 있으면 그것만, 없으면 전부
+	std::vector<const tinyobj::shape_t*> selected;
+	if (options.preferLOD1)
+	{
+		for (const tinyobj::shape_t& shape : shapes)
+			if (shape.name.find(kLODTag) != std::string::npos)
+				selected.push_back(&shape);
+	}
+	if (selected.empty())
+	{
+		for (const tinyobj::shape_t& shape : shapes)
+			selected.push_back(&shape);
+	}
+
 	std::unordered_map<IndexKey, uint32_t, IndexKeyHash> unique;
 	unique.reserve(attrib.vertices.size() / 3);
 
-	for (const tinyobj::shape_t& shape : shapes)
+	// 정점은 shape을 가로질러 공유하고 인덱스만 머티리얼별로 모음
+	// map이라 섹션 순서가 매번 같음 (-1 다음 id 오름차순)
+	std::map<int, std::vector<uint32_t>> buckets;
+
+	for (const tinyobj::shape_t* shapePtr : selected)
 	{
-		for (const tinyobj::index_t& idx : shape.mesh.indices)
+		const tinyobj::shape_t& shape = *shapePtr;
+		const size_t faceCount = shape.mesh.indices.size() / 3;
+
+		// 크기가 어긋나면 인덱싱이 나가므로 통째로 머티리얼 없음 처리
+		const bool hasFaceMaterial = shape.mesh.material_ids.size() == faceCount;
+
+		for (size_t f = 0; f < faceCount; ++f)
 		{
-			IndexKey key{ idx.vertex_index,
-						  hasNormals ? idx.normal_index : -1,
-						  hasUVs ? idx.texcoord_index : -1 };
-
-			auto it = unique.find(key);
-			if (it == unique.end())
+			int materialId = -1;
+			if (hasFaceMaterial)
 			{
-				uint32_t newIndex = out.VertexCount();
-
-				out.positions.push_back(attrib.vertices[key.v * 3 + 0]);
-				out.positions.push_back(attrib.vertices[key.v * 3 + 1]);
-				out.positions.push_back(attrib.vertices[key.v * 3 + 2]);
-
-				if (hasNormals && key.vn >= 0)
-				{
-					out.normals.push_back(attrib.normals[key.vn * 3 + 0]);
-					out.normals.push_back(attrib.normals[key.vn * 3 + 1]);
-					out.normals.push_back(attrib.normals[key.vn * 3 + 2]);
-				}
-				if (hasUVs && key.vt >= 0)
-				{
-					out.uvs.push_back(attrib.texcoords[key.vt * 2 + 0]);
-					out.uvs.push_back(attrib.texcoords[key.vt * 2 + 1]);
-				}
-				if (hasColors)
-				{
-					out.colors.push_back(attrib.colors[key.v * 3 + 0]);
-					out.colors.push_back(attrib.colors[key.v * 3 + 1]);
-					out.colors.push_back(attrib.colors[key.v * 3 + 2]);
-				}
-
-				it = unique.emplace(key, newIndex).first;
+				const int id = shape.mesh.material_ids[f];
+				if (id >= 0 && (size_t)id < out.materials.size())
+					materialId = id;
 			}
-			out.indices.push_back(it->second);
+			std::vector<uint32_t>& bucket = buckets[materialId];
+
+			for (size_t k = 0; k < 3; ++k)
+			{
+				const tinyobj::index_t& idx = shape.mesh.indices[f * 3 + k];
+				IndexKey key{ idx.vertex_index,
+							  hasNormals ? idx.normal_index : -1,
+							  hasUVs ? idx.texcoord_index : -1 };
+
+				auto it = unique.find(key);
+				if (it == unique.end())
+				{
+					uint32_t newIndex = out.VertexCount();
+
+					out.positions.push_back(attrib.vertices[key.v * 3 + 0]);
+					out.positions.push_back(attrib.vertices[key.v * 3 + 1]);
+					out.positions.push_back(attrib.vertices[key.v * 3 + 2]);
+
+					if (hasNormals && key.vn >= 0)
+					{
+						out.normals.push_back(attrib.normals[key.vn * 3 + 0]);
+						out.normals.push_back(attrib.normals[key.vn * 3 + 1]);
+						out.normals.push_back(attrib.normals[key.vn * 3 + 2]);
+					}
+					if (hasUVs && key.vt >= 0)
+					{
+						out.uvs.push_back(attrib.texcoords[key.vt * 2 + 0]);
+						out.uvs.push_back(attrib.texcoords[key.vt * 2 + 1]);
+					}
+					if (hasColors)
+					{
+						out.colors.push_back(attrib.colors[key.v * 3 + 0]);
+						out.colors.push_back(attrib.colors[key.v * 3 + 1]);
+						out.colors.push_back(attrib.colors[key.v * 3 + 2]);
+					}
+
+					it = unique.emplace(key, newIndex).first;
+				}
+				bucket.push_back(it->second);
+			}
 		}
+	}
+
+	for (const std::pair<const int, std::vector<uint32_t>>& bucket : buckets)
+	{
+		if (bucket.second.empty())
+			continue;
+
+		RawSection section;
+		section.indexOffset = (uint32_t)out.indices.size();
+		section.indexCount = (uint32_t)bucket.second.size();
+		section.materialIndex = bucket.first;
+		out.sections.push_back(section);
+
+		out.indices.insert(out.indices.end(), bucket.second.begin(), bucket.second.end());
 	}
 
 	// 노멀이 일부 면에만 있으면 개수가 어긋남. 그 경우 통째로 버리고 재생성
@@ -125,6 +205,11 @@ bool GP::LoadOBJ(const char* path, RawMesh& out, std::string* outError)
 		if (outError) *outError = "삼각형이 없음";
 		return false;
 	}
+
+	// 그리는 쪽이 섹션 루프 하나로 끝내도록 항상 1개는 남김
+	if (out.sections.empty())
+		out.sections.push_back(RawSection{ 0, (uint32_t)out.indices.size(), -1 });
+
 	return true;
 }
 
@@ -142,6 +227,11 @@ void GP::EnsureNormals(RawMesh& mesh, ENormalMode mode)
 		split.positions.reserve(mesh.positions.size());
 		split.normals.reserve(mesh.positions.size());
 		split.indices.reserve(mesh.indices.size());
+
+		// 삼각형 순서를 안 바꾸고 인덱스만 0부터 다시 매기므로 섹션 구간은 그대로 유효
+		// 여기서 인덱스를 재정렬하면 섹션이 깨짐
+		split.sections = mesh.sections;
+		split.materials = mesh.materials;
 
 		for (uint32_t t = 0; t < triCount; ++t)
 		{

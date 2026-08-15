@@ -4,13 +4,36 @@
 #include <cfloat>
 #include <cmath>
 
+const GP::MaterialCB* GP::Mesh::FindMaterial(int slot) const
+{
+	if (slot < 0 || (size_t)slot >= m_Materials.size())
+		return nullptr;
+	return &m_Materials[slot].params;
+}
+
 void GP::Mesh::Create(const std::vector<Vertex>& verts, const std::vector<uint32_t>& indices)
+{
+	// 프로시저럴 메시 등 머티리얼이 없는 경로
+	Create(verts, indices, std::vector<SubMesh>(), std::vector<MeshMaterial>());
+}
+
+void GP::Mesh::Create(const std::vector<Vertex>& verts, const std::vector<uint32_t>& indices,
+	const std::vector<SubMesh>& sections, const std::vector<MeshMaterial>& materials)
 {
 	ASSERT(!verts.empty() && !indices.empty(), "Mesh::Create - 빈 메시");
 
 	// 원본 보관
 	m_CPUVertices = verts;
 	m_CPUIndices = indices;
+
+	m_Materials = materials;
+	m_Sections = sections;
+	if (m_Sections.empty()) // 섹션 없이 만든 메시는 전체를 덮는 1개로
+	{
+		SubMesh single;
+		single.indexCount = (uint32_t)indices.size();
+		m_Sections.push_back(single);
+	}
 
 	m_VertexCount = (uint32_t)verts.size();
 	m_IndexCount = (uint32_t)indices.size();

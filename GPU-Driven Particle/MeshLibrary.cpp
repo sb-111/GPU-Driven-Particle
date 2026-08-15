@@ -7,6 +7,28 @@
 #include <filesystem>
 namespace GP
 {
+	namespace
+	{
+		// 로더의 머티리얼 인덱스가 그대로 슬롯 번호가 됨
+		void ConvertSections(const RawMesh& raw,
+			std::vector<MeshMaterial>& outMaterials, std::vector<SubMesh>& outSections)
+		{
+			outMaterials.reserve(raw.materials.size());
+			for (const RawMaterial& src : raw.materials)
+			{
+				MeshMaterial dst;
+				dst.name = src.name;
+				memcpy(dst.params.baseColor, src.baseColor, sizeof(dst.params.baseColor));
+				memcpy(dst.params.emissive, src.emissive, sizeof(dst.params.emissive));
+				outMaterials.push_back(std::move(dst));
+			}
+
+			outSections.reserve(raw.sections.size());
+			for (const RawSection& src : raw.sections)
+				outSections.push_back(SubMesh{ src.indexOffset, src.indexCount, src.materialIndex });
+		}
+	}
+
 	MeshLibrary::MeshLibrary()
 	{
 		DiscoverMeshAssets();
@@ -58,12 +80,17 @@ namespace GP
 		std::vector<Vertex> verts;
 		PackVertices(raw, verts);
 
+		std::vector<MeshMaterial> materials;
+		std::vector<SubMesh> sections;
+		ConvertSections(raw, materials, sections);
+
 		auto mesh = std::make_unique<Mesh>();
-		mesh->Create(verts, raw.indices);
+		mesh->Create(verts, raw.indices, sections, materials);
 		mesh->SetSourcePath(path);
 
-		Utility::Printf("[Mesh] %s: 정점 %u, 삼각형 %u, %.1f ms\n",
+		Utility::Printf("[Mesh] %s: 정점 %u, 삼각형 %u, 섹션 %u, 머티리얼 %u, %.1f ms\n",
 			path, raw.VertexCount(), raw.TriangleCount(),
+			(uint32_t)raw.sections.size(), (uint32_t)raw.materials.size(),
 			SystemTime::TicksToMillisecs(SystemTime::GetCurrentTick() - start));
 
 		Mesh* result = mesh.get();

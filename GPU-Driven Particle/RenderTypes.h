@@ -26,11 +26,12 @@ namespace GP
 	};
 	constexpr uint32_t kVertexLayoutCount = (uint32_t)(sizeof(kVertexLayout) / sizeof(kVertexLayout[0]));
 
-	// 오브젝트 단위 머티리얼 (b1)
-	// 색은 머티리얼 소유
+	// 메시 섹션마다 바인딩 (b1)
 	__declspec(align(16)) struct MaterialCB
 	{
-		float baseColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float baseColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f }; // mtl의 Kd + d
+		float emissive[3] = { 0.0f, 0.0f, 0.0f };		 // mtl의 Ke
+		float pad0 = 0.0f;
 		// 향후 확장 가능: roughness, metallic, textureIndex ...
 	};
 }

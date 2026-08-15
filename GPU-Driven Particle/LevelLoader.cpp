@@ -98,6 +98,14 @@ static void RequireArray(const json& value, const char* fieldName)
 		throw std::runtime_error(std::string(fieldName) + " must be an array");
 }
 
+static GP::EColorSource ReadColorSource(const json& value, const char* fieldName)
+{
+	const std::string text = value.get<std::string>();
+	if (text == "mesh") return GP::EColorSource::MeshMaterial;
+	if (text == "override") return GP::EColorSource::Override;
+	throw std::runtime_error(std::string(fieldName) + " must be \"mesh\" or \"override\"");
+}
+
 static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& settings, const std::string& prefix)
 {
 	if (!source.is_object())
@@ -360,6 +368,8 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 		}
 		objectJson.value("visible", true);
 		objectJson.value("sdfCollider", false);
+		if (objectJson.contains("colorSource"))
+			ReadColorSource(objectJson.at("colorSource"), (prefix + ".colorSource").c_str());
 	}
 }
 
@@ -637,6 +647,9 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 				ReadFloat4(objectJson.at("color"), (prefix + ".color").c_str(), object.GetMaterial().baseColor);
 			object.SetVisible(objectJson.value("visible", true));
 			object.SetSDFCollider(objectJson.value("sdfCollider", false));
+			// 키 없는 구 씬은 기본값이 되는데, mtl이 없는 메시라 결국 오브젝트 색이 쓰임
+			if (objectJson.contains("colorSource"))
+				object.SetColorSource(ReadColorSource(objectJson.at("colorSource"), (prefix + ".colorSource").c_str()));
 		}
 	}
 	catch (const json::exception& e)
@@ -770,6 +783,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		objectJson["rotation"] = QuaternionJson(object->GetTransform().GetRotation());
 		objectJson["scale"] = (float)object->GetTransform().GetScale();
 		objectJson["color"] = Float4Json(object->GetMaterial().baseColor);
+		objectJson["colorSource"] = object->GetColorSource() == GP::EColorSource::Override ? "override" : "mesh";
 		objectJson["visible"] = object->IsVisible();
 		objectJson["sdfCollider"] = object->IsSDFCollider();
 		objectsJson.push_back(objectJson);
