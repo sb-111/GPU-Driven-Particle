@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "BufferManager.h"
 #include "Camera.h"
+#include "GpuStats.h"
 #include "imgui/imgui.h"
 #include <cstddef>
 #include <cstdint>
@@ -168,13 +169,19 @@ namespace GP
 
 		// Emitter 선택 및 추가
 		static int selected = 0;
+		// 풀은 크기만큼 VRAM 차지
+		static const uint32_t kPoolSizes[] = { 16384, 65536, 262144, 1048576 };
+		static const char* kPoolSizeNames[] = { "16K (2 MB)", "64K (8 MB)", "256K (32 MB)", "1M (128 MB)" };
+		static int newPoolSize = 1;
+
 		int emitterCount = (int)system.GetEmitterCount();
 		if (emitterCount == 0)
 		{
 			ImGui::TextDisabled("No emitters in the loaded scene");
 			if (ImGui::Button("Add Emitter"))
 			{
-				system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)));
+				system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)),
+					kPoolSizes[newPoolSize]);
 				selected = 0;
 			}
 			ImGui::End();
@@ -197,12 +204,17 @@ namespace GP
 			ImGui::EndCombo();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Add Emitter") && emitterCount < 8)
+		if (ImGui::Button("Add Emitter") && emitterCount < 16)
 		{
 			// Emitter 추가
-			system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(3.0f * emitterCount, 0.0f, 0.0f)));
+			system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(3.0f * emitterCount, 0.0f, 0.0f)),
+				kPoolSizes[newPoolSize]);
 			selected = emitterCount;
 		}
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(140.0f);
+		ImGui::Combo("New Pool", &newPoolSize, kPoolSizeNames, IM_ARRAYSIZE(kPoolSizeNames));
+
 		// 선택된 Emitter의 Settings를 편집
 		ParticleEmitter& emitter = system.GetEmitter(selected);
 		ParticleSettings& s = emitter.GetSettings();
@@ -235,6 +247,12 @@ namespace GP
 
 		const ImGuiIO& io = ImGui::GetIO();
 		ImGui::Text("%.1f FPS  (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+
+		const VideoMemoryInfo vram = QueryVideoMemory();
+		if (vram.valid)
+			ImGui::Text("VRAM %llu / %llu MB", vram.currentUsage >> 20, vram.budget >> 20);
+
+		ImGui::Text("Pool %u  (emitters %d)", emitter.GetMaxParticles(), emitterCount);
 
 		Math::Vector3 camPos = camera.GetPosition();
 		float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };

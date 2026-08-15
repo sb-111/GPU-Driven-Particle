@@ -55,6 +55,7 @@ namespace GP
 		void Update(float dt);
 		void ResetEmitter();
 		uint32_t GetCurrentSpawnCount() const { return m_CurrentSpawnCount; }
+		uint32_t GetMaxParticles() const { return m_maxParticle; }
 		ParticleSettings& GetSettings() { return m_Settings; }
 		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
 

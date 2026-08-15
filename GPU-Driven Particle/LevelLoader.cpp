@@ -307,6 +307,8 @@ static void ValidateSceneData(const json& root, GP::MeshLibrary& meshLibrary)
 			float rotation[3];
 			ReadFloat3(emitterJson.at("rotation"), (prefix + ".rotation").c_str(), rotation);
 		}
+		if (emitterJson.contains("maxParticles") && emitterJson.at("maxParticles").get<uint32_t>() == 0)
+			throw std::runtime_error(prefix + ".maxParticles must be greater than zero");
 		if (emitterJson.contains("settings"))
 		{
 			GP::ParticleSettings settings;
@@ -554,7 +556,8 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 			const Math::Vector3 emitterPosition = ReadVec3(emitterJson.at("position"), (prefix + ".position").c_str());
 
 			if (index >= particles.GetEmitterCount())
-				particles.AddEmitter(Math::OrthogonalTransform(emitterPosition));
+				particles.AddEmitter(Math::OrthogonalTransform(emitterPosition),
+					emitterJson.value("maxParticles", 0u));
 
 			GP::ParticleEmitter& emitter = particles.GetEmitter(index);
 			emitter.SetBasePosition(emitterPosition);
@@ -706,6 +709,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		ojson emitterJson;
 		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
 		emitterJson["rotation"] = Float3Json(emitter.GetBaseRotationEuler());
+		emitterJson["maxParticles"] = emitter.GetMaxParticles();
 		if (!emitter.GetParticleMeshPath().empty())
 			emitterJson["particleMesh"] = emitter.GetParticleMeshPath();
 		if (!emitter.GetMorphTargetPath().empty())

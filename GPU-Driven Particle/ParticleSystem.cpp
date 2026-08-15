@@ -259,10 +259,21 @@ GP::MorphTargetSet* GP::ParticleSystem::ResolveSurfaceMorphTarget(const std::str
 	return &morphTarget;
 }
 
-void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform)
+void GP::ParticleSystem::AddEmitter(const Math::OrthogonalTransform& transform, uint32_t maxParticles)
 {
+	uint32_t capacity = 64; // 하한 64
+	// m_SortN이 거듭제곱으로 올림되므로, 풀도 거듭제곱이어야 정렬이 풀을 안 넘음
+	while (capacity < maxParticles && capacity < m_maxParticle)
+		capacity <<= 1; // 2의 거듭제곱으로 올림 (maxParticles까지)
+	if (maxParticles == 0) // 0이면 전역값
+		capacity = m_maxParticle;
+
+	// 올림 되었음을 표시
+	if (maxParticles != 0 && capacity != maxParticles)
+		Utility::Printf("[Emitter] maxParticles %u -> %u\n", maxParticles, capacity);
+
 	auto emitter = std::make_unique<ParticleEmitter>(transform);
-	emitter->Init(m_maxParticle, &m_Shared, (uint32_t)m_Emitters.size());
+	emitter->Init(capacity, &m_Shared, (uint32_t)m_Emitters.size());
 	m_Emitters.push_back(std::move(emitter));
 }
 

@@ -22,8 +22,12 @@ namespace GP {
 	{
 	public:
 		void Init(uint32_t maxParticlesPerEmitter);
-		// Emitter 추가
-		void AddEmitter(const Math::OrthogonalTransform& transform);
+		/**
+		* @brief Emitter 추가
+		* @param transform 추가할 위치
+		* @param maxParticles 풀 크기 지정 (0이면 전역 값), 2의 거듭제곱으로 올림되고, 전역값 못넘음
+		*/
+		void AddEmitter(const Math::OrthogonalTransform& transform, uint32_t maxParticles = 0);
 
 		// 이미터 갱신, CB 준비
 		void Update(float dt);
