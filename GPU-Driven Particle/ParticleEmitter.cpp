@@ -447,25 +447,21 @@ void GP::ParticleEmitter::TickSequence(float dt)
 		sequence.stages[sequence.currentStage].duration > 0.0f &&
 		sequence.stageTimer >= sequence.stages[sequence.currentStage].duration)
 	{
-		sequence.stageTimer -= sequence.stages[sequence.currentStage].duration;
-		if (sequence.currentStage < sequence.stages.size() - 1)
-		{
-			// 스테이지 남았으면 다음 스테이지로
-			sequence.currentStage++;
-		}
-		else if (sequence.loop)
-		{
-			// 스테이지 없고 루프 걸려 있으면 처음으로
-			sequence.currentStage = 0;
-		}
-		else
+		const bool isLast = sequence.currentStage + 1 >= sequence.stages.size();
+		if (isLast && !sequence.loop)
 		{
 			// 스테이지 없고 루프 없으면 중지
+			// 여기서 ApplyStage를 부르면 ResetEmitter가 끝난 이미터를 되살리고 버스트가 한 번 더 나감
+			sequence.stageTimer = sequence.stages[sequence.currentStage].duration;
 			sequence.playing = false;
+			break;
 		}
+
+		sequence.stageTimer -= sequence.stages[sequence.currentStage].duration;
+		// 루프면 처음으로, 아니면 다음 스테이지로
+		sequence.currentStage = isLast ? 0 : sequence.currentStage + 1;
 		ApplyStage();
 	}
-
 }
 void GP::ParticleEmitter::ApplyStage()
 {
