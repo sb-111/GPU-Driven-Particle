@@ -29,6 +29,9 @@ namespace GP
 		// [렌더러][해상도]
 		GraphicsPSO drawPSO[(int)EParticleRenderer::Count][2];
 
+		// 불투명 메시 파티클 전용 / 정렬 대신 깊이 버퍼로 앞뒤를 가림 [해상도]
+		GraphicsPSO meshOpaquePSO[2];
+
 		ByteAddressBuffer meshVertexBuffer, meshIndexBuffer;
 
 		// DownSample용
@@ -80,6 +83,7 @@ namespace GP
 		void SortPass(ComputeContext& cpt);
 		void UpdateDrawArgs(ComputeContext& cpt);
 		void Draw(GraphicsContext& gfx, bool halfResolution);
+		bool IsOpaque() const; // 불투명 PSO 사용하는지
 		void EndFrame();
 
 		void SetMorphTarget(MorphTargetSet* morphTarget) { m_CurrentMorphTarget = morphTarget; }

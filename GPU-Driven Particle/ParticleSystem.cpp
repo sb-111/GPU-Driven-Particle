@@ -168,6 +168,27 @@ void GP::ParticleSystem::InitSharedResources()
 			pso.Finalize();
 		}
 	}
+
+	// 불투명 메시 PSO : 깊이를 써야 서로 파고든 이미터끼리도 앞뒤가 맞음
+	// Blend x, Depth Write o
+	{
+		const RendererPSODesc& meshDesc = rendererDescs[(int)EParticleRenderer::Mesh];
+		for (int res = 0; res < 2; ++res)
+		{
+			GraphicsPSO& pso = m_Shared.meshOpaquePSO[res];
+			pso.SetRootSignature(m_Shared.graphicsRootSig);
+			pso.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+			pso.SetInputLayout(meshDesc.layoutCount, meshDesc.layout);
+			pso.SetVertexShader(meshDesc.vs->GetBufferPointer(), meshDesc.vs->GetBufferSize());
+			pso.SetPixelShader(meshDesc.ps->GetBufferPointer(), meshDesc.ps->GetBufferSize());
+			pso.SetRasterizerState(*meshDesc.rasterizer);
+			pso.SetBlendState(BlendDisable);
+			pso.SetDepthStencilState(DepthStateReadWrite);
+			pso.SetRenderTargetFormat(rtFormats[res], dsvFormats[res]);
+			pso.Finalize();
+		}
+	}
+
 	// Down Sample PSO : SV_Depth로 깊이만 출력
 	D3D12_DEPTH_STENCIL_DESC downsampleDepthDesc = DepthStateReadWrite;
 	downsampleDepthDesc.DepthFunc = D3D12_COMPARISON_FUNC_ALWAYS; // 이전 프레임 깊이때문에 깊이 안써지는 것 방지
@@ -383,22 +404,28 @@ void GP::ParticleSystem::DrawEmitters(GraphicsContext& gfx, const ParticleViewCB
 	gfx.SetRootSignature(m_Shared.graphicsRootSig);
 	gfx.SetDynamicConstantBufferView(0, sizeof(viewCB), &viewCB); // b0
 
-	// Emitter 거리별로 정렬 (앞에 있는 Emitter가 올라와야 자연스러움)
-	// 거리 먼 순서대로 정렬되는 게 목표 (back to front)
-	Math::Vector3 camPos(viewCB.camPos.x, viewCB.camPos.y, viewCB.camPos.z);
-	std::vector<ParticleEmitter*> sortedEmitters;
+	// 불투명은 반투명보다 먼저 (섞으면 뒤 불투명이 앞의 반투명 가림)
+	std::vector<ParticleEmitter*> opaqueEmitters, blendedEmitters;
 	for (const auto& e : m_Emitters)
 	{
-		sortedEmitters.push_back(e.get());
+		if (e->IsOpaque())
+			opaqueEmitters.push_back(e.get());
+		else
+			blendedEmitters.push_back(e.get());
 	}
-	std::sort(sortedEmitters.begin(), sortedEmitters.end(),
+
+	// 반투명만 거리 먼 순서로 정렬 (back to front)
+	Math::Vector3 camPos(viewCB.camPos.x, viewCB.camPos.y, viewCB.camPos.z);
+	std::sort(blendedEmitters.begin(), blendedEmitters.end(),
 		[&](ParticleEmitter* a, ParticleEmitter* b) {
 			float distanceA = Math::LengthSquare(a->GetPosition() - camPos);
 			float distanceB = Math::LengthSquare(b->GetPosition() - camPos);
 			return distanceA > distanceB;
 		});
 
-	for (auto& e : sortedEmitters)
+	for (auto& e : opaqueEmitters)
+		e->Draw(gfx, halfResolution);
+	for (auto& e : blendedEmitters)
 		e->Draw(gfx, halfResolution);
 }
 

@@ -12,7 +12,7 @@ namespace GP
 		RandomNonUniform,
 		Count
 	};
-	enum class EBlendMode : int {Additive, Alpha, Count};
+	enum class EBlendMode : int {Additive, Alpha, Opaque, Count}; // Opaque는 메시 전용
 	enum class ETexture : int {Fire, Smoke, Spark, Boom, Explosion, Count};
 	enum class EShapeType: int {Point, Box, Sphere, Cone, Count};
 	enum class EVelocityMode : int { Velocity, VelocityFromPoint, VelocityInCone, Count};

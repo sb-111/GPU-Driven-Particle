@@ -259,7 +259,7 @@ namespace GP
 
 		static const char* kGroupNames[(int)EParamGroup::Count] = { "Emitter", "Emit", "Simulate", "Renderer" };
 		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
-		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha"};
+		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha", "Opaque"};
 		static const char* kTextureNames[(int)ETexture::Count] = { "Fire", "Smoke", "Spark", "Boom (8x8)", "Explosion (4x4)" };
 		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
 		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
@@ -415,7 +415,12 @@ namespace GP
 			if (g == (int)EParamGroup::Renderer)
 			{
 				ImGui::Combo("Renderer##type", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
-				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, (int)EBlendMode::Count);
+				// Opaque는 메시에만 있음
+				const int blendCount = (s.rendererType == (int)EParticleRenderer::Mesh)
+					? (int)EBlendMode::Count : (int)EBlendMode::Opaque;
+				if (s.blendMode >= blendCount)
+					s.blendMode = (int)EBlendMode::Alpha;
+				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, blendCount);
 				if (s.blendMode == (int)EBlendMode::Alpha || s.rendererType == (int)EParticleRenderer::Ribbon)
 					ImGui::Checkbox("Sort", &s.sortEnabled);
 				// 리본 전용 설정

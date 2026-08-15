@@ -168,6 +168,11 @@ GP::ParticleFrameCB GP::ParticleEmitter::MakeParams(const ParticleSettings& s, f
 
 	return params;
 }
+bool GP::ParticleEmitter::IsOpaque() const
+{
+	return m_Settings.rendererType == (int)EParticleRenderer::Mesh &&
+		m_Settings.blendMode == (int)EBlendMode::Opaque;
+}
 bool GP::ParticleEmitter::NeedsSort() const
 {
 	// 알파(깊이 키) 또는 리본(나이 키)일 때, 토글이 켜져 있으면 정렬
@@ -407,7 +412,9 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx, bool halfResolution)
 	
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	// PSO 선택(렌더러 타입, 해상도 따라)
-	gfx.SetPipelineState(m_Shared->drawPSO[m_Settings.rendererType][halfResolution ? 1 : 0]);
+	const int res = halfResolution ? 1 : 0;
+	gfx.SetPipelineState(IsOpaque() ? m_Shared->meshOpaquePSO[res]
+		: m_Shared->drawPSO[m_Settings.rendererType][res]);
 
 	// 메시 드로우콜
 	if (m_Settings.rendererType == (int)EParticleRenderer::Mesh)

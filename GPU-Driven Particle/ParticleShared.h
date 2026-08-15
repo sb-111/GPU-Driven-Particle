@@ -27,9 +27,10 @@
 #define NON_UNIFORM_MODE 2
 #define RANDOM_NON_UNIFORM_MODE 3
 
-// Blend Mode: Additive, Alpha
+// Blend Mode: Additive, Alpha, Opaque
 #define BLEND_ADDITIVE_MODE 0
 #define BLEND_ALPHA_MODE 1
+#define BLEND_OPAQUE_MODE 2
 
 // Shape Type: (Emit 그룹에서 방출 모양 결정용)
 #define POINT_TYPE 0
