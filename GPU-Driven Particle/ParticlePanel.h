@@ -233,6 +233,9 @@ namespace GP
 		// 저해상도 렌더 on/off
 		ImGui::Checkbox("Half Resolution", &system.GetHalfResolution());
 
+		const ImGuiIO& io = ImGui::GetIO();
+		ImGui::Text("%.1f FPS  (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+
 		Math::Vector3 camPos = camera.GetPosition();
 		float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
 		if (ImGui::DragFloat3("Camera Pos", camPosF, 0.1f))
