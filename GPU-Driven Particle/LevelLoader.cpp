@@ -568,12 +568,15 @@ bool GP::LevelLoader::Load(const char* path, Scene& scene, MeshLibrary& meshLibr
 
 			const std::string prefix = "particleSystem.emitters[" + std::to_string(index) + "]";
 			const Math::Vector3 emitterPosition = ReadVec3(emitterJson.at("position"), (prefix + ".position").c_str());
+			const std::string emitterName = emitterJson.value(
+				"name", "Emitter " + std::to_string(index + 1));
 
 			if (index >= particles.GetEmitterCount())
 				particles.AddEmitter(Math::OrthogonalTransform(emitterPosition),
-					emitterJson.value("maxParticles", 0u));
+					emitterJson.value("maxParticles", 0u), emitterName);
 
 			GP::ParticleEmitter& emitter = particles.GetEmitter(index);
+			emitter.SetName(emitterName);
 			emitter.SetBasePosition(emitterPosition);
 			if (emitterJson.contains("rotation"))
 			{
@@ -721,6 +724,7 @@ bool GP::LevelLoader::Save(const char* path, const Scene& scene, const Camera& c
 		const EmitterSequence& sequence = emitter.GetSequence();
 
 		ojson emitterJson;
+		emitterJson["name"] = emitter.GetName();
 		emitterJson["position"] = Vec3Json(emitter.GetBasePosition());
 		emitterJson["rotation"] = Float3Json(emitter.GetBaseRotationEuler());
 		emitterJson["maxParticles"] = emitter.GetMaxParticles();

@@ -57,6 +57,8 @@ namespace GP
 		void ResetEmitter();
 		uint32_t GetCurrentSpawnCount() const { return m_CurrentSpawnCount; }
 		uint32_t GetMaxParticles() const { return m_maxParticle; }
+		const std::string& GetName() const { return m_Name; }
+		void SetName(const std::string& name) { m_Name = name; }
 		ParticleSettings& GetSettings() { return m_Settings; }
 		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
 
@@ -127,6 +129,7 @@ namespace GP
 		uint32_t m_FrameCount = 0;		  // 프레임 카운터
 
 		uint32_t m_maxParticle = 0;
+		std::string m_Name;
 		ParticleSettings m_Settings;
 		ParticleFrameCB m_FrameParams = {};
 		//ParticleViewCB m_ViewParams = {};

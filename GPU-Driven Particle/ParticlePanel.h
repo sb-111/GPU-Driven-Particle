@@ -244,17 +244,16 @@ namespace GP
 		}
 		if (selected >= emitterCount) selected = emitterCount - 1;
 
-		char curName[32];
-		sprintf_s(curName, "Emitter %d", selected); // Emitter 네임
+		const char* curName = system.GetEmitter(selected).GetName().c_str();
 		ImGui::SetNextItemWidth(120.0f);
 		if (ImGui::BeginCombo("##EmitterSelect", curName))
 		{
 			for (int i = 0; i < emitterCount; ++i)
 			{
-				char name[32];
-				sprintf_s(name, "Emitter %d", i);
-				// 클릭되면 true -> selected 변경
-				if (ImGui::Selectable(name, i == selected)) selected = i;
+				ImGui::PushID(i);
+				if (ImGui::Selectable(system.GetEmitter(i).GetName().c_str(), i == selected))
+					selected = i;
+				ImGui::PopID();
 			}
 			ImGui::EndCombo();
 		}
@@ -273,6 +272,17 @@ namespace GP
 		// 선택된 Emitter의 Settings를 편집
 		ParticleEmitter& emitter = system.GetEmitter(selected);
 		ParticleSettings& s = emitter.GetSettings();
+		static int nameBufferEmitter = -1;
+		static char nameBuffer[128] = {};
+		if (nameBufferEmitter != selected ||
+			strcmp(nameBuffer, emitter.GetName().c_str()) != 0)
+		{
+			strcpy_s(nameBuffer, emitter.GetName().c_str());
+			nameBufferEmitter = selected;
+		}
+		ImGui::SetNextItemWidth(180.0f);
+		if (ImGui::InputText("Emitter Name", nameBuffer, IM_ARRAYSIZE(nameBuffer)) && nameBuffer[0] != '\0')
+			emitter.SetName(nameBuffer);
 		bool restart = false;
 
 		if (ImGui::Button("Restart")) restart = true;
