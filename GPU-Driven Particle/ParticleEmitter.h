@@ -61,6 +61,7 @@ namespace GP
 		void SetName(const std::string& name) { m_Name = name; }
 		ParticleSettings& GetSettings() { return m_Settings; }
 		Math::Vector3 GetPosition() const { return m_EmitterTransform.GetTranslation(); }
+		const Math::OrthogonalTransform& GetTransform() const { return m_EmitterTransform; }
 
 		Math::Vector3 GetBasePosition() const { return m_BasePosition; }
 		void SetBasePosition(const Math::Vector3& p) { m_BasePosition = p; }

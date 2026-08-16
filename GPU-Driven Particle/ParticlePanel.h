@@ -214,7 +214,19 @@ namespace GP
 			ImGui::TreePop();
 		}
 	}
-	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera, MeshLibrary& meshLibrary)
+
+	struct ParticlePanelState
+	{
+		int selectedEmitter = 0;
+		bool showSelectedEmitterGizmo = false;
+	};
+
+	inline void DrawParticlePanel(
+		ParticleSystem& system,
+		bool& paused,
+		Camera& camera,
+		MeshLibrary& meshLibrary,
+		ParticlePanelState& panelState)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
 		{
@@ -223,7 +235,6 @@ namespace GP
 		}
 
 		// Emitter 선택 및 추가
-		static int selected = 0;
 		// 풀은 크기만큼 VRAM 차지
 		static const uint32_t kPoolSizes[] = { 16384, 65536, 262144, 1048576 };
 		static const char* kPoolSizeNames[] = { "16K (2 MB)", "64K (8 MB)", "256K (32 MB)", "1M (128 MB)" };
@@ -237,12 +248,16 @@ namespace GP
 			{
 				system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(0.0f, 0.0f, 0.0f)),
 					kPoolSizes[newPoolSize]);
-				selected = 0;
+				panelState.selectedEmitter = 0;
 			}
 			ImGui::End();
 			return;
 		}
-		if (selected >= emitterCount) selected = emitterCount - 1;
+		if (panelState.selectedEmitter >= emitterCount)
+			panelState.selectedEmitter = emitterCount - 1;
+		if (panelState.selectedEmitter < 0)
+			panelState.selectedEmitter = 0;
+		int& selected = panelState.selectedEmitter;
 
 		const char* curName = system.GetEmitter(selected).GetName().c_str();
 		ImGui::SetNextItemWidth(120.0f);
@@ -252,7 +267,7 @@ namespace GP
 			{
 				ImGui::PushID(i);
 				if (ImGui::Selectable(system.GetEmitter(i).GetName().c_str(), i == selected))
-					selected = i;
+					panelState.selectedEmitter = i;
 				ImGui::PopID();
 			}
 			ImGui::EndCombo();
@@ -263,7 +278,7 @@ namespace GP
 			// Emitter 추가
 			system.AddEmitter(Math::OrthogonalTransform(Math::Vector3(3.0f * emitterCount, 0.0f, 0.0f)),
 				kPoolSizes[newPoolSize]);
-			selected = emitterCount;
+			panelState.selectedEmitter = emitterCount;
 		}
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth(140.0f);
@@ -666,6 +681,8 @@ namespace GP
 
 		if (ImGui::CollapsingHeader("Debug & Profiling"))
 		{
+			ImGui::Checkbox("Show Selected Emitter Gizmo", &panelState.showSelectedEmitterGizmo);
+
 			if (ImGui::Button("Fire Preset")) { s = MakeFirePreset(); restart = true; }
 			ImGui::SameLine();
 			if (ImGui::Button("Smoke Preset")) { s = MakeSmokePreset(); restart = true; }

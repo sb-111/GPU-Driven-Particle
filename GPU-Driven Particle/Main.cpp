@@ -109,7 +109,7 @@ public:
 		m_CamController.Update(deltaT);
 
 		// 튜닝 패널
-		DrawParticlePanel(m_Particles, m_Paused, m_Camera, m_MeshLibrary);
+		DrawParticlePanel(m_Particles, m_Paused, m_Camera, m_MeshLibrary, m_ParticlePanelState);
 
 		SceneAuthoringRequests sceneRequests;
 		DrawSceneObjectPanel(
@@ -215,6 +215,24 @@ public:
 				grid.volumeBoundsMin + grid.volumeBoundsSize,
 				object->GetWorldMatrix(),
 				lineColor);
+		}
+		if (m_ParticlePanelState.showSelectedEmitterGizmo &&
+			m_ParticlePanelState.selectedEmitter >= 0 &&
+			m_ParticlePanelState.selectedEmitter < static_cast<int>(m_Particles.GetEmitterCount()))
+		{
+			const ParticleEmitter& emitter = m_Particles.GetEmitter(m_ParticlePanelState.selectedEmitter);
+			const Math::Vector3 position = emitter.GetPosition();
+			const Math::Matrix3 rotation(emitter.GetTransform().GetRotation());
+			// 화면에서 일정한 크기로 보이도록 카메라 거리에 비례해 조정
+			const float distanceToCamera = Math::Length(m_Camera.GetPosition() - position);
+			const float gizmoAxisLength = std::clamp(distanceToCamera * 0.03f, 0.5f, 12.0f);
+
+			m_DebugLines.AddLine(position, position + rotation.GetX() * gizmoAxisLength,
+				Math::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+			m_DebugLines.AddLine(position, position + rotation.GetY() * gizmoAxisLength,
+				Math::Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+			m_DebugLines.AddLine(position, position + rotation.GetZ() * gizmoAxisLength,
+				Math::Vector4(0.0f, 0.4f, 1.0f, 1.0f));
 		}
 		m_DebugLines.Render(gfx, m_Camera.GetViewProj());
 		// =============== 파티클 ==============
@@ -359,6 +377,7 @@ private:
 
 	static const uint32_t m_ParticleNum = 1 << 20;
 	ParticleSystem m_Particles;
+	ParticlePanelState m_ParticlePanelState;
 
 	// 씬 (불투명). TODO: Scene 클래스로 통째로 이관할 부분
 	RootSignature m_OpaqueRootSig;
