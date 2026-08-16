@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 145.0, 105.0, 310.0 ],
+    "lookAt": [ 0.0, 0.0, -520.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.92,
+    "nearZ": 0.5,
+    "farZ": 4000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Pulsar Backdrop - Sparse Stars",
+        "position": [ 0.0, 100.0, -1900.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 2200, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 1350.0, 800.0, 250.0 ],
+          "sizeMode": 1, "sizeMin": [ 1.0, 1.0, 0.0 ], "sizeMax": [ 5.0, 5.0, 0.0 ],
+          "startColor": [ 0.52, 0.66, 0.92, 0.62 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Neutron Star - White Hot Surface",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 720.0, "burstCount": 180, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 0.65, "lifeTimeMax": 1.25, "speedMin": 0.4, "speedMax": 2.2,
+          "shapeType": 2, "sphereRadius": 27.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 4.0, 4.0, 0.0 ], "sizeMax": [ 12.0, 12.0, 0.0 ],
+          "startColor": [ 0.78, 0.92, 1.0, 0.94 ], "endColor": [ 0.12, 0.42, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/light_01.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Neutron Star - Blue Corona",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 280.0, "burstCount": 80, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 2.0, "lifeTimeMax": 3.5, "speedMin": 4.0, "speedMax": 12.0,
+          "shapeType": 2, "sphereRadius": 31.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 10.0, 10.0, 0.0 ], "sizeMax": [ 32.0, 32.0, 0.0 ],
+          "startColor": [ 0.06, 0.28, 1.0, 0.26 ], "endColor": [ 0.0, 0.025, 0.18, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.045, "curlTargetSpeed": 5.0,
+          "curlResponseRate": 0.5, "surfaceInfluenceRadius": 10.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Polar Jet North - Luminous Spine",
+        "position": [ 0.0, 18.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 320.0, "burstCount": 120, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 4.8, "lifeTimeMax": 6.8, "speedMin": 135.0, "speedMax": 190.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.012, "posSpread": 2.0,
+          "sizeMode": 1, "sizeMin": [ 3.0, 3.0, 0.0 ], "sizeMax": [ 7.0, 7.0, 0.0 ],
+          "startColor": [ 0.92, 0.98, 1.0, 1.0 ], "endColor": [ 0.04, 0.22, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.010, "curlTargetSpeed": 5.0,
+          "curlResponseRate": 0.18, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Polar Jet South - Luminous Spine",
+        "position": [ 0.0, -18.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 180.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 320.0, "burstCount": 120, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 4.8, "lifeTimeMax": 6.8, "speedMin": 135.0, "speedMax": 190.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.012, "posSpread": 2.0,
+          "sizeMode": 1, "sizeMin": [ 3.0, 3.0, 0.0 ], "sizeMax": [ 7.0, 7.0, 0.0 ],
+          "startColor": [ 0.92, 0.98, 1.0, 1.0 ], "endColor": [ 0.04, 0.22, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.010, "curlTargetSpeed": 5.0,
+          "curlResponseRate": 0.18, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Polar Jet North - Blue Sheath",
+        "position": [ 0.0, 16.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 170.0, "burstCount": 60, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 6.0, "lifeTimeMax": 9.0, "speedMin": 78.0, "speedMax": 122.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.065, "posSpread": 5.0,
+          "sizeMode": 1, "sizeMin": [ 10.0, 10.0, 0.0 ], "sizeMax": [ 28.0, 28.0, 0.0 ],
+          "startColor": [ 0.08, 0.34, 1.0, 0.22 ], "endColor": [ 0.0, 0.02, 0.16, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.016, "curlTargetSpeed": 10.0,
+          "curlResponseRate": 0.32, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Polar Jet South - Blue Sheath",
+        "position": [ 0.0, -16.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 180.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 170.0, "burstCount": 60, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 6.0, "lifeTimeMax": 9.0, "speedMin": 78.0, "speedMax": 122.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.065, "posSpread": 5.0,
+          "sizeMode": 1, "sizeMin": [ 10.0, 10.0, 0.0 ], "sizeMax": [ 28.0, 28.0, 0.0 ],
+          "startColor": [ 0.08, 0.34, 1.0, 0.22 ], "endColor": [ 0.0, 0.02, 0.16, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.016, "curlTargetSpeed": 10.0,
+          "curlResponseRate": 0.32, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": false
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Neutron Star - Dense Core",
+      "mesh": "Meshes/sphere.obj",
+      "position": [ 0.0, 0.0, -520.0 ],
+      "rotation": [ 0.0, 0.0, 0.0, 1.0 ],
+      "scale": 24.0,
+      "color": [ 0.015, 0.03, 0.09, 1.0 ],
+      "colorSource": "override",
+      "visible": true,
+      "sdfCollider": false
+    }
+  ]
+}

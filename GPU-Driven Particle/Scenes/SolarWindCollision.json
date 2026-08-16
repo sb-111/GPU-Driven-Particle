@@ -1,0 +1,128 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 25.0, 70.0, 190.0 ],
+    "lookAt": [ 35.0, 0.0, -650.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.80,
+    "nearZ": 0.5,
+    "farZ": 4500.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": true,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Stellar Storm Backdrop - Sparse Stars",
+        "position": [ 0.0, 70.0, -2100.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 1250, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 1450.0, 850.0, 260.0 ],
+          "sizeMode": 1, "sizeMin": [ 1.0, 1.0, 0.0 ], "sizeMax": [ 4.0, 4.0, 0.0 ],
+          "startColor": [ 0.42, 0.54, 0.76, 0.42 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "CME Front - White Hot Ions",
+        "position": [ -720.0, 0.0, -650.0 ],
+        "rotation": [ 0.0, 0.0, -90.0 ],
+        "maxParticles": 16384,
+        "settings": {
+          "spawnRate": 460.0, "burstCount": 160, "loopMode": 0, "loopDuration": 2.0,
+          "lifeTimeMin": 11.0, "lifeTimeMax": 14.0, "speedMin": 76.0, "speedMax": 96.0,
+          "shapeType": 2, "sphereRadius": 155.0, "sphereSurfaceOnly": false,
+          "velocityMode": 0, "dirSpread": 0.012, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 4.0, 4.0, 0.0 ], "sizeMax": [ 9.0, 9.0, 0.0 ],
+          "startColor": [ 1.0, 0.72, 0.22, 0.72 ], "endColor": [ 0.72, 0.025, 0.004, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "collisionEnabled": true, "restitution": 0.20, "friction": 0.01,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_05.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "CME Body - Crimson Plasma",
+        "position": [ -730.0, 0.0, -650.0 ],
+        "rotation": [ 0.0, 0.0, -90.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 115.0, "burstCount": 40, "loopMode": 0, "loopDuration": 2.0,
+          "lifeTimeMin": 13.0, "lifeTimeMax": 17.0, "speedMin": 64.0, "speedMax": 83.0,
+          "shapeType": 2, "sphereRadius": 180.0, "sphereSurfaceOnly": false,
+          "velocityMode": 0, "dirSpread": 0.038, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 20.0, 20.0, 0.0 ], "sizeMax": [ 56.0, 56.0, 0.0 ],
+          "startColor": [ 0.55, 0.025, 0.006, 0.040 ], "endColor": [ 0.035, 0.001, 0.001, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "collisionEnabled": true, "restitution": 0.08, "friction": 0.02,
+          "forceCurlEnabled": true, "curlFrequency": 0.007, "curlTargetSpeed": 10.0,
+          "curlResponseRate": 0.035, "surfaceInfluenceRadius": 20.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/smoke_06.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Impact Tracers - Visible SDF Deflection",
+        "position": [ -700.0, -22.0, -650.0 ],
+        "rotation": [ 0.0, 0.0, -90.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 150.0, "burstCount": 55, "loopMode": 0, "loopDuration": 2.0,
+          "lifeTimeMin": 9.0, "lifeTimeMax": 12.0, "speedMin": 94.0, "speedMax": 120.0,
+          "shapeType": 2, "sphereRadius": 85.0, "sphereSurfaceOnly": false,
+          "velocityMode": 0, "dirSpread": 0.018, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 5.0, 5.0, 0.0 ], "sizeMax": [ 11.0, 11.0, 0.0 ],
+          "startColor": [ 1.0, 0.94, 0.72, 0.88 ], "endColor": [ 1.0, 0.12, 0.01, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "collisionEnabled": true, "restitution": 0.28, "friction": 0.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Planet Atmosphere - Cold Blue Rim",
+        "position": [ 110.0, 0.0, -650.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 150.0, "burstCount": 45, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 1.4, "lifeTimeMax": 2.5, "speedMin": 0.1, "speedMax": 1.1,
+          "shapeType": 2, "sphereRadius": 103.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 5.0, 5.0, 0.0 ],
+          "startColor": [ 0.025, 0.24, 1.0, 0.055 ], "endColor": [ 0.0, 0.025, 0.20, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/light_01.dds", "sortEnabled": false
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Storm Planet - SDF Collider",
+      "mesh": "Meshes/sphere.obj",
+      "position": [ 110.0, 0.0, -650.0 ],
+      "rotation": [ 0.0, 0.0, 0.0, 1.0 ],
+      "scale": 100.0,
+      "color": [ 0.006, 0.018, 0.055, 1.0 ],
+      "colorSource": "override",
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

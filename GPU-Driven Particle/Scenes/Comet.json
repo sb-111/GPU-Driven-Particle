@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 0.0, 70.0, 430.0 ],
+    "lookAt": [ 0.0, 0.0, -520.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.92,
+    "nearZ": 0.5,
+    "farZ": 4000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Comet Backdrop - Sparse Stars",
+        "position": [ 0.0, 80.0, -1900.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 2200, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 1400.0, 800.0, 260.0 ],
+          "sizeMode": 1, "sizeMin": [ 1.0, 1.0, 0.0 ], "sizeMax": [ 5.0, 5.0, 0.0 ],
+          "startColor": [ 0.52, 0.66, 0.92, 0.60 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Comet Nucleus - Hot Surface",
+        "position": [ -255.0, -12.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 380.0, "burstCount": 90, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 0.7, "lifeTimeMax": 1.4, "speedMin": 1.0, "speedMax": 5.0,
+          "shapeType": 2, "sphereRadius": 8.5, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 7.0, 7.0, 0.0 ],
+          "startColor": [ 1.0, 0.96, 0.82, 0.82 ], "endColor": [ 0.16, 0.42, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/light_01.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Comet Coma - Diffuse Gas",
+        "position": [ -255.0, -12.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 410.0, "burstCount": 120, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 2.2, "lifeTimeMax": 4.0, "speedMin": 4.0, "speedMax": 15.0,
+          "shapeType": 2, "sphereRadius": 10.5, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 7.0, 7.0, 0.0 ], "sizeMax": [ 24.0, 24.0, 0.0 ],
+          "startColor": [ 0.18, 0.66, 1.0, 0.19 ], "endColor": [ 0.01, 0.06, 0.18, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.035, "curlTargetSpeed": 6.0,
+          "curlResponseRate": 0.38, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Dust Tail - Broad Warm Fan",
+        "position": [ -233.0, -16.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, -98.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 300.0, "burstCount": 110, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 7.0, "lifeTimeMax": 11.0, "speedMin": 48.0, "speedMax": 94.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.14, "posSpread": 3.5,
+          "sizeMode": 1, "sizeMin": [ 7.0, 7.0, 0.0 ], "sizeMax": [ 35.0, 35.0, 0.0 ],
+          "startColor": [ 0.27, 0.23, 0.18, 0.065 ], "endColor": [ 0.020, 0.014, 0.010, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.012, "curlTargetSpeed": 18.0,
+          "curlResponseRate": 0.09, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, -0.46, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/smoke_09.dds", "sortEnabled": true
+        }
+      },
+      {
+        "name": "Dust Tail - Sunlit Grains",
+        "position": [ -233.0, -15.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, -97.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 165.0, "burstCount": 65, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 6.0, "lifeTimeMax": 9.0, "speedMin": 62.0, "speedMax": 105.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.075, "posSpread": 4.0,
+          "sizeMode": 1, "sizeMin": [ 1.2, 1.2, 0.0 ], "sizeMax": [ 4.5, 4.5, 0.0 ],
+          "startColor": [ 1.0, 0.72, 0.32, 0.58 ], "endColor": [ 0.18, 0.035, 0.005, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "gravity": [ 0.0, -0.34, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/spark_05.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Ion Tail - Electric Blue Spine",
+        "position": [ -229.0, -8.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, -84.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 255.0, "burstCount": 90, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 4.5, "lifeTimeMax": 6.5, "speedMin": 125.0, "speedMax": 185.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.016, "posSpread": 2.5,
+          "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 5.5, 5.5, 0.0 ],
+          "startColor": [ 0.72, 0.94, 1.0, 0.62 ], "endColor": [ 0.025, 0.20, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.009, "curlTargetSpeed": 5.0,
+          "curlResponseRate": 0.075, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Ion Tail - Diffuse Blue Sheath",
+        "position": [ -231.0, -8.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, -84.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 160.0, "burstCount": 55, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 5.5, "lifeTimeMax": 8.0, "speedMin": 98.0, "speedMax": 150.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.042, "posSpread": 5.0,
+          "sizeMode": 1, "sizeMin": [ 9.0, 9.0, 0.0 ], "sizeMax": [ 27.0, 27.0, 0.0 ],
+          "startColor": [ 0.035, 0.28, 1.0, 0.15 ], "endColor": [ 0.0, 0.015, 0.14, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.011, "curlTargetSpeed": 9.0,
+          "curlResponseRate": 0.10, "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": false
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Comet - Irregular Nucleus",
+      "mesh": "Meshes/Models/para_CC0_lp_rocks_pack-1/rock_d_03.obj",
+      "position": [ -255.0, -12.0, -520.0 ],
+      "rotation": [ 0.0, 0.0, 0.0, 1.0 ],
+      "scale": 6.5,
+      "color": [ 0.11, 0.095, 0.080, 1.0 ],
+      "colorSource": "override",
+      "visible": true,
+      "sdfCollider": false
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 540.0, 175.0, 500.0 ],
+    "lookAt": [ 0.0, 0.0, -520.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.74,
+    "nearZ": 0.5,
+    "farZ": 5000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": true,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Protostar Backdrop - Molecular Cloud Stars",
+        "position": [ 0.0, 120.0, -1850.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 2300, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 1550.0, 900.0, 300.0 ],
+          "sizeMode": 1, "sizeMin": [ 0.55, 0.55, 0.0 ], "sizeMax": [ 2.2, 2.2, 0.0 ],
+          "startColor": [ 0.42, 0.52, 0.72, 0.34 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Accretion Disk - Cool Outer Dust",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 14336,
+        "settings": {
+          "spawnRate": 520.0, "burstCount": 0, "loopMode": 0, "loopDuration": 60.0,
+          "lifeTimeMin": 18.0, "lifeTimeMax": 25.0, "speedMin": 3.0, "speedMax": 9.0,
+          "shapeType": 1, "boxExtents": [ 500.0, 8.0, 360.0 ], "velocityMode": 0,
+            "sizeMode": 1, "sizeMin": [ 4.0, 4.0, 0.0 ], "sizeMax": [ 10.0, 10.0, 0.0 ],
+            "startColor": [ 0.50, 0.20, 0.050, 0.034 ], "endColor": [ 0.020, 0.003, 0.001, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceTangentEnabled": true, "forceTangentStrength": 47.0, "forceTangentAxis": [ 0.0, 1.0, 0.0 ],
+          "forceAttractEnabled": true, "forceAttractStrength": 0.026, "forceAttractTarget": 0,
+          "surfaceInfluenceRadius": 620.0,
+          "forceCurlEnabled": true, "curlFrequency": 0.009, "curlTargetSpeed": 3.8, "curlResponseRate": 0.07,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+            "texturePath": "Textures/protostar_dust_mask_v2.dds",
+            "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Accretion Disk - Warm Spiral Body",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 16384,
+        "settings": {
+          "spawnRate": 800.0, "burstCount": 0, "loopMode": 0, "loopDuration": 60.0,
+          "lifeTimeMin": 13.0, "lifeTimeMax": 19.0, "speedMin": 2.0, "speedMax": 7.0,
+          "shapeType": 1, "boxExtents": [ 380.0, 4.5, 270.0 ], "velocityMode": 0,
+            "sizeMode": 1, "sizeMin": [ 1.5, 1.5, 0.0 ], "sizeMax": [ 4.2, 4.2, 0.0 ],
+            "startColor": [ 1.0, 0.46, 0.095, 0.105 ], "endColor": [ 0.12, 0.012, 0.002, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceTangentEnabled": true, "forceTangentStrength": 75.0, "forceTangentAxis": [ 0.0, 1.0, 0.0 ],
+          "forceAttractEnabled": true, "forceAttractStrength": 0.046, "forceAttractTarget": 0,
+          "surfaceInfluenceRadius": 490.0,
+          "forceCurlEnabled": true, "curlFrequency": 0.015, "curlTargetSpeed": 3.5, "curlResponseRate": 0.06,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+            "rendererType": 0, "blendMode": 1,
+            "texturePath": "Textures/protostar_dust_mask_v2.dds",
+            "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Accretion Disk - White Hot Inner Ring",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 12288,
+        "settings": {
+          "spawnRate": 850.0, "burstCount": 0, "loopMode": 0, "loopDuration": 60.0,
+          "lifeTimeMin": 8.0, "lifeTimeMax": 13.0, "speedMin": 1.0, "speedMax": 5.0,
+          "shapeType": 1, "boxExtents": [ 155.0, 2.0, 110.0 ], "velocityMode": 0,
+            "sizeMode": 1, "sizeMin": [ 1.8, 1.8, 0.0 ], "sizeMax": [ 4.5, 4.5, 0.0 ],
+            "startColor": [ 1.0, 0.84, 0.56, 0.86 ], "endColor": [ 0.72, 0.10, 0.006, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceTangentEnabled": true, "forceTangentStrength": 105.0, "forceTangentAxis": [ 0.0, 1.0, 0.0 ],
+          "forceAttractEnabled": true, "forceAttractStrength": 0.075, "forceAttractTarget": 0,
+          "surfaceInfluenceRadius": 330.0,
+          "forceCurlEnabled": true, "curlFrequency": 0.024, "curlTargetSpeed": 2.0, "curlResponseRate": 0.04,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+            "texturePath": "Textures/protostar_glow_mask_v2.dds",
+            "subImagesX": 1, "subImagesY": 1, "sortEnabled": false
+        }
+      },
+      {
+        "name": "Accretion Disk - Incandescent Grains",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 300.0, "burstCount": 0, "loopMode": 0, "loopDuration": 60.0,
+          "lifeTimeMin": 11.0, "lifeTimeMax": 17.0, "speedMin": 2.0, "speedMax": 6.0,
+          "shapeType": 1, "boxExtents": [ 430.0, 5.0, 300.0 ], "velocityMode": 0,
+            "sizeMode": 1, "sizeMin": [ 0.4, 0.4, 0.0 ], "sizeMax": [ 1.0, 1.0, 0.0 ],
+            "startColor": [ 1.0, 0.56, 0.13, 0.52 ], "endColor": [ 0.34, 0.016, 0.001, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceTangentEnabled": true, "forceTangentStrength": 58.0, "forceTangentAxis": [ 0.0, 1.0, 0.0 ],
+          "forceAttractEnabled": true, "forceAttractStrength": 0.036, "forceAttractTarget": 0,
+          "surfaceInfluenceRadius": 580.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+            "texturePath": "Textures/protostar_glow_mask_v2.dds",
+            "subImagesX": 1, "subImagesY": 1, "sortEnabled": false
+        }
+      },
+      {
+        "name": "Protostar - Photospheric Fire",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 1260.0, "burstCount": 420, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 0.55, "lifeTimeMax": 1.25, "speedMin": 1.0, "speedMax": 7.0,
+          "shapeType": 2, "sphereRadius": 45.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+            "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 5.0, 5.0, 0.0 ],
+          "startColor": [ 1.0, 0.86, 0.66, 0.82 ], "endColor": [ 0.86, 0.16, 0.008, 0.0 ],
+          "randomSpawnBrightness": false, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.038, "curlTargetSpeed": 8.0, "curlResponseRate": 0.34,
+          "surfaceInfluenceRadius": 10.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+            "texturePath": "Textures/protostar_glow_mask_v2.dds",
+            "subImagesX": 1, "subImagesY": 1, "sortEnabled": false
+        }
+      },
+      {
+        "name": "Protostar - Amber Corona",
+        "position": [ 0.0, 0.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 310.0, "burstCount": 150, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 2.4, "lifeTimeMax": 4.0, "speedMin": 5.0, "speedMax": 15.0,
+          "shapeType": 2, "sphereRadius": 52.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 11.0, 11.0, 0.0 ], "sizeMax": [ 29.0, 29.0, 0.0 ],
+          "startColor": [ 1.0, 0.30, 0.035, 0.20 ], "endColor": [ 0.22, 0.010, 0.001, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.029, "curlTargetSpeed": 11.0, "curlResponseRate": 0.27,
+          "surfaceInfluenceRadius": 12.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/smoke_06.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Bipolar Outflow North - Ionized Spine",
+        "position": [ 0.0, 34.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 360.0, "burstCount": 260, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 6.0, "lifeTimeMax": 8.5, "speedMin": 145.0, "speedMax": 210.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.019, "posSpread": 4.0,
+          "sizeMode": 1, "sizeMin": [ 3.0, 3.0, 0.0 ], "sizeMax": [ 8.5, 8.5, 0.0 ],
+          "startColor": [ 0.72, 0.95, 1.0, 1.0 ], "endColor": [ 0.025, 0.30, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.011, "curlTargetSpeed": 6.0, "curlResponseRate": 0.09,
+          "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Bipolar Outflow South - Ionized Spine",
+        "position": [ 0.0, -34.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 180.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 360.0, "burstCount": 260, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 6.0, "lifeTimeMax": 8.5, "speedMin": 145.0, "speedMax": 210.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.019, "posSpread": 4.0,
+          "sizeMode": 1, "sizeMin": [ 3.0, 3.0, 0.0 ], "sizeMax": [ 8.5, 8.5, 0.0 ],
+          "startColor": [ 0.72, 0.95, 1.0, 1.0 ], "endColor": [ 0.025, 0.30, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.011, "curlTargetSpeed": 6.0, "curlResponseRate": 0.09,
+          "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Bipolar Outflow North - Ionized Shock Sheath",
+        "position": [ 0.0, 28.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 240.0, "burstCount": 180, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 8.0, "lifeTimeMax": 12.0, "speedMin": 85.0, "speedMax": 125.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.095, "posSpread": 9.0,
+          "sizeMode": 1, "sizeMin": [ 12.0, 12.0, 0.0 ], "sizeMax": [ 38.0, 38.0, 0.0 ],
+          "startColor": [ 0.018, 0.42, 0.85, 0.11 ], "endColor": [ 0.002, 0.030, 0.18, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.016, "curlTargetSpeed": 16.0, "curlResponseRate": 0.17,
+          "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": true
+        }
+      },
+      {
+        "name": "Bipolar Outflow South - Ionized Shock Sheath",
+        "position": [ 0.0, -28.0, -520.0 ],
+        "rotation": [ 0.0, 0.0, 180.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 240.0, "burstCount": 180, "loopMode": 0, "loopDuration": 1.5,
+          "lifeTimeMin": 8.0, "lifeTimeMax": 12.0, "speedMin": 85.0, "speedMax": 125.0,
+          "shapeType": 0, "velocityMode": 0, "dirSpread": 0.095, "posSpread": 9.0,
+          "sizeMode": 1, "sizeMin": [ 12.0, 12.0, 0.0 ], "sizeMax": [ 38.0, 38.0, 0.0 ],
+          "startColor": [ 0.018, 0.42, 0.85, 0.11 ], "endColor": [ 0.002, 0.030, 0.18, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.016, "curlTargetSpeed": 16.0, "curlResponseRate": 0.17,
+          "surfaceInfluenceRadius": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/smoke_03.dds", "sortEnabled": true
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Protostar - Central Gravity Surface",
+      "mesh": "Meshes/sphere.obj",
+      "position": [ 0.0, 0.0, -520.0 ],
+      "rotation": [ 0.0, 0.0, 0.0, 1.0 ],
+      "scale": 42.0,
+      "color": [ 0.045, 0.004, 0.001, 1.0 ],
+      "colorSource": "override",
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}
