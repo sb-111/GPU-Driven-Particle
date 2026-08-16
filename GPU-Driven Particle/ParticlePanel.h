@@ -80,7 +80,7 @@ namespace GP
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.endColor[0] = 0.35f;   s.endColor[1] = 0.35f;   s.endColor[2] = 0.35f;   s.endColor[3] = 0.0f; // a=0: 수명 끝 페이드아웃
 		s.blendMode = (int)EBlendMode::Alpha;
-		s.textureIndex = (int)ETexture::Smoke;
+		s.texturePath = "Textures/smoke.dds";
 		return s;
 	}
 	inline ParticleSettings MakeArtifactPreset() // 미정렬 문제 아티팩트 재현용
@@ -103,7 +103,7 @@ namespace GP
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.endColor[0] = 0.0f;   s.endColor[1] = 0.0f;   s.endColor[2] = 1.0f;   s.endColor[3] = 0.0f;   // 파랑, a=0: 수명 끝 페이드아웃
 		s.blendMode = (int)EBlendMode::Alpha;
-		s.textureIndex = (int)ETexture::Smoke;
+		s.texturePath = "Textures/smoke.dds";
 		return s;
 	}
 	inline ParticleSettings MakeRibbonPreset() // 리본 검증용
@@ -126,7 +126,7 @@ namespace GP
 		s.gravity[0] = 0.0f;    s.gravity[1] = -9.8f;   s.gravity[2] = 0.0f;
 		s.blendMode = (int)EBlendMode::Additive;
 		s.rendererType = (int)EParticleRenderer::Ribbon;
-		s.textureIndex = (int)ETexture::Fire;
+		s.texturePath = "Textures/fire.dds";
 		return s;
 	}
 	inline ParticleSettings MakeOverdrawPreset() // 오버드로우 측정용: 평형 생존수 고정(spawnRate x lifeTime), 랜덤 요소 제거
@@ -149,7 +149,7 @@ namespace GP
 		s.gravity[0] = 0.0f;    s.gravity[1] = 0.0f;    s.gravity[2] = 0.0f;
 		s.blendMode = (int)EBlendMode::Additive;         // 정렬 변수 제거
 		s.rendererType = (int)EParticleRenderer::Sprite;
-		s.textureIndex = (int)ETexture::Fire;
+		s.texturePath = "Textures/fire.dds";
 		return s;
 	}
 	// 클라이언트 영역을 정확한 픽셀 크기로 변경 (WM_SIZE -> Display::Resize 경로로 렌더 해상도까지 갱신)
@@ -278,7 +278,6 @@ namespace GP
 		static const char* kGroupNames[(int)EParamGroup::Count] = { "Emitter", "Emit", "Simulate", "Renderer" };
 		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
 		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha", "Opaque"};
-		static const char* kTextureNames[(int)ETexture::Count] = { "Fire", "Smoke", "Spark", "Boom (8x8)", "Explosion (4x4)" };
 		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
 		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
 		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
@@ -468,7 +467,17 @@ namespace GP
 				if (s.rendererType == (int)EParticleRenderer::Sprite)
 				{
 					ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
-					ImGui::Combo("Texture", &s.textureIndex, kTextureNames, (int)ETexture::Count);
+					const TextureLibrary& textureLibrary = system.GetTextureLibrary();
+					const std::string& texturePath = s.texturePath;
+					if (ImGui::BeginCombo("Texture", texturePath.c_str()))
+					{
+						for (const std::string& assetPath : textureLibrary.GetAssetPaths())
+						{
+							if (ImGui::Selectable(assetPath.c_str(), assetPath == texturePath))
+								s.texturePath = assetPath;
+						}
+						ImGui::EndCombo();
+					}
 					ImGui::SliderInt("SubImages X", &s.subImagesX, 1, 16);
 					ImGui::SliderInt("SubImages Y", &s.subImagesY, 1, 16);
 				}

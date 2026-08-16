@@ -10,7 +10,6 @@
 #include "Mesh.h"
 #include "ParticleShared.h"
 #include "SceneObject.h"
-#include "TextureLoader.h"
 #include <algorithm>
 using namespace GameCore;
 using namespace Graphics;
@@ -215,12 +214,9 @@ void GP::ParticleSystem::InitSharedResources()
 	m_Shared.compositePSO.SetRenderTargetFormat(g_SceneColorBuffer.GetFormat(), DXGI_FORMAT_UNKNOWN);
 	m_Shared.compositePSO.Finalize();
 
-	// 텍스쳐 로드 (ETexture enum 순서와 일치)
-	static const char* kTexturePaths[(int)ETexture::Count] =
-	{ "Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
-	  "SpriteAtlasTextures/boom3.dds", "SpriteAtlasTextures/exp2_0.dds" };
-	for (int i = 0; i < (int)ETexture::Count; ++i)
-		ASSERT(LoadDDSTexture(m_Shared.spriteTextures[i], kTexturePaths[i]), "dds 로드 실패");
+	ASSERT(m_TextureLibrary.LoadFromDirectories({ "Textures", "SpriteAtlasTextures" }),
+		"파티클 DDS를 찾을 수 없습니다.");
+	m_Shared.textureLibrary = &m_TextureLibrary;
 }
 
 void GP::ParticleSystem::AddSDFCollider(SceneObject* pObject)

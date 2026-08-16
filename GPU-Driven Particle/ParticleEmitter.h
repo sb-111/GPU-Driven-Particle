@@ -16,6 +16,7 @@ class GraphicsContext;
 namespace GP
 {
 	class Mesh;
+	class TextureLibrary;
 
 	// Emitter들이 공유하는 자원
 	struct ParticleSharedResources
@@ -23,7 +24,7 @@ namespace GP
 		RootSignature computeRootSig;
 		RootSignature graphicsRootSig;
 		ComputePSO kickoffPSO, emitPSO, simulatePSO;
-		Texture spriteTextures[(int)ETexture::Count];
+		TextureLibrary* textureLibrary = nullptr;
 		BitonicSort sorter;
 
 		// [렌더러][해상도]

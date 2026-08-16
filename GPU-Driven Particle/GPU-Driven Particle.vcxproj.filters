@@ -81,6 +81,9 @@
     <ClCompile Include="SkyboxRenderer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="TextureLibrary.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -203,6 +206,9 @@
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="TextureLoader.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureLibrary.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="SkyboxRenderer.h">

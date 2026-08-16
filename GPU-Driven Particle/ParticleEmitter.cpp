@@ -1,4 +1,5 @@
 ﻿#include "ParticleEmitter.h"
+#include "TextureLibrary.h"
 #include "CommandContext.h"
 #include "MathConvert.h"
 #include "GraphicsCommon.h"
@@ -407,7 +408,10 @@ void GP::ParticleEmitter::Draw(GraphicsContext& gfx, bool halfResolution)
 	gfx.SetDynamicConstantBufferView(2, sizeof(drawCB), &drawCB);               // b2
 	gfx.SetBufferSRV(3, m_Pool);												// t0
 	gfx.SetBufferSRV(4, *m_NewAlive);											// t1
-	gfx.SetDynamicDescriptor(5, 0, m_Shared->spriteTextures[m_Settings.textureIndex].GetSRV()); // t2
+	const Texture* texture = m_Shared->textureLibrary->Find(m_Settings.texturePath);
+	if (texture == nullptr)
+		texture = &m_Shared->textureLibrary->GetFallback();
+	gfx.SetDynamicDescriptor(5, 0, texture->GetSRV()); // t2
 	gfx.SetBufferSRV(6, m_Counters);											// t3
 	
 	gfx.SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

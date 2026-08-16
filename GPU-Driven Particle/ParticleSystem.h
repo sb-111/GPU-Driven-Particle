@@ -9,6 +9,7 @@
 #include <memory>
 #include "Texture.h"
 #include "MorphTargetLibrary.h"
+#include "TextureLibrary.h"
 
 class GraphicsContext;
 class ComputeContext;
@@ -40,6 +41,7 @@ namespace GP {
 		ParticleEmitter& GetEmitter(size_t i) { return *m_Emitters[i]; }
 		bool& GetHalfResolution() { return m_HalfResolution; }
 		CollisionSettings& GetCollisionSettings() { return m_CollisionSettings; }
+		const TextureLibrary& GetTextureLibrary() const { return m_TextureLibrary; }
 
 		// SDF Collider 등록
 		void AddSDFCollider(SceneObject* pObject);
@@ -86,6 +88,7 @@ namespace GP {
 
 		// Morph target 용
 		MorphTargetLibrary m_MorphTargetLibrary;
+		TextureLibrary m_TextureLibrary;
 
 		// bvh 관련
 		BVHNode m_BVHNodes[MAX_BVH_NODES];

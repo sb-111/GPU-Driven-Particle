@@ -176,7 +176,21 @@ static void ApplyEmitterSettings(const json& source, GP::ParticleSettings& setti
 	if (source.contains("rendererType")) settings.rendererType = source.at("rendererType").get<int>();
 	if (source.contains("blendMode")) settings.blendMode = source.at("blendMode").get<int>();
 	if (source.contains("alignmentMode")) settings.alignmentMode = source.at("alignmentMode").get<int>();
-	if (source.contains("textureIndex")) settings.textureIndex = source.at("textureIndex").get<int>();
+	if (source.contains("texturePath"))
+	{
+		settings.texturePath = source.at("texturePath").get<std::string>();
+	}
+	else if (source.contains("textureIndex"))
+	{
+		static const char* kLegacyTexturePaths[] =
+		{
+			"Textures/fire.dds", "Textures/smoke.dds", "Textures/sparkTex.dds",
+			"SpriteAtlasTextures/boom3.dds", "SpriteAtlasTextures/exp2_0.dds"
+		};
+		const int textureIndex = source.at("textureIndex").get<int>();
+		if (textureIndex >= 0 && textureIndex < static_cast<int>(sizeof(kLegacyTexturePaths) / sizeof(kLegacyTexturePaths[0])))
+			settings.texturePath = kLegacyTexturePaths[textureIndex];
+	}
 	if (source.contains("subImagesX")) settings.subImagesX = source.at("subImagesX").get<int>();
 	if (source.contains("subImagesY")) settings.subImagesY = source.at("subImagesY").get<int>();
 	if (source.contains("sortEnabled")) settings.sortEnabled = source.at("sortEnabled").get<bool>();
@@ -467,7 +481,7 @@ static ojson EmitterSettingsToJson(const GP::ParticleSettings& settings)
 	settingsJson["rendererType"] = settings.rendererType;
 	settingsJson["blendMode"] = settings.blendMode;
 	settingsJson["alignmentMode"] = settings.alignmentMode;
-	settingsJson["textureIndex"] = settings.textureIndex;
+	settingsJson["texturePath"] = settings.texturePath;
 	settingsJson["subImagesX"] = settings.subImagesX;
 	settingsJson["subImagesY"] = settings.subImagesY;
 	settingsJson["sortEnabled"] = settings.sortEnabled;
