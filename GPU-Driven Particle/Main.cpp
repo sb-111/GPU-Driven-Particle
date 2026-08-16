@@ -23,6 +23,7 @@
 #include "SceneObjectPanel.h"
 #include "SDFStatsPanel.h"
 #include "LevelLoader.h"
+#include <algorithm>
 #include "SceneFileDialog.h"
 
 #include "DebugLineRenderer.h"
@@ -121,8 +122,11 @@ public:
 		HandleSceneAuthoringRequests(sceneRequests);
 		DrawSDFStatsPanel(m_Scene);
 
+		// 히칭 시 튐 방지
+		const float simDeltaT = std::min(deltaT, 0.1f);
+
 		// 멈춤 요청 들어오면 이미터 업데이트 정지
-		m_Particles.Update(m_Paused ? 0.0f : deltaT);
+		m_Particles.Update(m_Paused ? 0.0f : simDeltaT);
 	}
 
 	// ==============================================================
