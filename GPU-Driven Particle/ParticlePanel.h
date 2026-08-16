@@ -7,6 +7,7 @@
 #include "Camera.h"
 #include "GpuStats.h"
 #include "imgui/imgui.h"
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -16,48 +17,6 @@ namespace GameCore { extern HWND g_hWnd; }
 
 namespace GP
 {
-	enum class EParamGroup : int { Emitter, Emit, Simulate, Renderer, Count };
-	enum class EParamType : int { Float, Int, Color4, Float3 };
-
-	// ImGui 위젯 하나 정보
-	struct UIParamDesc	
-	{
-		const char* name;	// 문자열 리터럴
-		EParamGroup group;
-		EParamType type;
-		size_t offset;	// ParticleSettings 안에서의 위치
-		float minV;		// 최소 값
-		float maxV;		// 최대 값
-		const char* format = "%.3f";
-		ImGuiSliderFlags flags = 0;
-		bool (*visibleIf)(const ParticleSettings&) = nullptr;
-	};
-
-	// g_ParticleParams 그룹별로 순회하며 위젯 생성
-	inline const UIParamDesc g_ParticleParams[] =
-	{
-		{ "Spawn Rate",    EParamGroup::Emitter,  EParamType::Float,  offsetof(ParticleSettings, spawnRate),    0.0f,  1000000.0f , "%.0f", ImGuiSliderFlags_Logarithmic},
-		{ "Burst Count",   EParamGroup::Emitter,  EParamType::Int,    offsetof(ParticleSettings, burstCount),   0.0f,  1000000.0f, "%.0f", ImGuiSliderFlags_Logarithmic },
-
-		{ "LifeTime Min",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMin),  0.05f, 10.0f },
-		{ "LifeTime Max",  EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, lifeTimeMax),  0.05f, 10.0f },
-		{ "Speed Min",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMin),     0.0f,  30.0f },
-		{ "Speed Max",     EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, speedMax),     0.0f,  30.0f },
-		{ "Spin Speed Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMin), 0.0f,  360.0f, "%.3f", 0,
-			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
-		{ "Spin Speed Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, spinSpeedMax), 0.0f,  360.0f, "%.3f", 0,
-			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
-		{ "Init Angle Min", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMin), 0.0f,  360.0f, "%.3f", 0,
-			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
-		{ "Init Angle Max", EParamGroup::Emit,   EParamType::Float,  offsetof(ParticleSettings, initAngleMax), 0.0f,  360.0f, "%.3f", 0,
-			[](const ParticleSettings& s) { return s.alignmentMode == (int)EAlignmentMode::UnAligned; } },
-		{ "Dir Spread",    EParamGroup::Emit,    EParamType::Float,  offsetof(ParticleSettings, dirSpread),    0.0f,  5.0f },
-		{ "Start Color",   EParamGroup::Emit,    EParamType::Color4, offsetof(ParticleSettings, startColor),   0.0f,  1.0f },
-
-		{ "Gravity",       EParamGroup::Simulate,   EParamType::Float3, offsetof(ParticleSettings, gravity),     -20.0f, 20.0f },
-		{ "End Color",     EParamGroup::Simulate,   EParamType::Color4, offsetof(ParticleSettings, endColor),     0.0f,  1.0f },
-	};
-
 	inline ParticleSettings MakeFirePreset()
 	{
 		return ParticleSettings{};
@@ -159,6 +118,102 @@ namespace GP
 		AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, FALSE);
 		::SetWindowPos(GameCore::g_hWnd, nullptr, 0, 0, r.right - r.left, r.bottom - r.top, SWP_NOMOVE | SWP_NOZORDER);
 	}
+
+	inline void DrawFloatRange(const char* label, float& minValue, float& maxValue,
+		float minimum, float maximum, const char* format = "%.3f")
+	{
+		if (minValue > maxValue)
+			std::swap(minValue, maxValue);
+		float range[2] = { minValue, maxValue };
+		if (ImGui::SliderFloat2(label, range, minimum, maximum, format))
+		{
+			minValue = std::min(range[0], range[1]);
+			maxValue = std::max(range[0], range[1]);
+		}
+	}
+
+	inline void DrawSizeSettings(ParticleSettings& s)
+	{
+		static const char* kSizeModeNames[(int)EUniformMode::Count] =
+			{ "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
+
+		if (s.rendererType == (int)EParticleRenderer::Ribbon)
+		{
+			bool randomWidth = s.sizeMode == (int)EUniformMode::RandomUniform ||
+				s.sizeMode == (int)EUniformMode::RandomNonUniform;
+			if (ImGui::Checkbox("Random Width", &randomWidth))
+				s.sizeMode = randomWidth ? (int)EUniformMode::RandomUniform : (int)EUniformMode::Uniform;
+
+			if (randomWidth)
+				DrawFloatRange("Width Range", s.sizeMin[0], s.sizeMax[0], 0.001f, 0.5f);
+			else
+				ImGui::SliderFloat("Width", &s.sizeMin[0], 0.001f, 0.5f);
+			return;
+		}
+
+		ImGui::Combo(s.rendererType == (int)EParticleRenderer::Mesh ? "Scale Mode" : "Size Mode",
+			&s.sizeMode, kSizeModeNames, (int)EUniformMode::Count);
+
+		const bool isMesh = s.rendererType == (int)EParticleRenderer::Mesh;
+		switch ((EUniformMode)s.sizeMode)
+		{
+		case EUniformMode::Uniform:
+			ImGui::SliderFloat(isMesh ? "Uniform Scale" : "Size", &s.sizeMin[0], 0.001f, 0.5f);
+			break;
+		case EUniformMode::RandomUniform:
+			DrawFloatRange(isMesh ? "Uniform Scale Range" : "Size Range",
+				s.sizeMin[0], s.sizeMax[0], 0.001f, 0.5f);
+			break;
+		case EUniformMode::NonUniform:
+			if (isMesh)
+				ImGui::SliderFloat3("Scale XYZ", s.sizeMin, 0.001f, 0.5f);
+			else
+				ImGui::SliderFloat2("Size XY", s.sizeMin, 0.001f, 0.5f);
+			break;
+		case EUniformMode::RandomNonUniform:
+			if (isMesh)
+			{
+				ImGui::SliderFloat3("Scale Min XYZ", s.sizeMin, 0.001f, 0.5f);
+				ImGui::SliderFloat3("Scale Max XYZ", s.sizeMax, 0.001f, 0.5f);
+			}
+			else
+			{
+				ImGui::SliderFloat2("Size Min XY", s.sizeMin, 0.001f, 0.5f);
+				ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
+			}
+			break;
+		}
+	}
+
+	inline void DrawSpriteInitialRotation(ParticleSettings& s)
+	{
+		if (s.rendererType != (int)EParticleRenderer::Sprite ||
+			s.alignmentMode != (int)EAlignmentMode::UnAligned)
+			return;
+
+		if (ImGui::TreeNode("Sprite Initial Rotation"))
+		{
+			DrawFloatRange("Spin Speed Range", s.spinSpeedMin, s.spinSpeedMax, 0.0f, 360.0f, "%.1f deg/s");
+			DrawFloatRange("Initial Angle Range", s.initAngleMin, s.initAngleMax, 0.0f, 360.0f, "%.1f deg");
+			ImGui::TreePop();
+		}
+	}
+
+	inline void DrawMeshInitialRotation(ParticleSettings& s)
+	{
+		if (s.rendererType != (int)EParticleRenderer::Mesh)
+			return;
+
+		if (ImGui::TreeNode("Mesh Initial Orientation"))
+		{
+			DrawFloatRange("Rotation Rate Range", s.rotationRateMin, s.rotationRateMax, 0.0f, 720.0f, "%.0f deg/s");
+			ImGui::Checkbox("Random Rotation Axis", &s.randomRotationAxis);
+			if (!s.randomRotationAxis)
+				ImGui::SliderFloat3("Rotation Axis", s.rotationAxis, -1.0f, 1.0f);
+			ImGui::Checkbox("Random Initial Orientation", &s.randomInitOrientation);
+			ImGui::TreePop();
+		}
+	}
 	inline void DrawParticlePanel(ParticleSystem& system, bool& paused, Camera& camera, MeshLibrary& meshLibrary)
 	{
 		if (!ImGui::Begin("Particle Tuning"))
@@ -220,271 +275,199 @@ namespace GP
 		ParticleSettings& s = emitter.GetSettings();
 		bool restart = false;
 
-		if (ImGui::Button("Fire")) { s = MakeFirePreset(); restart = true; }
-		ImGui::SameLine();
-		if (ImGui::Button("Smoke")) { s = MakeSmokePreset(); restart = true; }
-		ImGui::SameLine();
-		if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
-		ImGui::SameLine();
-		if (ImGui::Button("Ribbon")) { s = MakeRibbonPreset(); restart = true; }
-		ImGui::SameLine();
-		if (ImGui::Button("Overdraw")) { s = MakeOverdrawPreset(); restart = true; }
-		ImGui::SameLine();
 		if (ImGui::Button("Restart")) restart = true;
 		ImGui::SameLine();
 		ImGui::Checkbox("Pause", &paused);
 
-		
-		// 해상도 스냅 (오버드로우 측정용, 클라이언트 영역 기준)
-		if (ImGui::Button("1920x1129")) SetClientSize(1920, 1129);
-		ImGui::SameLine();
-		if (ImGui::Button("960x564")) SetClientSize(960, 564);
-		ImGui::SameLine();
-		ImGui::Text("Resolution");
-
-		// 저해상도 렌더 on/off
-		ImGui::Checkbox("Half Resolution", &system.GetHalfResolution());
-
-		const ImGuiIO& io = ImGui::GetIO();
-		ImGui::Text("%.1f FPS  (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
-
-		const VideoMemoryInfo vram = QueryVideoMemory();
-		if (vram.valid)
-			ImGui::Text("VRAM %llu / %llu MB", vram.currentUsage >> 20, vram.budget >> 20);
-
-		ImGui::Text("Pool %u  (emitters %d)", emitter.GetMaxParticles(), emitterCount);
-
-		Math::Vector3 camPos = camera.GetPosition();
-		float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
-		if (ImGui::DragFloat3("Camera Pos", camPosF, 0.1f))
-		{
-			Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
-			camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
-		}
-
-		float clipZ[2] = { camera.GetNearClip(), camera.GetFarClip() };
-		if (ImGui::DragFloat2("Near / Far", clipZ, 0.1f, 0.0f, 0.0f, "%.2f"))
-		{
-			clipZ[0] = std::max(clipZ[0], 0.01f);
-			clipZ[1] = std::max(clipZ[1], clipZ[0] + 0.01f); // 0 < near < far 유지
-			const float aspect =
-				static_cast<float>(Graphics::g_SceneColorBuffer.GetHeight()) /
-				static_cast<float>(Graphics::g_SceneColorBuffer.GetWidth());
-			camera.SetPerspective(camera.GetFOV(), aspect, clipZ[0], clipZ[1]);
-		}
-
 		ImGui::Separator();
 
-		static const char* kGroupNames[(int)EParamGroup::Count] = { "Emitter", "Emit", "Simulate", "Renderer" };
-		static const char* kSizeModeNames[(int)EUniformMode::Count] = { "Uniform", "Random Uniform", "Non Uniform", "Random Non Uniform" };
-		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha", "Opaque"};
 		static const char* kShapeNames[(int)EShapeType::Count] = { "Point", "Box", "Sphere", "Cone" };
-		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone"};
-		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple"};
-		static const char* kAlignmentModeNames[(int)EAlignmentMode::Count] = { "Unaligned", "Velocity aligned"};
-		static const char* kRendererNames[(int)EParticleRenderer::Count] = { "Sprite", "Mesh", "Ribbon"};
+		static const char* kVelocityNames[(int)EVelocityMode::Count] = { "Velocity", "Velocity From Point", "Velocity In Cone" };
+		static const char* kLoopModeNames[(int)ELoopMode::Count] = { "Infinite", "Once", "Multiple" };
+		static const char* kAlignmentModeNames[(int)EAlignmentMode::Count] = { "Unaligned", "Velocity Aligned" };
+		static const char* kRendererNames[(int)EParticleRenderer::Count] = { "Sprite", "Mesh", "Ribbon" };
+		static const char* kBlendModeNames[(int)EBlendMode::Count] = { "Additive", "Alpha", "Opaque" };
 		static const char* kRibbonUVModeNames[(int)ERibbonUVMode::Count] = { "Stretch", "Tile" };
-	
-		for (int g = 0; g < (int)EParamGroup::Count; ++g)
+
+		if (ImGui::CollapsingHeader("Emitter", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			// 접혀있으면(false) 스킵
-			if (!ImGui::CollapsingHeader(kGroupNames[g], ImGuiTreeNodeFlags_DefaultOpen))
-				continue;
+			Math::Vector3 basePos = emitter.GetBasePosition();
+			float basePosF[3] = { basePos.GetX(), basePos.GetY(), basePos.GetZ() };
+			if (ImGui::DragFloat3("Position", basePosF, 0.05f))
+				emitter.SetBasePosition(Math::Vector3(basePosF[0], basePosF[1], basePosF[2]));
 
-			for (const UIParamDesc& p : g_ParticleParams)
+			float baseRotF[3] = { emitter.GetBaseRotationEuler()[0], emitter.GetBaseRotationEuler()[1], emitter.GetBaseRotationEuler()[2] };
+			if (ImGui::DragFloat3("Rotation", baseRotF, 1.0f, -360.0f, 360.0f))
+				emitter.SetBaseRotationEuler(baseRotF);
+
+			ImGui::SliderFloat("Spawn Rate", &s.spawnRate, 0.0f, 1000000.0f, "%.0f", ImGuiSliderFlags_Logarithmic);
+			ImGui::SliderInt("Burst Count", &s.burstCount, 0, 1000000);
+			ImGui::Combo("Loop Mode", &s.loopMode, kLoopModeNames, (int)ELoopMode::Count);
+			ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
+			if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
+				ImGui::SliderInt("Loop Count", &s.loopCount, 1, 20);
+			ImGui::Checkbox("Orbit", &s.orbitEnabled);
+			if (s.orbitEnabled)
 			{
-				if ((int)p.group != g) // 같은 그룹 아니면 스킵
-					continue;
-				if (p.visibleIf && !p.visibleIf(s)) // 보이지 않아야 하면 스킵
-					continue;
-				void* ptr = (uint8_t*)&s + p.offset;	// 인스턴스 시작 주소 + 필드 offset
-				switch (p.type)
-				{
-				case EParamType::Float:  ImGui::SliderFloat(p.name, (float*)ptr, p.minV, p.maxV, p.format, p.flags); break;
-				case EParamType::Int:    ImGui::SliderInt(p.name, (int*)ptr, (int)p.minV, (int)p.maxV); break;
-				case EParamType::Color4: ImGui::ColorEdit4(p.name, (float*)ptr); break;
-				case EParamType::Float3: ImGui::SliderFloat3(p.name, (float*)ptr, p.minV, p.maxV); break;
-				}
+				ImGui::SliderFloat("Orbit Radius", &s.orbitRadius, 0.1f, 10.0f);
+				ImGui::SliderFloat("Orbit Speed", &s.orbitSpeed, 0.1f, 10.0f, "%.2f rad/s");
 			}
-			if (g == (int)EParamGroup::Emitter)
+		}
+
+		if (ImGui::CollapsingHeader("Emission", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			DrawFloatRange("Lifetime Range", s.lifeTimeMin, s.lifeTimeMax, 0.05f, 10.0f, "%.2f s");
+			DrawFloatRange("Speed Range", s.speedMin, s.speedMax, 0.0f, 30.0f, "%.2f");
+			ImGui::Combo("Shape", &s.shapeType, kShapeNames, (int)EShapeType::Cone);
+			switch ((EShapeType)s.shapeType)
 			{
-				Math::Vector3 basePos = emitter.GetBasePosition();
-				float basePosF[3] = { basePos.GetX(), basePos.GetY(), basePos.GetZ() };
-				if (ImGui::DragFloat3("Position", basePosF, 0.05f))
-					emitter.SetBasePosition(Math::Vector3(basePosF[0], basePosF[1], basePosF[2]));
-
-				float baseRotF[3] = { emitter.GetBaseRotationEuler()[0], emitter.GetBaseRotationEuler()[1], emitter.GetBaseRotationEuler()[2] };
-				if (ImGui::DragFloat3("Rotation", baseRotF, 1.0f, -360.0f, 360.0f))
-					emitter.SetBaseRotationEuler(baseRotF);
-
-				ImGui::Combo("Loop Mode", &s.loopMode, kLoopModeNames, (int)ELoopMode::Count);
-				ImGui::SliderFloat("Loop Duration", &s.loopDuration, 0.1f, 10.0f, "%.2f s");
-				if ((ELoopMode)s.loopMode == ELoopMode::Multiple)
-					ImGui::SliderInt("Loop Count", &s.loopCount, 1, 20);
-				ImGui::Checkbox("Orbit", &s.orbitEnabled);
-				if (s.orbitEnabled)
-				{
-					ImGui::SliderFloat("Orbit Radius", &s.orbitRadius, 0.1f, 10.0f);
-					ImGui::SliderFloat("Orbit Speed", &s.orbitSpeed, 0.1f, 10.0f, "%.2f rad/s");
-				}
+			case EShapeType::Box: ImGui::SliderFloat3("Box Extents", s.boxExtents, 0.0f, 20.0f); break;
+			case EShapeType::Sphere:
+				ImGui::SliderFloat("Sphere Radius", &s.sphereRadius, 0.0f, 10.0f);
+				ImGui::Checkbox("Surface Only", &s.sphereSurfaceOnly);
+				break;
 			}
-			if (g == (int)EParamGroup::Simulate)
+			ImGui::Combo("Velocity", &s.velocityMode, kVelocityNames, (int)EVelocityMode::Count);
+			if ((EVelocityMode)s.velocityMode == EVelocityMode::VelocityInCone)
+				ImGui::SliderFloat("Cone Angle", &s.coneAngle, 0.0f, 89.0f);
+			ImGui::SliderFloat("Direction Spread", &s.dirSpread, 0.0f, 5.0f);
+			DrawSizeSettings(s);
+			DrawSpriteInitialRotation(s);
+			DrawMeshInitialRotation(s);
+			ImGui::ColorEdit4("Start Color", s.startColor);
+			ImGui::Checkbox("Random Spawn Brightness", &s.randomSpawnBrightness);
+		}
+
+		if (ImGui::CollapsingHeader("Simulation", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::SliderFloat3("Gravity", s.gravity, -20.0f, 20.0f);
+			ImGui::Checkbox("Size Over Life", &s.sizeOverLife);
+			ImGui::Checkbox("Color Over Life", &s.colorOverLife);
+			ImGui::Checkbox("Alpha Over Life", &s.alphaOverLife);
+			if (s.colorOverLife)
+				ImGui::ColorEdit3("End Color", s.endColor);
+			if (s.alphaOverLife)
+				ImGui::SliderFloat("End Alpha", &s.endColor[3], 0.0f, 1.0f);
+
+			ImGui::Checkbox("Collision", &s.collisionEnabled);
+			if (s.collisionEnabled)
 			{
-				ImGui::Checkbox("Size Over Life", &s.sizeOverLife);
-				ImGui::Checkbox("Color Over Life", &s.colorOverLife);
-				ImGui::Checkbox("Alpha Over Life", &s.alphaOverLife);
-				ImGui::Checkbox("Collision", &s.collisionEnabled);
-				if (s.collisionEnabled)
-				{
-					ImGui::SliderFloat("Restitution", &s.restitution, 0.0f, 1.0f);
-					ImGui::SliderFloat("Friction", &s.friction, 0.0f, 1.0f);
-				}
-				ImGui::Checkbox("Force Avoid", &s.forceAvoidEnabled);
-				if (s.forceAvoidEnabled)
-					ImGui::SliderFloat("Avoid Strength", &s.forceAvoidStrength, 0.0f, 50.0f);
-				ImGui::Checkbox("Force Tangent", &s.forceTangentEnabled);
-				if (s.forceTangentEnabled)
-				{
-					ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
-					ImGui::DragFloat3("Tangent Axis", s.forceTangentAxis, 0.01f, -1.0f, 1.0f);
-				}
-				ImGui::Checkbox("Force Curl", &s.forceCurlEnabled);
+				ImGui::Indent();
+				ImGui::SliderFloat("Restitution", &s.restitution, 0.0f, 1.0f);
+				ImGui::SliderFloat("Friction", &s.friction, 0.0f, 1.0f);
+				ImGui::Unindent();
+			}
+
+			if (ImGui::TreeNode("SDF Forces"))
+			{
+				ImGui::Checkbox("Curl", &s.forceCurlEnabled);
 				if (s.forceCurlEnabled)
 				{
 					ImGui::SliderFloat("Curl Frequency", &s.curlFrequency, 0.05f, 4.0f);
 					ImGui::SliderFloat("Curl Target Speed", &s.curlTargetSpeed, 0.0f, 50.0f);
 					ImGui::SliderFloat("Curl Response Rate", &s.curlResponseRate, 0.1f, 20.0f);
-					ImGui::Checkbox("Curl Boundary: Psi (Bridson)", &s.curlPsiBoundary);
+					ImGui::Checkbox("Psi Boundary", &s.curlPsiBoundary);
+				}
+				if (ImGui::TreeNode("Advanced"))
+				{
+					ImGui::Checkbox("Avoid", &s.forceAvoidEnabled);
+					if (s.forceAvoidEnabled)
+						ImGui::SliderFloat("Avoid Strength", &s.forceAvoidStrength, 0.0f, 50.0f);
+					ImGui::Checkbox("Tangent", &s.forceTangentEnabled);
+					if (s.forceTangentEnabled)
+					{
+						ImGui::SliderFloat("Tangent Strength", &s.forceTangentStrength, 0.0f, 50.0f);
+						ImGui::DragFloat3("Tangent Axis", s.forceTangentAxis, 0.01f, -1.0f, 1.0f);
+					}
+					ImGui::Checkbox("Attract", &s.forceAttractEnabled);
+					if (s.forceAttractEnabled)
+					{
+						ImGui::SliderFloat("Attract Strength", &s.forceAttractStrength, 0.0f, 50.0f);
+						ImGui::SliderInt("Attract Target SDF", &s.forceAttractTarget, 0, MAX_SDF_COUNT - 1);
+					}
+					ImGui::TreePop();
 				}
 				if (s.forceAvoidEnabled || s.forceTangentEnabled || s.forceCurlEnabled)
 					ImGui::SliderFloat("Surface Influence Radius", &s.surfaceInfluenceRadius, 0.1f, 10.0f);
-				ImGui::Checkbox("Force Attract", &s.forceAttractEnabled);
-				if (s.forceAttractEnabled)
-				{
-					ImGui::SliderFloat("Attract Strength", &s.forceAttractStrength, 0.0f, 50.0f);
-					ImGui::SliderInt("Attract Target SDF", &s.forceAttractTarget, 0, MAX_SDF_COUNT - 1);
-				}
-				ImGui::Checkbox("Morph", &s.morphEnabled);
-				if (s.morphEnabled)
-				{
-					ImGui::SliderFloat("Morph Strength", &s.morphStrength, 0.0f, 50.0f);
-					ImGui::DragFloat3("Target Pos", s.morphTargetPosition, 0.1f);
-					ImGui::DragFloat3("Target Rotation", s.morphTargetRotation, 1.0f, -360.0f, 360.0f);
-					ImGui::DragFloat3("Target Scale", s.morphTargetScale, 0.05f, 0.01f, 20.0f);
-				}
+				ImGui::TreePop();
 			}
-			if (g == (int)EParamGroup::Emit)
+
+			ImGui::Checkbox("Morph", &s.morphEnabled);
+			if (s.morphEnabled)
 			{
-				ImGui::Checkbox("Random Spawn Brightness", &s.randomSpawnBrightness);
-				ImGui::Combo("Shape Type", &s.shapeType, kShapeNames, (int)EShapeType::Cone); // Cone(위치 방출)은 TODO
-				switch ((EShapeType)s.shapeType)
-				{
-				case EShapeType::Point:
-					break;                                   
-				case EShapeType::Box:
-					ImGui::SliderFloat3("Box Extents", s.boxExtents, 0.0f, 20.0f);
-					break;
-				case EShapeType::Sphere:
-					ImGui::SliderFloat("Sphere Radius", &s.sphereRadius, 0.0f, 10.0f);
-					ImGui::Checkbox("Surface Only", &s.sphereSurfaceOnly);
-					break;
-				}
-				ImGui::Combo("Velocity Mode", &s.velocityMode, kVelocityNames, (int)EVelocityMode::Count);
-				if ((EVelocityMode)s.velocityMode == EVelocityMode::VelocityInCone)
-					ImGui::SliderFloat("Cone Angle", &s.coneAngle, 0.0f, 89.0f);
-				ImGui::Combo("Size Mode", &s.sizeMode, kSizeModeNames, (int)EUniformMode::Count);
-				switch ((EUniformMode)s.sizeMode)
-				{
-				case EUniformMode::Uniform: ImGui::SliderFloat("Size", &s.sizeMin[0], 0.001f, 0.5f); break;
-				case EUniformMode::RandomUniform:
-					ImGui::SliderFloat("Size Min", &s.sizeMin[0], 0.001f, 0.5f);
-					ImGui::SliderFloat("Size Max", &s.sizeMax[0], 0.001f, 0.5f);
-					break;
-				case EUniformMode::NonUniform:
-					if (s.rendererType == (int)EParticleRenderer::Mesh)
-						ImGui::SliderFloat3("Size XYZ", s.sizeMin, 0.001f, 0.5f);
-					else
-						ImGui::SliderFloat2("Size XY", s.sizeMin, 0.001f, 0.5f);
-					break;
-				case EUniformMode::RandomNonUniform:
-					if (s.rendererType == (int)EParticleRenderer::Mesh)
-					{
-						ImGui::SliderFloat3("Size Min XYZ", s.sizeMin, 0.001f, 0.5f);
-						ImGui::SliderFloat3("Size Max XYZ", s.sizeMax, 0.001f, 0.5f);
-					}
-					else
-					{
-						ImGui::SliderFloat2("Size Min XY", s.sizeMin, 0.001f, 0.5f);
-						ImGui::SliderFloat2("Size Max XY", s.sizeMax, 0.001f, 0.5f);
-					}
-					break;
-				}
-				// 메시 회전 (Rotation Rate 방식)
-				if (s.rendererType == (int)EParticleRenderer::Mesh)
-				{
-					ImGui::SliderFloat2("Rotation Rate", &s.rotationRateMin, 0.0f, 720.0f, "%.0f deg/s");
-					ImGui::Checkbox("Random Rotation Axis", &s.randomRotationAxis);
-					if (!s.randomRotationAxis)
-						ImGui::SliderFloat3("Rotation Axis", s.rotationAxis, -1.0f, 1.0f);
-					ImGui::Checkbox("Random Init Orientation", &s.randomInitOrientation);
-				}
+				ImGui::Indent();
+				ImGui::SliderFloat("Morph Strength", &s.morphStrength, 0.0f, 50.0f);
+				ImGui::DragFloat3("Target Position", s.morphTargetPosition, 0.1f);
+				ImGui::DragFloat3("Target Rotation", s.morphTargetRotation, 1.0f, -360.0f, 360.0f);
+				ImGui::DragFloat3("Target Scale", s.morphTargetScale, 0.05f, 0.01f, 20.0f);
+				ImGui::Unindent();
 			}
-			if (g == (int)EParamGroup::Renderer)
+		}
+
+		if (ImGui::CollapsingHeader("Renderer", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::Combo("Type", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
+			const int blendCount = s.rendererType == (int)EParticleRenderer::Mesh ?
+				(int)EBlendMode::Count : (int)EBlendMode::Opaque;
+			if (s.blendMode >= blendCount)
+				s.blendMode = (int)EBlendMode::Alpha;
+			ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, blendCount);
+			if (s.blendMode == (int)EBlendMode::Alpha || s.rendererType == (int)EParticleRenderer::Ribbon)
+				ImGui::Checkbox("Sort", &s.sortEnabled);
+
+			if (s.rendererType == (int)EParticleRenderer::Mesh)
 			{
-				ImGui::Combo("Renderer##type", &s.rendererType, kRendererNames, (int)EParticleRenderer::Count);
-				// Opaque는 메시에만 있음
-				const int blendCount = (s.rendererType == (int)EParticleRenderer::Mesh)
-					? (int)EBlendMode::Count : (int)EBlendMode::Opaque;
-				if (s.blendMode >= blendCount)
-					s.blendMode = (int)EBlendMode::Alpha;
-				ImGui::Combo("Blend Mode", &s.blendMode, kBlendModeNames, blendCount);
-				if (s.blendMode == (int)EBlendMode::Alpha || s.rendererType == (int)EParticleRenderer::Ribbon)
-					ImGui::Checkbox("Sort", &s.sortEnabled);
-				// 리본 전용 설정
-				if (s.rendererType == (int)EParticleRenderer::Ribbon)
-					ImGui::Combo("UV Mode", &s.ribbonUVMode, kRibbonUVModeNames, (int)ERibbonUVMode::Count);
-				// 메시 전용 설정
-				if (s.rendererType == (int)EParticleRenderer::Mesh)
+				const std::string& currentMeshPath = emitter.GetParticleMeshPath();
+				if (ImGui::BeginCombo("Particle Mesh", currentMeshPath.empty() ? "Cube (default)" : currentMeshPath.c_str()))
 				{
-					const std::string& currentMeshPath = emitter.GetParticleMeshPath();
-					if (ImGui::BeginCombo("Particle Mesh", currentMeshPath.empty() ? "Cube (default)" : currentMeshPath.c_str()))
+					if (ImGui::Selectable("Cube (default)", currentMeshPath.empty()))
+						emitter.SetParticleMesh(nullptr, "");
+					for (const std::string& assetPath : meshLibrary.GetAssetPaths())
 					{
-						if (ImGui::Selectable("Cube (default)", currentMeshPath.empty()))
-							emitter.SetParticleMesh(nullptr, "");
-						for (const std::string& assetPath : meshLibrary.GetAssetPaths())
+						if (ImGui::Selectable(assetPath.c_str(), assetPath == currentMeshPath))
 						{
-							if (ImGui::Selectable(assetPath.c_str(), assetPath == currentMeshPath))
-							{
-								Mesh* particleMesh = meshLibrary.Get(assetPath.c_str());
-								if (particleMesh != nullptr)
-									emitter.SetParticleMesh(particleMesh, assetPath);
-							}
+							Mesh* particleMesh = meshLibrary.Get(assetPath.c_str());
+							if (particleMesh != nullptr)
+								emitter.SetParticleMesh(particleMesh, assetPath);
 						}
-						ImGui::EndCombo();
 					}
+					ImGui::EndCombo();
 				}
-				// 스프라이트 전용 설정
+			}
+			else
+			{
+				if (s.rendererType == (int)EParticleRenderer::Sprite)
+					ImGui::Combo("Alignment", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
+
+				const TextureLibrary& textureLibrary = system.GetTextureLibrary();
+				const std::string& texturePath = s.texturePath;
+				if (ImGui::BeginCombo("Texture", texturePath.c_str()))
+				{
+					for (const std::string& assetPath : textureLibrary.GetAssetPaths())
+					{
+						if (ImGui::Selectable(assetPath.c_str(), assetPath == texturePath))
+							s.texturePath = assetPath;
+					}
+					ImGui::EndCombo();
+				}
+
 				if (s.rendererType == (int)EParticleRenderer::Sprite)
 				{
-					ImGui::Combo("Alignment Mode", &s.alignmentMode, kAlignmentModeNames, (int)EAlignmentMode::Count);
-					const TextureLibrary& textureLibrary = system.GetTextureLibrary();
-					const std::string& texturePath = s.texturePath;
-					if (ImGui::BeginCombo("Texture", texturePath.c_str()))
+					int subImageGrid[2] = { s.subImagesX, s.subImagesY };
+					if (ImGui::SliderInt2("Sub-image Grid", subImageGrid, 1, 16))
 					{
-						for (const std::string& assetPath : textureLibrary.GetAssetPaths())
-						{
-							if (ImGui::Selectable(assetPath.c_str(), assetPath == texturePath))
-								s.texturePath = assetPath;
-						}
-						ImGui::EndCombo();
+						s.subImagesX = subImageGrid[0];
+						s.subImagesY = subImageGrid[1];
 					}
-					ImGui::SliderInt("SubImages X", &s.subImagesX, 1, 16);
-					ImGui::SliderInt("SubImages Y", &s.subImagesY, 1, 16);
+				}
+				else
+				{
+					ImGui::Combo("UV Mode", &s.ribbonUVMode, kRibbonUVModeNames, (int)ERibbonUVMode::Count);
 				}
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Morph Target", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::CollapsingHeader("Morph Target"))
 		{
 			ImGui::Text("Current: %s", emitter.GetMorphTargetPath().empty() ? "none" : emitter.GetMorphTargetPath().c_str());
 
@@ -533,7 +516,7 @@ namespace GP
 				ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", morphError);
 		}
 
-		if (ImGui::CollapsingHeader("Sequence", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::CollapsingHeader("Sequence"))
 		{
 			EmitterSequence& seq = emitter.GetSequence();
 			if (seq.stages.empty())
@@ -653,7 +636,7 @@ namespace GP
 			}
 		}
 
-		if (ImGui::CollapsingHeader("Scene Collision", ImGuiTreeNodeFlags_DefaultOpen))
+		if (ImGui::CollapsingHeader("Global Collision"))
 		{
 			CollisionSettings& c = system.GetCollisionSettings();
 			ImGui::Checkbox("Plane", &c.planeEnabled);
@@ -668,6 +651,57 @@ namespace GP
 			{
 				ImGui::DragFloat3("Sphere Center", c.sphereCenter, 0.1f);
 				ImGui::SliderFloat("Collider Radius", &c.sphereRadius, 0.1f, 5.0f);
+			}
+		}
+
+		if (ImGui::CollapsingHeader("Debug & Profiling"))
+		{
+			if (ImGui::Button("Fire Preset")) { s = MakeFirePreset(); restart = true; }
+			ImGui::SameLine();
+			if (ImGui::Button("Smoke Preset")) { s = MakeSmokePreset(); restart = true; }
+			ImGui::SameLine();
+			if (ImGui::Button("Ribbon Preset")) { s = MakeRibbonPreset(); restart = true; }
+
+			if (ImGui::TreeNode("Benchmark Presets"))
+			{
+				if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
+				ImGui::SameLine();
+				if (ImGui::Button("Overdraw")) { s = MakeOverdrawPreset(); restart = true; }
+				ImGui::TreePop();
+			}
+
+			ImGui::Checkbox("Half Resolution", &system.GetHalfResolution());
+			if (ImGui::Button("1920x1129")) SetClientSize(1920, 1129);
+			ImGui::SameLine();
+			if (ImGui::Button("960x564")) SetClientSize(960, 564);
+
+			const ImGuiIO& io = ImGui::GetIO();
+			ImGui::Text("%.1f FPS  (%.2f ms)", io.Framerate, 1000.0f / io.Framerate);
+			const VideoMemoryInfo vram = QueryVideoMemory();
+			if (vram.valid)
+				ImGui::Text("VRAM %llu / %llu MB", vram.currentUsage >> 20, vram.budget >> 20);
+			ImGui::Text("Pool %u  (emitters %d)", emitter.GetMaxParticles(), emitterCount);
+
+			if (ImGui::TreeNode("Camera"))
+			{
+				Math::Vector3 camPos = camera.GetPosition();
+				float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
+				if (ImGui::DragFloat3("Camera Position", camPosF, 0.1f))
+				{
+					Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
+					camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
+				}
+
+				float clipZ[2] = { camera.GetNearClip(), camera.GetFarClip() };
+				if (ImGui::DragFloat2("Near / Far", clipZ, 0.1f, 0.0f, 0.0f, "%.2f"))
+				{
+					clipZ[0] = std::max(clipZ[0], 0.01f);
+					clipZ[1] = std::max(clipZ[1], clipZ[0] + 0.01f);
+					const float aspect = static_cast<float>(Graphics::g_SceneColorBuffer.GetHeight()) /
+						static_cast<float>(Graphics::g_SceneColorBuffer.GetWidth());
+					camera.SetPerspective(camera.GetFOV(), aspect, clipZ[0], clipZ[1]);
+				}
+				ImGui::TreePop();
 			}
 		}
 
