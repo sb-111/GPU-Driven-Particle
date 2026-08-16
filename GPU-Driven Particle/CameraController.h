@@ -14,8 +14,8 @@ namespace GP
 		static constexpr float kDegToRad  = XM_PI / 180.0f;
 		static constexpr float kMaxPitch  = 89.0f * kDegToRad;   // 수직 근처에서 뒤집히지 않게
 		static constexpr float kSpeedMin  = 0.5f;
-		static constexpr float kSpeedMax  = 200.0f;
-		static constexpr float kSpeedMul  = 1.25f;               // 휠 한 칸당 속도 배율
+		static constexpr float kSpeedMax  = 10000.0f;
+		static constexpr float kSpeedMul  = 1.5f;                // 휠 한 칸당 속도 배율
 		static constexpr float kLookScale = 1.0f;                // 마우스 감도
 
 	public:

@@ -225,7 +225,7 @@ public:
 			const Math::Matrix3 rotation(emitter.GetTransform().GetRotation());
 			// 화면에서 일정한 크기로 보이도록 카메라 거리에 비례해 조정
 			const float distanceToCamera = Math::Length(m_Camera.GetPosition() - position);
-			const float gizmoAxisLength = std::clamp(distanceToCamera * 0.03f, 0.5f, 12.0f);
+			const float gizmoAxisLength = std::max(distanceToCamera * 0.03f, 0.5f);
 
 			m_DebugLines.AddLine(position, position + rotation.GetX() * gizmoAxisLength,
 				Math::Vector4(1.0f, 0.0f, 0.0f, 1.0f));
@@ -234,9 +234,14 @@ public:
 			m_DebugLines.AddLine(position, position + rotation.GetZ() * gizmoAxisLength,
 				Math::Vector4(0.0f, 0.4f, 1.0f, 1.0f));
 		}
-		m_DebugLines.Render(gfx, m_Camera.GetViewProj());
 		// =============== 파티클 ==============
 		m_Particles.Render(gfx, viewCB);
+
+		gfx.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+		gfx.SetViewportAndScissor(0, 0, g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight());
+		gfx.SetRenderTarget(g_SceneColorBuffer.GetRTV());
+		// 디버그 라인은 마지막에 렌더링
+		m_DebugLines.Render(gfx, m_Camera.GetViewProj());
 		gfx.Finish();
 
 		m_Particles.EndFrame();   // 핑퐁 스왑

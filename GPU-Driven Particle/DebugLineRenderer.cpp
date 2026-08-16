@@ -28,10 +28,10 @@ void GP::DebugLineRenderer::Init()
 	m_PSO.SetPixelShader(debugLinePS->GetBufferPointer(), debugLinePS->GetBufferSize());
 	m_PSO.SetRasterizerState(RasterizerDefault);
 	m_PSO.SetBlendState(BlendDisable);
-	m_PSO.SetDepthStencilState(DepthStateReadOnly);
+	m_PSO.SetDepthStencilState(DepthStateDisabled);
 	m_PSO.SetRenderTargetFormat(
 		g_SceneColorBuffer.GetFormat(),
-		g_SceneDepthBuffer.GetFormat());
+		DXGI_FORMAT_UNKNOWN);
 	m_PSO.Finalize();
 }
 
