@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      0.0,
+      2.0,
+      28.0
+    ],
+    "lookAt": [
+      0.0,
+      1.9000012874603271,
+      27.00501251220703
+    ],
+    "up": [
+      0.0,
+      0.9949875473976135,
+      -0.09999872744083405
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 1.0,
+    "farZ": 1000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": 0.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": true,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Curl Flow",
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maxParticles": 65536,
+        "settings": {
+          "spawnRate": 3000.0,
+          "burstCount": 0,
+          "loopMode": 0,
+          "loopDuration": 2.0,
+          "loopCount": 3,
+          "orbitEnabled": false,
+          "orbitRadius": 2.0,
+          "orbitSpeed": 2.0,
+          "lifeTimeMin": 10.0,
+          "lifeTimeMax": 16.0,
+          "speedMin": 0.0,
+          "speedMax": 0.4000000059604645,
+          "spinSpeedMin": 1.0,
+          "spinSpeedMax": 3.0,
+          "initAngleMin": 1.0,
+          "initAngleMax": 5.0,
+          "rotationRateMin": 3.0,
+          "rotationRateMax": 18.0,
+          "rotationAxis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 1,
+          "sizeMin": [
+            0.07999999821186066,
+            0.07999999821186066,
+            0.07999999821186066
+          ],
+          "sizeMax": [
+            0.20000000298023224,
+            0.20000000298023224,
+            0.20000000298023224
+          ],
+          "dirSpread": 1.0,
+          "posSpread": 0.0,
+          "startColor": [
+            1.0,
+            0.550000011920929,
+            0.2199999988079071,
+            1.0
+          ],
+          "randomSpawnBrightness": true,
+          "shapeType": 2,
+          "velocityMode": 0,
+          "sphereRadius": 9.0,
+          "sphereSurfaceOnly": true,
+          "coneAngle": 30.0,
+          "endColor": [
+            0.550000011920929,
+            0.800000011920929,
+            1.0,
+            0.0
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": true,
+          "alphaOverLife": true,
+          "collisionEnabled": true,
+          "restitution": 0.05000000074505806,
+          "friction": 0.75,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5.0,
+          "forceTangentStrength": 5.0,
+          "forceTangentAxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "surfaceInfluenceRadius": 3.5,
+          "forceCurlEnabled": true,
+          "curlFrequency": 0.05000000074505806,
+          "curlTargetSpeed": 7.0,
+          "curlResponseRate": 3.0,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5.0,
+          "forceAttractTarget": 0,
+          "morphEnabled": false,
+          "morphStrength": 20.0,
+          "morphTargetPosition": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetRotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetScale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/spark_05.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "boxExtents": [
+            16.0,
+            11.0,
+            11.0
+          ]
+        }
+      },
+      {
+        "name": "Stars",
+        "position": [
+          0.0,
+          0.0,
+          -40.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maxParticles": 16384,
+        "settings": {
+          "spawnRate": 8.0,
+          "burstCount": 0,
+          "loopMode": 0,
+          "loopDuration": 2.0,
+          "loopCount": 3,
+          "orbitEnabled": false,
+          "orbitRadius": 2.0,
+          "orbitSpeed": 2.0,
+          "lifeTimeMin": 300.0,
+          "lifeTimeMax": 300.0,
+          "speedMin": 0.0,
+          "speedMax": 0.0,
+          "spinSpeedMin": 1.0,
+          "spinSpeedMax": 3.0,
+          "initAngleMin": 1.0,
+          "initAngleMax": 5.0,
+          "rotationRateMin": 3.0,
+          "rotationRateMax": 18.0,
+          "rotationAxis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 1,
+          "sizeMin": [
+            0.03999999910593033,
+            0.03999999910593033,
+            0.03999999910593033
+          ],
+          "sizeMax": [
+            0.10000000149011612,
+            0.10000000149011612,
+            0.10000000149011612
+          ],
+          "dirSpread": 1.0,
+          "posSpread": 0.0,
+          "startColor": [
+            0.8500000238418579,
+            0.8999999761581421,
+            1.0,
+            1.0
+          ],
+          "randomSpawnBrightness": true,
+          "shapeType": 1,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "endColor": [
+            0.8500000238418579,
+            0.8999999761581421,
+            1.0,
+            1.0
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": false,
+          "alphaOverLife": false,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5.0,
+          "forceTangentStrength": 5.0,
+          "forceTangentAxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "surfaceInfluenceRadius": 2.0,
+          "forceCurlEnabled": false,
+          "curlFrequency": 0.054999999701976776,
+          "curlTargetSpeed": 12.0,
+          "curlResponseRate": 3.0,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5.0,
+          "forceAttractTarget": 0,
+          "morphEnabled": false,
+          "morphStrength": 20.0,
+          "morphTargetPosition": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetRotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetScale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/star_07.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "boxExtents": [
+            150.0,
+            100.0,
+            100.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Boundary_Rock",
+      "mesh": "Meshes/Models/para_CC0_lp_rocks_pack-1/rock_c_01.obj",
+      "position": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "scale": 6.0,
+      "color": [
+        0.30000001192092896,
+        0.2800000011920929,
+        0.27000001072883606,
+        1.0
+      ],
+      "colorSource": "mesh",
+      "visible": true,
+      "sdfCollider": true
+    }
+  ]
+}

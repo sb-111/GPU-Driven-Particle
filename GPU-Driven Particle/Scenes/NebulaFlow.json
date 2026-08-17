@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 120.0, 80.0, 1350.0 ],
+    "lookAt": [ 0.0, 0.0, -1900.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.78,
+    "nearZ": 0.5,
+    "farZ": 10000.0
+  },
+  "particleSystem": {
+    "halfResolution": true,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Nebula Backdrop - Deep Stars",
+        "position": [ 0.0, 0.0, -4050.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 900, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 2550.0, 1550.0, 500.0 ],
+          "sizeMode": 1, "sizeMin": [ 0.45, 0.45, 0.0 ], "sizeMax": [ 1.8, 1.8, 0.0 ],
+          "startColor": [ 0.40, 0.54, 0.78, 0.20 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Nebula Envelope - Cool Diffuse Gas",
+        "position": [ -120.0, 70.0, -1900.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 6144,
+        "settings": {
+          "spawnRate": 28.0, "burstCount": 2500, "loopMode": 0, "loopDuration": 48.0,
+          "lifeTimeMin": 48.0, "lifeTimeMax": 55.0, "speedMin": 0.08, "speedMax": 0.42,
+          "shapeType": 2, "sphereRadius": 1750.0, "sphereSurfaceOnly": false,
+          "velocityMode": 1, "dirSpread": 0.48, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 210.0, 210.0, 0.0 ], "sizeMax": [ 520.0, 520.0, 0.0 ],
+          "startColor": [ 0.005, 0.070, 0.20, 0.018 ], "endColor": [ 0.001, 0.008, 0.028, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.0032, "curlTargetSpeed": 1.4, "curlResponseRate": 0.10,
+          "surfaceInfluenceRadius": 10.0, "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/protostar_dust_mask_v2.dds", "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Nebula Envelope - Warm Emission Gas",
+        "position": [ 210.0, -190.0, -1930.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 5120,
+        "settings": {
+          "spawnRate": 24.0, "burstCount": 2150, "loopMode": 0, "loopDuration": 46.0,
+          "lifeTimeMin": 46.0, "lifeTimeMax": 55.0, "speedMin": 0.08, "speedMax": 0.45,
+          "shapeType": 2, "sphereRadius": 1350.0, "sphereSurfaceOnly": false,
+          "velocityMode": 1, "dirSpread": 0.46, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 180.0, 180.0, 0.0 ], "sizeMax": [ 470.0, 470.0, 0.0 ],
+          "startColor": [ 0.23, 0.006, 0.070, 0.016 ], "endColor": [ 0.035, 0.001, 0.010, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.0038, "curlTargetSpeed": 1.6, "curlResponseRate": 0.11,
+          "surfaceInfluenceRadius": 10.0, "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/protostar_dust_mask_v2.dds", "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Nebula Filaments - Ionized Ridges",
+        "position": [ -250.0, 120.0, -1840.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 24.0, "burstCount": 1700, "loopMode": 0, "loopDuration": 44.0,
+          "lifeTimeMin": 44.0, "lifeTimeMax": 50.0, "speedMin": 0.10, "speedMax": 0.56,
+          "shapeType": 2, "sphereRadius": 820.0, "sphereSurfaceOnly": false,
+          "velocityMode": 1, "dirSpread": 0.34, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 130.0, 130.0, 0.0 ], "sizeMax": [ 360.0, 360.0, 0.0 ],
+          "startColor": [ 0.34, 0.16, 0.055, 0.048 ], "endColor": [ 0.038, 0.008, 0.002, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.0060, "curlTargetSpeed": 2.1, "curlResponseRate": 0.13,
+          "surfaceInfluenceRadius": 10.0, "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/nebula_filament_mask_v1.dds", "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Nebula Core - Young Stellar Cluster",
+        "position": [ 60.0, -40.0, -1820.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 18.0, "burstCount": 300, "loopMode": 0, "loopDuration": 30.0,
+          "lifeTimeMin": 30.0, "lifeTimeMax": 38.0, "speedMin": 0.05, "speedMax": 0.26,
+          "shapeType": 2, "sphereRadius": 330.0, "sphereSurfaceOnly": false,
+          "velocityMode": 1, "dirSpread": 0.42, "posSpread": 0.0,
+          "sizeMode": 1, "sizeMin": [ 48.0, 48.0, 0.0 ], "sizeMax": [ 135.0, 135.0, 0.0 ],
+          "startColor": [ 0.64, 0.20, 0.035, 0.035 ], "endColor": [ 0.08, 0.006, 0.001, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.0080, "curlTargetSpeed": 1.1, "curlResponseRate": 0.12,
+          "surfaceInfluenceRadius": 10.0, "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/nebula_filament_mask_v1.dds", "subImagesX": 1, "subImagesY": 1, "sortEnabled": true
+        }
+      },
+      {
+        "name": "Nebula Core - Embedded Young Stars",
+        "position": [ 60.0, -40.0, -1800.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 1024,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 140, "loopMode": 1, "loopDuration": 1.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 2, "sphereRadius": 520.0, "sphereSurfaceOnly": false,
+          "sizeMode": 1, "sizeMin": [ 0.8, 0.8, 0.0 ], "sizeMax": [ 3.2, 3.2, 0.0 ],
+          "startColor": [ 1.0, 0.56, 0.18, 0.25 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_04.dds", "sortEnabled": false
+        }
+      }
+    ]
+  },
+  "objects": []
+}

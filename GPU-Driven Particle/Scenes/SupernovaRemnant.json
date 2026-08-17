@@ -1,0 +1,191 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [ 95.0, 85.0, 245.0 ],
+    "lookAt": [ 0.0, 0.0, -620.0 ],
+    "up": [ 0.0, 1.0, 0.0 ],
+    "fovYRadians": 0.88,
+    "nearZ": 0.5,
+    "farZ": 4500.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "sphereEnabled": false,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "SNR Backdrop - Ancient Star Field",
+        "position": [ 0.0, 80.0, -2050.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 0.0, "burstCount": 2400, "loopMode": 1, "loopDuration": 900.0,
+          "lifeTimeMin": 900.0, "lifeTimeMax": 900.0, "speedMin": 0.0, "speedMax": 0.0,
+          "shapeType": 1, "boxExtents": [ 1450.0, 850.0, 260.0 ],
+          "sizeMode": 1, "sizeMin": [ 0.8, 0.8, 0.0 ], "sizeMax": [ 4.0, 4.0, 0.0 ],
+          "startColor": [ 0.46, 0.57, 0.78, 0.50 ], "randomSpawnBrightness": true,
+          "sizeOverLife": false, "colorOverLife": false, "alphaOverLife": false,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/star_07.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Forward Shock - Razor Thin Blue Rim",
+        "position": [ 0.0, 0.0, -620.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 380.0, "burstCount": 1800, "loopMode": 0, "loopDuration": 13.0,
+          "lifeTimeMin": 8.0, "lifeTimeMax": 13.0, "speedMin": 1.5, "speedMax": 5.5,
+          "shapeType": 2, "sphereRadius": 272.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 7.0, 7.0, 0.0 ],
+          "startColor": [ 0.48, 0.84, 1.0, 0.72 ], "endColor": [ 0.05, 0.22, 0.70, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.013, "curlTargetSpeed": 2.8,
+          "curlResponseRate": 0.20, "surfaceInfluenceRadius": 14.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/light_01.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Outer Shell - Shredded Cyan Filaments",
+        "position": [ 4.0, 1.0, -620.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 12288,
+        "settings": {
+          "spawnRate": 480.0, "burstCount": 1900, "loopMode": 0, "loopDuration": 17.0,
+          "lifeTimeMin": 10.0, "lifeTimeMax": 17.0, "speedMin": 0.8, "speedMax": 4.2,
+          "shapeType": 2, "sphereRadius": 238.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 7.0, 7.0, 0.0 ], "sizeMax": [ 24.0, 24.0, 0.0 ],
+          "startColor": [ 0.07, 0.62, 0.88, 0.21 ], "endColor": [ 0.005, 0.06, 0.16, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.020, "curlTargetSpeed": 5.2,
+          "curlResponseRate": 0.42, "surfaceInfluenceRadius": 18.0,
+          "randomRotationAxis": true, "randomInitOrientation": true,
+          "rotationRateMin": 1.0, "rotationRateMax": 8.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/snr_filament_realistic.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Outer Shell - Rust Red Ejecta Knots",
+        "position": [ -12.0, -8.0, -614.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 280.0, "burstCount": 1400, "loopMode": 0, "loopDuration": 18.0,
+          "lifeTimeMin": 11.0, "lifeTimeMax": 18.0, "speedMin": 1.0, "speedMax": 5.0,
+          "shapeType": 2, "sphereRadius": 224.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 5.0, 5.0, 0.0 ], "sizeMax": [ 18.0, 18.0, 0.0 ],
+          "startColor": [ 0.96, 0.20, 0.035, 0.29 ], "endColor": [ 0.15, 0.008, 0.003, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.024, "curlTargetSpeed": 6.8,
+          "curlResponseRate": 0.48, "surfaceInfluenceRadius": 16.0,
+          "randomRotationAxis": true, "randomInitOrientation": true,
+          "rotationRateMin": 2.0, "rotationRateMax": 12.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/supernova_filament.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Reverse Shock - Golden Filament Web",
+        "position": [ 10.0, -3.0, -624.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 330.0, "burstCount": 1400, "loopMode": 0, "loopDuration": 15.0,
+          "lifeTimeMin": 9.0, "lifeTimeMax": 15.0, "speedMin": 0.5, "speedMax": 3.4,
+          "shapeType": 2, "sphereRadius": 176.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 3.0, 3.0, 0.0 ], "sizeMax": [ 12.0, 12.0, 0.0 ],
+          "startColor": [ 1.0, 0.56, 0.10, 0.34 ], "endColor": [ 0.30, 0.018, 0.003, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.030, "curlTargetSpeed": 7.5,
+          "curlResponseRate": 0.55, "surfaceInfluenceRadius": 14.0,
+          "randomRotationAxis": true, "randomInitOrientation": true,
+          "rotationRateMin": 4.0, "rotationRateMax": 18.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/spark_05.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Interior - Diffuse X-Ray Plasma",
+        "position": [ 0.0, 0.0, -620.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 8192,
+        "settings": {
+          "spawnRate": 260.0, "burstCount": 1200, "loopMode": 0, "loopDuration": 22.0,
+          "lifeTimeMin": 13.0, "lifeTimeMax": 22.0, "speedMin": 0.3, "speedMax": 2.2,
+          "shapeType": 2, "sphereRadius": 145.0, "sphereSurfaceOnly": false, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 18.0, 18.0, 0.0 ], "sizeMax": [ 54.0, 54.0, 0.0 ],
+          "startColor": [ 0.035, 0.20, 0.65, 0.042 ], "endColor": [ 0.008, 0.018, 0.08, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.014, "curlTargetSpeed": 3.8,
+          "curlResponseRate": 0.30, "surfaceInfluenceRadius": 20.0,
+          "randomRotationAxis": true, "randomInitOrientation": true,
+          "rotationRateMin": 0.5, "rotationRateMax": 4.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 1,
+          "texturePath": "Textures/smoke_06.dds", "sortEnabled": true
+        }
+      },
+      {
+        "name": "Fast Ejecta - Radial Metal Shrapnel",
+        "position": [ 0.0, 0.0, -620.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 170.0, "burstCount": 420, "loopMode": 0, "loopDuration": 9.0,
+          "lifeTimeMin": 5.0, "lifeTimeMax": 9.0, "speedMin": 28.0, "speedMax": 54.0,
+          "shapeType": 2, "sphereRadius": 42.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 1.5, 1.5, 0.0 ], "sizeMax": [ 5.0, 5.0, 0.0 ],
+          "startColor": [ 1.0, 0.86, 0.52, 0.82 ], "endColor": [ 0.82, 0.04, 0.008, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "forceCurlEnabled": true, "curlFrequency": 0.011, "curlTargetSpeed": 3.0,
+          "curlResponseRate": 0.08, "surfaceInfluenceRadius": 10.0,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0, "alignmentMode": 1,
+          "texturePath": "Textures/trace_02.dds", "sortEnabled": false
+        }
+      },
+      {
+        "name": "Compact Remnant - Hot Central Ash",
+        "position": [ 0.0, 0.0, -620.0 ],
+        "rotation": [ 0.0, 0.0, 0.0 ],
+        "maxParticles": 2048,
+        "settings": {
+          "spawnRate": 240.0, "burstCount": 120, "loopMode": 0, "loopDuration": 2.0,
+          "lifeTimeMin": 0.8, "lifeTimeMax": 1.8, "speedMin": 0.4, "speedMax": 2.4,
+          "shapeType": 2, "sphereRadius": 12.0, "sphereSurfaceOnly": true, "velocityMode": 1,
+          "sizeMode": 1, "sizeMin": [ 2.0, 2.0, 0.0 ], "sizeMax": [ 8.0, 8.0, 0.0 ],
+          "startColor": [ 0.88, 0.96, 1.0, 0.88 ], "endColor": [ 0.08, 0.36, 1.0, 0.0 ],
+          "randomSpawnBrightness": true, "sizeOverLife": true, "colorOverLife": true, "alphaOverLife": true,
+          "gravity": [ 0.0, 0.0, 0.0 ], "morphEnabled": false,
+          "rendererType": 0, "blendMode": 0,
+          "texturePath": "Textures/light_01.dds", "sortEnabled": false
+        }
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Compact Remnant - Dark Neutron Core",
+      "mesh": "Meshes/sphere.obj",
+      "position": [ 0.0, 0.0, -620.0 ],
+      "rotation": [ 0.0, 0.0, 0.0, 1.0 ],
+      "scale": 8.0,
+      "color": [ 0.008, 0.016, 0.045, 1.0 ],
+      "colorSource": "override",
+      "visible": true,
+      "sdfCollider": false
+    }
+  ]
+}
