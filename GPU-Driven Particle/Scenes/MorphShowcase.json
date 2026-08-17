@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      46,
+      8,
+      8
+    ],
+    "lookAt": [
+      45.011,
+      7.854,
+      7.989
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 1,
+    "farZ": 1000
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0,
+        1,
+        0
+      ],
+      "planeOffset": 0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0,
+        0,
+        0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Assemble",
+        "position": [
+          0,
+          1.2,
+          7.5
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "maxParticles": 131072,
+        "settings": {
+          "spawnRate": 9000,
+          "burstCount": 0,
+          "loopMode": 0,
+          "loopDuration": 2,
+          "loopCount": 3,
+          "orbitEnabled": false,
+          "orbitRadius": 2,
+          "orbitSpeed": 2,
+          "lifeTimeMin": 6,
+          "lifeTimeMax": 9,
+          "speedMin": 0,
+          "speedMax": 0,
+          "spinSpeedMin": 1,
+          "spinSpeedMax": 3,
+          "initAngleMin": 1,
+          "initAngleMax": 5,
+          "rotationRateMin": 3,
+          "rotationRateMax": 18,
+          "rotationAxis": [
+            0,
+            0,
+            1
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 1,
+          "sizeMin": [
+            0.1,
+            0.1,
+            0.1
+          ],
+          "sizeMax": [
+            0.22,
+            0.22,
+            0.22
+          ],
+          "dirSpread": 1,
+          "posSpread": 0,
+          "startColor": [
+            0.15,
+            0.35,
+            0.85,
+            1
+          ],
+          "randomSpawnBrightness": false,
+          "shapeType": 2,
+          "velocityMode": 0,
+          "sphereRadius": 34,
+          "sphereSurfaceOnly": true,
+          "coneAngle": 30,
+          "endColor": [
+            0.95,
+            0.98,
+            1,
+            1
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": true,
+          "alphaOverLife": false,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5,
+          "forceTangentStrength": 5,
+          "forceTangentAxis": [
+            0,
+            1,
+            0
+          ],
+          "surfaceInfluenceRadius": 2,
+          "forceCurlEnabled": false,
+          "curlFrequency": 0.055,
+          "curlTargetSpeed": 12,
+          "curlResponseRate": 3,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5,
+          "forceAttractTarget": 0,
+          "morphEnabled": true,
+          "morphStrength": 8,
+          "morphTargetPosition": [
+            0,
+            0,
+            0
+          ],
+          "morphTargetRotation": [
+            0,
+            0,
+            0
+          ],
+          "morphTargetScale": [
+            1,
+            1,
+            1
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/spark_05.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0,
+            0,
+            0
+          ],
+          "boxExtents": [
+            34,
+            16,
+            22
+          ]
+        },
+        "morph": {
+          "mesh": "Meshes/Models/Models/Spectre/Spectre.obj",
+          "sampleCount": 40000,
+          "seed": 1337
+        }
+      },
+      {
+        "name": "Stars",
+        "position": [
+          0,
+          0,
+          -60
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "maxParticles": 16384,
+        "settings": {
+          "spawnRate": 10,
+          "burstCount": 0,
+          "loopMode": 0,
+          "loopDuration": 2,
+          "loopCount": 3,
+          "orbitEnabled": false,
+          "orbitRadius": 2,
+          "orbitSpeed": 2,
+          "lifeTimeMin": 300,
+          "lifeTimeMax": 300,
+          "speedMin": 0,
+          "speedMax": 0,
+          "spinSpeedMin": 1,
+          "spinSpeedMax": 3,
+          "initAngleMin": 1,
+          "initAngleMax": 5,
+          "rotationRateMin": 3,
+          "rotationRateMax": 18,
+          "rotationAxis": [
+            0,
+            0,
+            1
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 1,
+          "sizeMin": [
+            0.05,
+            0.05,
+            0.05
+          ],
+          "sizeMax": [
+            0.12,
+            0.12,
+            0.12
+          ],
+          "dirSpread": 1,
+          "posSpread": 0,
+          "startColor": [
+            0.82,
+            0.88,
+            1,
+            1
+          ],
+          "randomSpawnBrightness": true,
+          "shapeType": 1,
+          "velocityMode": 0,
+          "sphereRadius": 5,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30,
+          "endColor": [
+            0.82,
+            0.88,
+            1,
+            1
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": false,
+          "alphaOverLife": false,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5,
+          "forceTangentStrength": 5,
+          "forceTangentAxis": [
+            0,
+            1,
+            0
+          ],
+          "surfaceInfluenceRadius": 2,
+          "forceCurlEnabled": false,
+          "curlFrequency": 0.055,
+          "curlTargetSpeed": 12,
+          "curlResponseRate": 3,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5,
+          "forceAttractTarget": 0,
+          "morphEnabled": false,
+          "morphStrength": 20,
+          "morphTargetPosition": [
+            0,
+            0,
+            0
+          ],
+          "morphTargetRotation": [
+            0,
+            0,
+            0
+          ],
+          "morphTargetScale": [
+            1,
+            1,
+            1
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/star_07.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0,
+            0,
+            0
+          ],
+          "boxExtents": [
+            200,
+            130,
+            130
+          ]
+        }
+      }
+    ]
+  },
+  "objects": []
+}
