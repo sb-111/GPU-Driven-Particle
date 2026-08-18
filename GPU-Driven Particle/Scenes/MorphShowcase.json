@@ -1,350 +1,466 @@
-﻿{
-    "version":  1,
-    "camera":  {
-                   "position":  [
-                                    0,
-                                    14,
-                                    115
-                                ],
-                   "lookAt":  [
-                                  0,
-                                  13.88,
-                                  114.01
-                              ],
-                   "up":  [
-                              0,
-                              1,
-                              0
-                          ],
-                   "fovYRadians":  1.0471975803375244,
-                   "nearZ":  0.4,
-                   "farZ":  3000
-               },
-    "particleSystem":  {
-                           "halfResolution":  false,
-                           "collision":  {
-                                             "planeEnabled":  false,
-                                             "planeNormal":  [
-                                                                 0,
-                                                                 1,
-                                                                 0
-                                                             ],
-                                             "planeOffset":  0,
-                                             "sphereEnabled":  false,
-                                             "sphereCenter":  [
-                                                                  0,
-                                                                  0,
-                                                                  0
-                                                              ],
-                                             "sphereRadius":  1.5,
-                                             "sdfEnabled":  false,
-                                             "useBVH":  false
-                                         },
-                           "emitters":  [
-                                            {
-                                                "name":  "Morph Show",
-                                                "position":  [
-                                                                 0,
-                                                                 0,
-                                                                 0
-                                                             ],
-                                                "rotation":  [
-                                                                 0,
-                                                                 0,
-                                                                 0
-                                                             ],
-                                                "maxParticles":  65536,
-                                                "settings":  {
-                                                                 "spawnRate":  0,
-                                                                 "burstCount":  32768,
-                                                                 "loopMode":  1,
-                                                                 "loopDuration":  1,
-                                                                 "lifeTimeMin":  600,
-                                                                 "lifeTimeMax":  600,
-                                                                 "speedMin":  0,
-                                                                 "speedMax":  0,
-                                                                 "shapeType":  2,
-                                                                 "boxExtents":  [
-                                                                                    1450.0,
-                                                                                    850.0,
-                                                                                    260.0
-                                                                                ],
-                                                                 "sizeMode":  0,
-                                                                 "sizeMin":  [
-                                                                                 0.35,
-                                                                                 0.35,
-                                                                                 0.35
-                                                                             ],
-                                                                 "sizeMax":  [
-                                                                                 0.35,
-                                                                                 0.35,
-                                                                                 0.35
-                                                                             ],
-                                                                 "startColor":  [
-                                                                                    0.195,
-                                                                                    0.27,
-                                                                                    0.3,
-                                                                                    1
-                                                                                ],
-                                                                 "randomSpawnBrightness":  false,
-                                                                 "sizeOverLife":  false,
-                                                                 "colorOverLife":  false,
-                                                                 "alphaOverLife":  false,
-                                                                 "gravity":  [
-                                                                                 0,
-                                                                                 0,
-                                                                                 0
-                                                                             ],
-                                                                 "morphEnabled":  true,
-                                                                 "rendererType":  0,
-                                                                 "blendMode":  0,
-                                                                 "texturePath":  "Textures/star_04.dds",
-                                                                 "sortEnabled":  false,
-                                                                 "posSpread":  0,
-                                                                 "morphStrength":  12,
-                                                                 "collisionEnabled":  false,
-                                                                 "morphTargetRotation":  [
-                                                                                             0,
-                                                                                             0,
-                                                                                             0
-                                                                                         ],
-                                                                 "orbitEnabled":  false,
-                                                                 "forceTangentEnabled":  false,
-                                                                 "velocityMode":  0,
-                                                                 "loopCount":  1,
-                                                                 "morphTargetScale":  [
-                                                                                          20,
-                                                                                          20,
-                                                                                          20
-                                                                                      ],
-                                                                 "forceCurlEnabled":  false,
-                                                                 "morphTargetPosition":  [
-                                                                                             0,
-                                                                                             0,
-                                                                                             0
-                                                                                         ],
-                                                                 "forceAvoidEnabled":  false,
-                                                                 "sphereRadius":  60,
-                                                                 "sphereSurfaceOnly":  false,
-                                                                 "endColor":  [
-                                                                                  0.195,
-                                                                                  0.27,
-                                                                                  0.3,
-                                                                                  1
-                                                                              ],
-                                                                 "forceAttractEnabled":  false,
-                                                                 "dirSpread":  0
-                                                             },
-                                                "sequence":  {
-                                                                 "loop":  true,
-                                                                 "stages":  [
-                                                                                {
-                                                                                    "duration":  5,
-                                                                                    "morph":  {
-                                                                                                  "mesh":  "Meshes/sphere.obj",
-                                                                                                  "sampleCount":  32768,
-                                                                                                  "seed":  101
-                                                                                              },
-                                                                                    "settings":  {
-                                                                                                     "morphTargetScale":  [
-                                                                                                                              20,
-                                                                                                                              20,
-                                                                                                                              20
-                                                                                                                          ],
-                                                                                                     "startColor":  [
-                                                                                                                        0.195,
-                                                                                                                        0.27,
-                                                                                                                        0.3,
-                                                                                                                        1
-                                                                                                                    ],
-                                                                                                     "endColor":  [
-                                                                                                                      0.195,
-                                                                                                                      0.27,
-                                                                                                                      0.3,
-                                                                                                                      1
-                                                                                                                  ],
-                                                                                                     "morphStrength":  12
-                                                                                                 }
-                                                                                },
-                                                                                {
-                                                                                    "duration":  5,
-                                                                                    "morph":  {
-                                                                                                  "mesh":  "Meshes/Models/Shuttle/Shuttle.obj",
-                                                                                                  "sampleCount":  32768,
-                                                                                                  "seed":  202
-                                                                                              },
-                                                                                    "settings":  {
-                                                                                                     "morphTargetScale":  [
-                                                                                                                              1.9,
-                                                                                                                              1.9,
-                                                                                                                              1.9
-                                                                                                                          ],
-                                                                                                     "startColor":  [
-                                                                                                                        0.3,
-                                                                                                                        0.234,
-                                                                                                                        0.105,
-                                                                                                                        1
-                                                                                                                    ],
-                                                                                                     "endColor":  [
-                                                                                                                      0.3,
-                                                                                                                      0.234,
-                                                                                                                      0.105,
-                                                                                                                      1
-                                                                                                                  ],
-                                                                                                     "morphStrength":  12
-                                                                                                 }
-                                                                                },
-                                                                                {
-                                                                                    "duration":  5,
-                                                                                    "morph":  {
-                                                                                                  "mesh":  "Meshes/Models/Ranger/Ranger.obj",
-                                                                                                  "sampleCount":  32768,
-                                                                                                  "seed":  303
-                                                                                              },
-                                                                                    "settings":  {
-                                                                                                     "morphTargetScale":  [
-                                                                                                                              0.71,
-                                                                                                                              0.71,
-                                                                                                                              0.71
-                                                                                                                          ],
-                                                                                                     "startColor":  [
-                                                                                                                        0.165,
-                                                                                                                        0.3,
-                                                                                                                        0.225,
-                                                                                                                        1
-                                                                                                                    ],
-                                                                                                     "endColor":  [
-                                                                                                                      0.165,
-                                                                                                                      0.3,
-                                                                                                                      0.225,
-                                                                                                                      1
-                                                                                                                  ],
-                                                                                                     "morphStrength":  12
-                                                                                                 }
-                                                                                },
-                                                                                {
-                                                                                    "duration":  5,
-                                                                                    "morph":  {
-                                                                                                  "mesh":  "Meshes/Models/Spectre/Spectre.obj",
-                                                                                                  "sampleCount":  32768,
-                                                                                                  "seed":  404
-                                                                                              },
-                                                                                    "settings":  {
-                                                                                                     "morphTargetScale":  [
-                                                                                                                              1.27,
-                                                                                                                              1.27,
-                                                                                                                              1.27
-                                                                                                                          ],
-                                                                                                     "startColor":  [
-                                                                                                                        0.3,
-                                                                                                                        0.165,
-                                                                                                                        0.225,
-                                                                                                                        1
-                                                                                                                    ],
-                                                                                                     "endColor":  [
-                                                                                                                      0.3,
-                                                                                                                      0.165,
-                                                                                                                      0.225,
-                                                                                                                      1
-                                                                                                                  ],
-                                                                                                     "morphStrength":  12
-                                                                                                 }
-                                                                                },
-                                                                                {
-                                                                                    "duration":  5,
-                                                                                    "morph":  {
-                                                                                                  "mesh":  "Meshes/Models/P189/P189.obj",
-                                                                                                  "sampleCount":  32768,
-                                                                                                  "seed":  505
-                                                                                              },
-                                                                                    "settings":  {
-                                                                                                     "morphTargetScale":  [
-                                                                                                                              1.37,
-                                                                                                                              1.37,
-                                                                                                                              1.37
-                                                                                                                          ],
-                                                                                                     "startColor":  [
-                                                                                                                        0.24,
-                                                                                                                        0.24,
-                                                                                                                        0.3,
-                                                                                                                        1
-                                                                                                                    ],
-                                                                                                     "endColor":  [
-                                                                                                                      0.24,
-                                                                                                                      0.24,
-                                                                                                                      0.3,
-                                                                                                                      1
-                                                                                                                  ],
-                                                                                                     "morphStrength":  12
-                                                                                                 }
-                                                                                }
-                                                                            ]
-                                                             }
-                                            },
-                                            {
-                                                "name":  "Backdrop Stars",
-                                                "position":  [
-                                                                 0,
-                                                                 60,
-                                                                 -900
-                                                             ],
-                                                "rotation":  [
-                                                                 0.0,
-                                                                 0.0,
-                                                                 0.0
-                                                             ],
-                                                "maxParticles":  4096,
-                                                "settings":  {
-                                                                 "spawnRate":  0.0,
-                                                                 "burstCount":  2400,
-                                                                 "loopMode":  1,
-                                                                 "loopDuration":  900.0,
-                                                                 "lifeTimeMin":  900.0,
-                                                                 "lifeTimeMax":  900.0,
-                                                                 "speedMin":  0.0,
-                                                                 "speedMax":  0.0,
-                                                                 "shapeType":  1,
-                                                                 "boxExtents":  [
-                                                                                    1450.0,
-                                                                                    850.0,
-                                                                                    260.0
-                                                                                ],
-                                                                 "sizeMode":  1,
-                                                                 "sizeMin":  [
-                                                                                 0.8,
-                                                                                 0.8,
-                                                                                 0.0
-                                                                             ],
-                                                                 "sizeMax":  [
-                                                                                 4.0,
-                                                                                 4.0,
-                                                                                 0.0
-                                                                             ],
-                                                                 "startColor":  [
-                                                                                    0.46,
-                                                                                    0.57,
-                                                                                    0.78,
-                                                                                    0.50
-                                                                                ],
-                                                                 "randomSpawnBrightness":  true,
-                                                                 "sizeOverLife":  false,
-                                                                 "colorOverLife":  false,
-                                                                 "alphaOverLife":  false,
-                                                                 "gravity":  [
-                                                                                 0.0,
-                                                                                 0.0,
-                                                                                 0.0
-                                                                             ],
-                                                                 "morphEnabled":  false,
-                                                                 "rendererType":  0,
-                                                                 "blendMode":  0,
-                                                                 "texturePath":  "Textures/star_07.dds",
-                                                                 "sortEnabled":  false
-                                                             }
-                                            }
-                                        ]
-                       },
-    "objects":  [
-
+{
+  "version": 1,
+  "camera": {
+    "position": [
+      -13.894777297973633,
+      13.21705436706543,
+      71.76577758789063
+    ],
+    "lookAt": [
+      -13.801066398620605,
+      13.130738258361816,
+      70.77392578125
+    ],
+    "up": [
+      0.008119044825434685,
+      0.9962677955627441,
+      -0.08593332767486572
+    ],
+    "fovYRadians": 1.0471975803375244,
+    "nearZ": 0.4000000059604645,
+    "farZ": 3000.0
+  },
+  "particleSystem": {
+    "halfResolution": false,
+    "collision": {
+      "planeEnabled": false,
+      "planeNormal": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "planeOffset": 0.0,
+      "sphereEnabled": false,
+      "sphereCenter": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "sphereRadius": 1.5,
+      "sdfEnabled": false,
+      "useBVH": false
+    },
+    "emitters": [
+      {
+        "name": "Morph Show",
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maxParticles": 65536,
+        "morph": {
+          "mesh": "Meshes/Text_Finale_Mixed.obj",
+          "sampleCount": 60000,
+          "seed": 7
+        },
+        "settings": {
+          "spawnRate": 0.0,
+          "burstCount": 32768,
+          "loopMode": 1,
+          "loopDuration": 1.0,
+          "loopCount": 1,
+          "orbitEnabled": false,
+          "orbitRadius": 2.0,
+          "orbitSpeed": 2.0,
+          "lifeTimeMin": 600.0,
+          "lifeTimeMax": 600.0,
+          "speedMin": 0.0,
+          "speedMax": 0.0,
+          "spinSpeedMin": 1.0,
+          "spinSpeedMax": 3.0,
+          "initAngleMin": 1.0,
+          "initAngleMax": 5.0,
+          "rotationRateMin": 90.0,
+          "rotationRateMax": 360.0,
+          "rotationAxis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 0,
+          "sizeMin": [
+            0.3499999940395355,
+            0.3499999940395355,
+            0.3499999940395355
+          ],
+          "sizeMax": [
+            0.3499999940395355,
+            0.3499999940395355,
+            0.3499999940395355
+          ],
+          "dirSpread": 0.0,
+          "posSpread": 0.0,
+          "startColor": [
+            0.19499999284744263,
+            0.27000001072883606,
+            0.30000001192092896,
+            1.0
+          ],
+          "randomSpawnBrightness": false,
+          "shapeType": 2,
+          "velocityMode": 0,
+          "sphereRadius": 60.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "endColor": [
+            0.19499999284744263,
+            0.27000001072883606,
+            0.30000001192092896,
+            1.0
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": false,
+          "alphaOverLife": false,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5.0,
+          "forceTangentStrength": 5.0,
+          "forceTangentAxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "surfaceInfluenceRadius": 2.0,
+          "forceCurlEnabled": false,
+          "curlFrequency": 0.5,
+          "curlTargetSpeed": 5.0,
+          "curlResponseRate": 2.0,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5.0,
+          "forceAttractTarget": 0,
+          "morphEnabled": true,
+          "morphStrength": 12.0,
+          "morphTargetPosition": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetRotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetScale": [
+            20.0,
+            20.0,
+            20.0
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/star_04.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "boxExtents": [
+            1450.0,
+            850.0,
+            260.0
+          ]
+        },
+        "sequence": {
+          "loop": false,
+          "stages": [
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/sphere.obj",
+                "sampleCount": 32768,
+                "seed": 101
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Models/Models/Shuttle/Shuttle.obj",
+                "sampleCount": 32768,
+                "seed": 202
+              },
+              "settings": {
+                "startColor": [
+                  0.30000001192092896,
+                  0.23399999737739563,
+                  0.10499999672174454,
+                  1.0
+                ],
+                "endColor": [
+                  0.30000001192092896,
+                  0.23399999737739563,
+                  0.10499999672174454,
+                  1.0
+                ],
+                "morphTargetScale": [
+                  1.899999976158142,
+                  1.899999976158142,
+                  1.899999976158142
                 ]
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Models/Models/Ranger/Ranger.obj",
+                "sampleCount": 32768,
+                "seed": 303
+              },
+              "settings": {
+                "startColor": [
+                  0.16500000655651093,
+                  0.30000001192092896,
+                  0.22499999403953552,
+                  1.0
+                ],
+                "endColor": [
+                  0.16500000655651093,
+                  0.30000001192092896,
+                  0.22499999403953552,
+                  1.0
+                ],
+                "morphTargetScale": [
+                  0.7099999785423279,
+                  0.7099999785423279,
+                  0.7099999785423279
+                ]
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Models/Models/Spectre/Spectre.obj",
+                "sampleCount": 32768,
+                "seed": 404
+              },
+              "settings": {
+                "startColor": [
+                  0.30000001192092896,
+                  0.16500000655651093,
+                  0.22499999403953552,
+                  1.0
+                ],
+                "endColor": [
+                  0.30000001192092896,
+                  0.16500000655651093,
+                  0.22499999403953552,
+                  1.0
+                ],
+                "morphTargetScale": [
+                  1.2699999809265137,
+                  1.2699999809265137,
+                  1.2699999809265137
+                ]
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Models/Models/P189/P189.obj",
+                "sampleCount": 32768,
+                "seed": 505
+              },
+              "settings": {
+                "startColor": [
+                  0.23999999463558197,
+                  0.23999999463558197,
+                  0.30000001192092896,
+                  1.0
+                ],
+                "endColor": [
+                  0.23999999463558197,
+                  0.23999999463558197,
+                  0.30000001192092896,
+                  1.0
+                ],
+                "morphTargetScale": [
+                  1.3700000047683716,
+                  1.3700000047683716,
+                  1.3700000047683716
+                ]
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Text_Finale_Mixed.obj",
+                "sampleCount": 60000,
+                "seed": 7
+              }
+            },
+            {
+              "duration": 3.0,
+              "morph": {
+                "mesh": "Meshes/Text_Finale_Mixed.obj",
+                "sampleCount": 60000,
+                "seed": 7
+              },
+              "settings": {
+                "forceCurlEnabled": true
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/Text_Finale_Mixed.obj",
+                "sampleCount": 60000,
+                "seed": 7
+              },
+              "settings": {
+                "forceCurlEnabled": false,
+                "morphEnabled": false
+              }
+            }
+          ]
+        }
+      },
+      {
+        "name": "Backdrop Stars",
+        "position": [
+          0.0,
+          60.0,
+          -900.0
+        ],
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "maxParticles": 4096,
+        "settings": {
+          "spawnRate": 0.0,
+          "burstCount": 2400,
+          "loopMode": 1,
+          "loopDuration": 900.0,
+          "loopCount": 3,
+          "orbitEnabled": false,
+          "orbitRadius": 2.0,
+          "orbitSpeed": 2.0,
+          "lifeTimeMin": 900.0,
+          "lifeTimeMax": 900.0,
+          "speedMin": 0.0,
+          "speedMax": 0.0,
+          "spinSpeedMin": 1.0,
+          "spinSpeedMax": 3.0,
+          "initAngleMin": 1.0,
+          "initAngleMax": 5.0,
+          "rotationRateMin": 90.0,
+          "rotationRateMax": 360.0,
+          "rotationAxis": [
+            0.0,
+            0.0,
+            1.0
+          ],
+          "randomRotationAxis": true,
+          "randomInitOrientation": true,
+          "sizeMode": 1,
+          "sizeMin": [
+            0.800000011920929,
+            0.800000011920929,
+            0.0
+          ],
+          "sizeMax": [
+            4.0,
+            4.0,
+            0.0
+          ],
+          "dirSpread": 0.30000001192092896,
+          "posSpread": 0.10000000149011612,
+          "startColor": [
+            0.46000000834465027,
+            0.5699999928474426,
+            0.7799999713897705,
+            0.5
+          ],
+          "randomSpawnBrightness": true,
+          "shapeType": 1,
+          "velocityMode": 0,
+          "sphereRadius": 5.0,
+          "sphereSurfaceOnly": false,
+          "coneAngle": 30.0,
+          "endColor": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "sizeOverLife": false,
+          "colorOverLife": false,
+          "alphaOverLife": false,
+          "collisionEnabled": false,
+          "restitution": 0.4000000059604645,
+          "friction": 0.20000000298023224,
+          "forceAvoidEnabled": false,
+          "forceTangentEnabled": false,
+          "forceAvoidStrength": 5.0,
+          "forceTangentStrength": 5.0,
+          "forceTangentAxis": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "surfaceInfluenceRadius": 2.0,
+          "forceCurlEnabled": false,
+          "curlFrequency": 0.5,
+          "curlTargetSpeed": 5.0,
+          "curlResponseRate": 2.0,
+          "curlPsiBoundary": false,
+          "forceAttractEnabled": false,
+          "forceAttractStrength": 5.0,
+          "forceAttractTarget": 0,
+          "morphEnabled": false,
+          "morphStrength": 20.0,
+          "morphTargetPosition": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetRotation": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "morphTargetScale": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "rendererType": 0,
+          "blendMode": 0,
+          "alignmentMode": 0,
+          "texturePath": "Textures/star_07.dds",
+          "subImagesX": 1,
+          "subImagesY": 1,
+          "sortEnabled": false,
+          "ribbonUVMode": 0,
+          "gravity": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "boxExtents": [
+            1450.0,
+            850.0,
+            260.0
+          ]
+        }
+      }
+    ]
+  },
+  "objects": []
 }
