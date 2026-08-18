@@ -614,7 +614,14 @@ namespace GP
 
 					// 패널의 라이브 settings를 현재 스테이지 사본에 저장
 					if (ImGui::Button("Capture To Stage"))
+					{
 						cur.settings = s;
+						cur.morphTarget = emitter.GetMorphTarget();
+						cur.replacesMorphTarget = !emitter.GetMorphTargetPath().empty();
+						cur.morphMeshPath = emitter.GetMorphTargetPath();
+						cur.morphSampleCount = emitter.GetMorphTargetSampleCount();
+						cur.morphSeed = emitter.GetMorphTargetSeed();
+					}
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Add Stage From Current"))
@@ -622,7 +629,11 @@ namespace GP
 					SequenceStage stage;
 					stage.duration = 5.0f;
 					stage.settings = s;
-					stage.morphTarget = seq.stages.back().morphTarget; // 타깃은 마지막 스테이지에서 가져오기
+					stage.morphTarget = emitter.GetMorphTarget();
+					stage.replacesMorphTarget = !emitter.GetMorphTargetPath().empty();
+					stage.morphMeshPath = emitter.GetMorphTargetPath();
+					stage.morphSampleCount = emitter.GetMorphTargetSampleCount();
+					stage.morphSeed = emitter.GetMorphTargetSeed();
 					seq.stages.push_back(stage);
 					seq.currentStage = seq.stages.size() - 1;
 					seq.stageTimer = 0.0f;
