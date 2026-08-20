@@ -2,19 +2,19 @@
   "version": 1,
   "camera": {
     "position": [
-      -13.894777297973633,
-      13.21705436706543,
-      71.76577758789063
+      27.72913932800293,
+      1.2624340057373047,
+      60.6974983215332
     ],
     "lookAt": [
-      -13.801066398620605,
-      13.130738258361816,
-      70.77392578125
+      27.206958770751953,
+      1.1707392930984497,
+      59.849605560302734
     ],
     "up": [
-      0.008119044825434685,
-      0.9962677955627441,
-      -0.08593332767486572
+      -0.04808370769023895,
+      0.9957871437072754,
+      -0.07807609438896179
     ],
     "fovYRadians": 1.0471975803375244,
     "nearZ": 0.4000000059604645,
@@ -55,9 +55,9 @@
         ],
         "maxParticles": 65536,
         "morph": {
-          "mesh": "Meshes/Text_Finale_Mixed.obj",
-          "sampleCount": 60000,
-          "seed": 7
+          "mesh": "Meshes/Models/para_CC0_lp_rocks_pack-1/rock_d_03.obj",
+          "sampleCount": 32768,
+          "seed": 324
         },
         "settings": {
           "spawnRate": 0.0,
@@ -180,7 +180,7 @@
           "loop": false,
           "stages": [
             {
-              "duration": 5.0,
+              "duration": 3.0,
               "morph": {
                 "mesh": "Meshes/sphere.obj",
                 "sampleCount": 32768,
@@ -188,9 +188,9 @@
               }
             },
             {
-              "duration": 5.0,
+              "duration": 3.5,
               "morph": {
-                "mesh": "Meshes/Models/Models/Shuttle/Shuttle.obj",
+                "mesh": "Meshes/Models/Shuttle/Shuttle.obj",
                 "sampleCount": 32768,
                 "seed": 202
               },
@@ -215,9 +215,9 @@
               }
             },
             {
-              "duration": 5.0,
+              "duration": 3.5,
               "morph": {
-                "mesh": "Meshes/Models/Models/Ranger/Ranger.obj",
+                "mesh": "Meshes/Models/Ranger/Ranger.obj",
                 "sampleCount": 32768,
                 "seed": 303
               },
@@ -242,9 +242,9 @@
               }
             },
             {
-              "duration": 5.0,
+              "duration": 3.5,
               "morph": {
-                "mesh": "Meshes/Models/Models/Spectre/Spectre.obj",
+                "mesh": "Meshes/Models/Spectre/Spectre.obj",
                 "sampleCount": 32768,
                 "seed": 404
               },
@@ -269,11 +269,11 @@
               }
             },
             {
-              "duration": 5.0,
+              "duration": 3.5,
               "morph": {
-                "mesh": "Meshes/Models/Models/P189/P189.obj",
+                "mesh": "Meshes/Models/para_CC0_lp_rocks_pack-1/rock_d_03.obj",
                 "sampleCount": 32768,
-                "seed": 505
+                "seed": 324
               },
               "settings": {
                 "startColor": [
@@ -289,6 +289,21 @@
                   1.0
                 ],
                 "morphTargetScale": [
+                  10.0,
+                  10.0,
+                  10.0
+                ]
+              }
+            },
+            {
+              "duration": 5.0,
+              "morph": {
+                "mesh": "Meshes/ring.obj",
+                "sampleCount": 60000,
+                "seed": 7
+              },
+              "settings": {
+                "morphTargetScale": [
                   1.3700000047683716,
                   1.3700000047683716,
                   1.3700000047683716
@@ -296,17 +311,9 @@
               }
             },
             {
-              "duration": 5.0,
-              "morph": {
-                "mesh": "Meshes/Text_Finale_Mixed.obj",
-                "sampleCount": 60000,
-                "seed": 7
-              }
-            },
-            {
               "duration": 3.0,
               "morph": {
-                "mesh": "Meshes/Text_Finale_Mixed.obj",
+                "mesh": "Meshes/ring.obj",
                 "sampleCount": 60000,
                 "seed": 7
               },
@@ -317,7 +324,7 @@
             {
               "duration": 5.0,
               "morph": {
-                "mesh": "Meshes/Text_Finale_Mixed.obj",
+                "mesh": "Meshes/ring.obj",
                 "sampleCount": 60000,
                 "seed": 7
               },

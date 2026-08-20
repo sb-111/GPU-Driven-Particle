@@ -42,7 +42,7 @@ __declspec(align(16)) struct SceneConstants
 	Math::Matrix4 viewProj;
 };
 
-static constexpr const char* kInitialScenePath = "Scenes/villageScene.json";
+static constexpr const char* kInitialScenePath = "Scenes/Showcase.json";
 
 static ParticleViewCB makeViewCB(const Camera& camera)
 {

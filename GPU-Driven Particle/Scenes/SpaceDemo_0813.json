@@ -177,9 +177,9 @@
           0.0,
           0.0
         ],
-        "particleMesh": "Meshes/para_CC0_lp_rocks_pack-1/rock_c_01.obj",
+        "particleMesh": "Meshes/Models/para_CC0_lp_rocks_pack-1/rock_c_01.obj",
         "morph": {
-          "mesh": "Meshes/teapot.obj",
+          "mesh": "Meshes/sphere.obj",
           "sampleCount": 32768,
           "seed": 324
         },
