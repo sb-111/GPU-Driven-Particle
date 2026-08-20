@@ -234,6 +234,10 @@ namespace GP
 			return;
 		}
 
+		ImGui::Checkbox("Half Resolution", &system.GetHalfResolution());
+		ImGui::Checkbox("Show Selected Emitter Gizmo", &panelState.showSelectedEmitterGizmo);
+		ImGui::Separator();
+
 		// Emitter 선택 및 추가
 		// 풀은 크기만큼 VRAM 차지
 		static const uint32_t kPoolSizes[] = { 16384, 65536, 262144, 1048576 };
@@ -383,7 +387,7 @@ namespace GP
 				ImGui::Unindent();
 			}
 
-			if (ImGui::TreeNode("SDF Forces"))
+			if (ImGui::TreeNode("Force Fields"))
 			{
 				ImGui::Checkbox("Curl", &s.forceCurlEnabled);
 				if (s.forceCurlEnabled)
@@ -393,7 +397,7 @@ namespace GP
 					ImGui::SliderFloat("Curl Response Rate", &s.curlResponseRate, 0.1f, 20.0f);
 					ImGui::Checkbox("Psi Boundary", &s.curlPsiBoundary);
 				}
-				if (ImGui::TreeNode("Advanced"))
+				if (ImGui::TreeNode("Surface Forces (SDF)"))
 				{
 					ImGui::Checkbox("Avoid", &s.forceAvoidEnabled);
 					if (s.forceAvoidEnabled)
@@ -682,33 +686,39 @@ namespace GP
 				ImGui::SliderFloat("Plane Offset", &c.planeOffset, -5.0f, 5.0f);
 			}
 			ImGui::Checkbox("Sphere", &c.sphereEnabled);
-			ImGui::Checkbox("Use BVH", &c.useBVH);
 			if (c.sphereEnabled)
 			{
 				ImGui::DragFloat3("Sphere Center", c.sphereCenter, 0.1f);
 				ImGui::SliderFloat("Collider Radius", &c.sphereRadius, 0.1f, 5.0f);
 			}
+			ImGui::Checkbox("SDF", &c.sdfEnabled);
+			if (c.sdfEnabled)
+			{
+				ImGui::Indent();
+				ImGui::Checkbox("Use BVH", &c.useBVH);
+				ImGui::Unindent();
+			}
 		}
 
-		if (ImGui::CollapsingHeader("Debug & Profiling"))
+		if (ImGui::CollapsingHeader("Presets"))
 		{
-			ImGui::Checkbox("Show Selected Emitter Gizmo", &panelState.showSelectedEmitterGizmo);
-
 			if (ImGui::Button("Fire Preset")) { s = MakeFirePreset(); restart = true; }
 			ImGui::SameLine();
 			if (ImGui::Button("Smoke Preset")) { s = MakeSmokePreset(); restart = true; }
 			ImGui::SameLine();
 			if (ImGui::Button("Ribbon Preset")) { s = MakeRibbonPreset(); restart = true; }
 
-			if (ImGui::TreeNode("Benchmark Presets"))
+			if (ImGui::TreeNode("Benchmark"))
 			{
 				if (ImGui::Button("Sort Test")) { s = MakeArtifactPreset(); restart = true; }
 				ImGui::SameLine();
 				if (ImGui::Button("Overdraw")) { s = MakeOverdrawPreset(); restart = true; }
 				ImGui::TreePop();
 			}
+		}
 
-			ImGui::Checkbox("Half Resolution", &system.GetHalfResolution());
+		if (ImGui::CollapsingHeader("Debug & Profiling"))
+		{
 			if (ImGui::Button("1920x1129")) SetClientSize(1920, 1129);
 			ImGui::SameLine();
 			if (ImGui::Button("960x564")) SetClientSize(960, 564);
@@ -719,27 +729,26 @@ namespace GP
 			if (vram.valid)
 				ImGui::Text("VRAM %llu / %llu MB", vram.currentUsage >> 20, vram.budget >> 20);
 			ImGui::Text("Pool %u  (emitters %d)", emitter.GetMaxParticles(), emitterCount);
+		}
 
-			if (ImGui::TreeNode("Camera"))
+		if (ImGui::CollapsingHeader("Camera"))
+		{
+			Math::Vector3 camPos = camera.GetPosition();
+			float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
+			if (ImGui::DragFloat3("Camera Position", camPosF, 0.1f))
 			{
-				Math::Vector3 camPos = camera.GetPosition();
-				float camPosF[3] = { camPos.GetX(), camPos.GetY(), camPos.GetZ() };
-				if (ImGui::DragFloat3("Camera Position", camPosF, 0.1f))
-				{
-					Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
-					camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
-				}
+				Math::Vector3 newPos(camPosF[0], camPosF[1], camPosF[2]);
+				camera.SetEyeAtUp(newPos, newPos + camera.GetForward(), Math::Vector3(0.0f, 1.0f, 0.0f));
+			}
 
-				float clipZ[2] = { camera.GetNearClip(), camera.GetFarClip() };
-				if (ImGui::DragFloat2("Near / Far", clipZ, 0.1f, 0.0f, 0.0f, "%.2f"))
-				{
-					clipZ[0] = std::max(clipZ[0], 0.01f);
-					clipZ[1] = std::max(clipZ[1], clipZ[0] + 0.01f);
-					const float aspect = static_cast<float>(Graphics::g_SceneColorBuffer.GetHeight()) /
-						static_cast<float>(Graphics::g_SceneColorBuffer.GetWidth());
-					camera.SetPerspective(camera.GetFOV(), aspect, clipZ[0], clipZ[1]);
-				}
-				ImGui::TreePop();
+			float clipZ[2] = { camera.GetNearClip(), camera.GetFarClip() };
+			if (ImGui::DragFloat2("Near / Far", clipZ, 0.1f, 0.0f, 0.0f, "%.2f"))
+			{
+				clipZ[0] = std::max(clipZ[0], 0.01f);
+				clipZ[1] = std::max(clipZ[1], clipZ[0] + 0.01f);
+				const float aspect = static_cast<float>(Graphics::g_SceneColorBuffer.GetHeight()) /
+					static_cast<float>(Graphics::g_SceneColorBuffer.GetWidth());
+				camera.SetPerspective(camera.GetFOV(), aspect, clipZ[0], clipZ[1]);
 			}
 		}
 
